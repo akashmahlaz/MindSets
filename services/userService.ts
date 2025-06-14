@@ -4,11 +4,15 @@ import {
     doc,
     getDoc,
     getDocs,
+    orderBy,
+    query,
     serverTimestamp,
     setDoc,
-    updateDoc
+    updateDoc,
+    where
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { chatClient } from './stream';
 
 export interface UserProfile {
   uid: string;
@@ -148,6 +152,35 @@ export const updateUserStatus = async (userId: string, status: 'online' | 'offli
     console.log('User status updated:', userId, status);
   } catch (error) {
     console.error('Error updating user status:', error);
+    throw error;
+  }
+};
+
+// Create Stream Chat users for users who exist in Firestore but not in Stream Chat
+export const createStreamChatUsers = async (): Promise<void> => {
+  try {
+    const usersCollection = collection(db, 'users');
+    const querySnapshot = await getDocs(usersCollection);
+    
+    for (const doc of querySnapshot.docs) {
+      const userData = doc.data() as UserProfile;
+      
+      // Check if user already exists in Stream Chat
+      const userExists = await chatClient.queryUsers({ id: { $eq: userData.uid } });
+      
+      if (userExists.users.length === 0) {
+        // Create user in Stream Chat
+        await chatClient.upsertUser({
+          id: userData.uid,
+          name: userData.displayName,
+          email: userData.email,
+          image: userData.photoURL,
+        });
+        console.log('Stream Chat user created:', userData.uid);
+      }
+    }
+  } catch (error) {
+    console.error('Error creating Stream Chat users:', error);
     throw error;
   }
 };

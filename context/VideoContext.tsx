@@ -14,14 +14,18 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [isVideoConnected, setIsVideoConnected] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+
   useEffect(() => {
     const initVideoClient = async () => {
       console.log('VideoContext: initVideoClient called');
       console.log('VideoContext: user available:', !!user);
       console.log('VideoContext: existing videoClient:', !!videoClient);
+      console.log('VideoContext: isInitializing:', isInitializing);
       
-      if (user && !videoClient) {
+      if (user && !videoClient && !isInitializing) {
         try {
+          setIsInitializing(true);
           console.log('VideoContext: Initializing video client for user:', user.uid);
           
           // Get Stream token
@@ -53,27 +57,19 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (error) {
           console.error('VideoContext: Error initializing video client:', error);
+        } finally {
+          setIsInitializing(false);
         }
-      } else if (!user) {
+      } else if (!user && videoClient) {
         console.log('VideoContext: No user, clearing video client');
         setVideoClient(null);
         setIsVideoConnected(false);
+        setIsInitializing(false);
       }
     };
 
     initVideoClient();
-
-    // Cleanup on unmount or user change
-    return () => {
-      if (videoClient) {
-        console.log('VideoContext: Cleaning up video client');
-        // Note: StreamVideoClient doesn't have a disconnect method like chat
-        // It cleans up automatically when the component unmounts
-        setVideoClient(null);
-        setIsVideoConnected(false);
-      }
-    };
-  }, [user]); // Only depend on user changes
+  }, [user?.uid]); // Only depend on user ID changes
 
   const value = {
     videoClient,

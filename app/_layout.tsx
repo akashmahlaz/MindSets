@@ -4,18 +4,34 @@ import { VideoProvider } from "@/context/VideoContext";
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+// Suppress specific warnings from Stream Video SDK
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (
+    args[0] &&
+    typeof args[0] === 'string' &&
+    args[0].includes('Text strings must be rendered within a <Text> component')
+  ) {
+    return; // Suppress this specific warning
+  }
+  originalWarn.apply(console, args);
+};
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <StreamProvider>
-        <VideoProvider>
-          <AuthGate>
-            <Slot />
-          </AuthGate>
-        </VideoProvider>
-      </StreamProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <StreamProvider>
+          <VideoProvider>
+            <AuthGate>
+              <Slot />
+            </AuthGate>
+          </VideoProvider>
+        </StreamProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -37,11 +53,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Show loading spinner while checking auth state
   if (loading) {
     return (
-      <StreamProvider>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" />
-        </View>
-      </StreamProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StreamProvider>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" />
+          </View>
+        </StreamProvider>
+      </GestureHandlerRootView>
     );
   }
 

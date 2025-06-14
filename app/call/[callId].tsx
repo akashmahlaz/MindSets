@@ -1,37 +1,65 @@
-import { Call, CallContent, StreamCall, useStreamVideoClient } from '@stream-io/video-react-native-sdk'; // Import StreamCall
+import { Call, CallContent, StreamCall, useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 export default function CallScreen() {
   const { callId: rawCallId } = useLocalSearchParams();
   const callId = Array.isArray(rawCallId) ? rawCallId[0] : rawCallId;
   const videoClient = useStreamVideoClient();
-  const [call, setCall] = useState<Call | null | undefined>(null); // Explicitly type the state
-
+  const [call, setCall] = useState<Call | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const joinCall = async () => {
       if (!videoClient || !callId) {
-        setCall(undefined); // Or null
+        setCall(null);
+        setIsLoading(false);
+        setError('Video client or call ID not available');
         return;
       }
-      const newCallInstance = videoClient.call('default', callId as string);
+      
       try {
+        setIsLoading(true);
+        setError(null);
+        
+        const newCallInstance = videoClient.call('default', callId as string);
         await newCallInstance.join();
         setCall(newCallInstance);
       } catch (error) {
         console.error("Failed to join call:", error);
-        setCall(undefined); // Or null
-        // Optionally, navigate away or show an error message
-        // router.back(); 
+        setCall(null);
+        setError('Failed to join call');
+        // Optionally navigate back after a delay
+        setTimeout(() => router.back(), 3000);
+      } finally {
+        setIsLoading(false);
       }
     };
+    
     joinCall();
-  }, [callId, videoClient]); // Add videoClient to dependencies
-
+  }, [callId, videoClient]);
   return (
-    <View style={{ flex: 1 }}>
-      {call && (
-        <StreamCall call={call}> {/* Use StreamCall as the provider */}
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      {isLoading && (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Joining call...</Text>
+        </View>
+      )}
+      
+      {error && (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#fff', textAlign: 'center', margin: 20 }}>
+            {error}
+          </Text>
+          <Text style={{ color: '#fff', textAlign: 'center' }}>
+            Returning to previous screen...
+          </Text>
+        </View>
+      )}
+      
+      {call && !isLoading && (
+        <StreamCall call={call}>
           <CallContent
             onHangupCallHandler={() => router.back()}
           />

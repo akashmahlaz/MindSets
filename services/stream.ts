@@ -13,24 +13,25 @@ export const chatClient = StreamChat.getInstance(STREAM_API_KEY);
 let isConnecting = false;
 let isConnected = false;
 
-// Create video client with better configuration
-export const createVideoClient = (user: User, token: string): StreamVideoClient | null => { // Use imported User type, specify return type
+// Create video client with better configuration using singleton pattern
+export const createVideoClient = (user: User, token: string): StreamVideoClient | null => {
   try {
     if (!user || !user.uid) {
       console.error('Error creating video client: User or user.uid is missing');
       return null;
     }
-    return new StreamVideoClient({
+    
+    // Use getOrCreateInstance to prevent duplicate clients
+    return StreamVideoClient.getOrCreateInstance({
       apiKey: STREAM_API_KEY,
       user: {
         id: user.uid,
         name: user.displayName || user.email || 'Anonymous',
-        image: user.photoURL || `https://getstream.io/random_png/?name=${user.displayName || user.email || user.uid}`, // Added user.uid as fallback
+        image: user.photoURL || `https://getstream.io/random_png/?name=${user.displayName || user.email || user.uid}`,
       },
       token,
       options: {
         timeout: 10000,
-        // Disable location hints by setting locationHintUrl to undefined
         locationHintUrl: undefined,
       }
     });
