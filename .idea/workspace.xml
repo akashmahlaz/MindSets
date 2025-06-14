@@ -4,24 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ef62984e-5f4a-426d-957d-85602b5ecea1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/users/chat.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/context/ChatContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/chatHelpers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(main)/profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(main)/profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(main)/profile/[userId].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(main)/profile/[userId].tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/_layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/call/[callId].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/call/[callId].tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/chat/[channelId].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/chat/[channelId].tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/context/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/context/AuthContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/functions/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/functions/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/userService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/userService.ts" afterDir="false" />
-    </list>
+    <list default="true" id="ef62984e-5f4a-426d-957d-85602b5ecea1" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -84,7 +67,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1749738403682</updated>
-      <workItem from="1749899420995" duration="3185000" />
+      <workItem from="1749899420995" duration="3683000" />
     </task>
     <servers />
   </component>
