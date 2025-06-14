@@ -6,6 +6,8 @@ import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import "./global.css";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Suppress specific warnings from Stream Video SDK
 const originalWarn = console.warn;
