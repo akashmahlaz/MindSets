@@ -1,4 +1,6 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { StreamProvider } from "@/context/StreamContext";
+import { VideoProvider } from "@/context/VideoContext";
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -6,9 +8,13 @@ import { ActivityIndicator, View } from 'react-native';
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <AuthGate>
-        <Slot />
-      </AuthGate>
+      <StreamProvider>
+        <VideoProvider>
+          <AuthGate>
+            <Slot />
+          </AuthGate>
+        </VideoProvider>
+      </StreamProvider>
     </AuthProvider>
   );
 }
@@ -31,9 +37,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Show loading spinner while checking auth state
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <StreamProvider>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      </StreamProvider>
     );
   }
 

@@ -4,6 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import { getReactNativePersistence, initializeAuth } from 'firebase/auth'; // Import isSupported for auth
 import { getFirestore } from "firebase/firestore";
+
 import { storage } from "firebase/storage"; // Import storage if needed
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -41,6 +42,7 @@ const app = initializeApp(firebaseConfig);
 // }
 
 const db = getFirestore(app);
+
 
 // Initialize Auth with persistence
 const auth = initializeAuth(app, {
