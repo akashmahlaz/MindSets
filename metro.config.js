@@ -10,6 +10,6 @@ config.resolver.unstable_enablePackageExports = false;
 
 // Apply NativeWind (Tailwind) transformation
 module.exports = withNativeWind(config, { 
-  input: './global.css',
+  input: './app/global.css',
   // Optional: You can add other NativeWind options here if needed
 });
