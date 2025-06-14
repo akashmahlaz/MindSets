@@ -4,12 +4,9 @@ import {
     doc,
     getDoc,
     getDocs,
-    orderBy,
-    query,
     serverTimestamp,
     setDoc,
-    updateDoc,
-    where
+    updateDoc
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
@@ -55,29 +52,70 @@ export const createUserProfile = async (user: User): Promise<void> => {
   }
 };
 
+// Debug function to check total users
+export const debugUsersCollection = async (): Promise<void> => {
+  try {
+    const usersCollection = collection(db, 'users');
+    const querySnapshot = await getDocs(usersCollection);
+    
+    console.log('=== DEBUG: Users Collection ===');
+    console.log('Total documents:', querySnapshot.size);
+    
+    querySnapshot.forEach((doc) => {
+      const userData = doc.data();
+      console.log('User document:', {
+        id: doc.id,
+        uid: userData.uid,
+        email: userData.email,
+        displayName: userData.displayName,
+        status: userData.status,
+        createdAt: userData.createdAt
+      });
+    });
+    console.log('=== END DEBUG ===');
+  } catch (error) {
+    console.error('Error in debug function:', error);
+  }
+};
+
 // Get all users except current user
 export const getAllUsers = async (currentUserId: string): Promise<UserProfile[]> => {
   try {
+    console.log('Getting all users except:', currentUserId);
     const usersCollection = collection(db, 'users');
-    const q = query(
-      usersCollection, 
-      where('uid', '!=', currentUserId),
-      orderBy('uid'),
-      orderBy('lastSeen', 'desc')
-    );
     
-    const querySnapshot = await getDocs(q);
+    // First, try a simple query to get all users
+    const querySnapshot = await getDocs(usersCollection);
     const users: UserProfile[] = [];
     
+    console.log('Total documents in users collection:', querySnapshot.size);
+    
     querySnapshot.forEach((doc) => {
-      users.push(doc.data() as UserProfile);
+      const userData = doc.data() as UserProfile;
+      console.log('Found user:', userData.uid, userData.displayName || userData.email);
+      
+      // Filter out current user
+      if (userData.uid !== currentUserId) {
+        users.push(userData);
+      }
     });
     
-    console.log('Fetched users:', users.length);
+    // Sort by lastSeen in memory
+    users.sort((a, b) => {
+      if (!a.lastSeen && !b.lastSeen) return 0;
+      if (!a.lastSeen) return 1;
+      if (!b.lastSeen) return -1;
+      return b.lastSeen.toMillis() - a.lastSeen.toMillis();
+    });
+    
+    console.log('Filtered users (excluding current):', users.length);
     return users;
   } catch (error) {
     console.error('Error fetching users:', error);
-    throw error;
+    console.error('Error details:', error);
+    
+    // Fallback: return empty array instead of throwing
+    return [];
   }
 };
 

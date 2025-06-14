@@ -1,4 +1,4 @@
-import { StreamVideoClient } from '@stream-io/video-react-native-sdk';
+import { StreamVideo, StreamVideoClient } from '@stream-io/video-react-native-sdk';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createVideoClient } from '../services/stream';
 import { useAuth } from './AuthContext';
@@ -14,12 +14,17 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [isVideoConnected, setIsVideoConnected] = useState(false);
-
   useEffect(() => {
     const initVideoClient = async () => {
+      console.log('VideoContext: initVideoClient called');
+      console.log('VideoContext: user available:', !!user);
+      console.log('VideoContext: existing videoClient:', !!videoClient);
+      
       if (user && !videoClient) {
         try {
-          // Get Stream token (you'll need to implement this)
+          console.log('VideoContext: Initializing video client for user:', user.uid);
+          
+          // Get Stream token
           const response = await fetch('https://us-central1-mental-health-f7b7f.cloudfunctions.net/generateStreamToken', {
             method: 'POST',
             headers: {
@@ -28,18 +33,31 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
             },
             body: JSON.stringify({ userId: user.uid }),
           });
+          
+          if (!response.ok) {
+            throw new Error(`Failed to get token: ${response.status}`);
+          }
+          
           const data = await response.json();
           const token = data.token;
-
+          
+          console.log('VideoContext: Token received, creating video client');
+          
           const client = createVideoClient(user, token);
           if (client) {
             setVideoClient(client);
             setIsVideoConnected(true);
-            console.log('Video client initialized successfully');
+            console.log('VideoContext: Video client initialized successfully');
+          } else {
+            console.error('VideoContext: Failed to create video client');
           }
         } catch (error) {
-          console.error('Error initializing video client:', error);
+          console.error('VideoContext: Error initializing video client:', error);
         }
+      } else if (!user) {
+        console.log('VideoContext: No user, clearing video client');
+        setVideoClient(null);
+        setIsVideoConnected(false);
       }
     };
 
@@ -48,22 +66,28 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     // Cleanup on unmount or user change
     return () => {
       if (videoClient) {
+        console.log('VideoContext: Cleaning up video client');
         // Note: StreamVideoClient doesn't have a disconnect method like chat
         // It cleans up automatically when the component unmounts
         setVideoClient(null);
         setIsVideoConnected(false);
       }
     };
-  }, [user]);
+  }, [user]); // Only depend on user changes
 
   const value = {
     videoClient,
     isVideoConnected,
   };
-
   return (
     <VideoContext.Provider value={value}>
-      {children}
+      {videoClient ? (
+        <StreamVideo client={videoClient}>
+          {children}
+        </StreamVideo>
+      ) : (
+        children
+      )}
     </VideoContext.Provider>
   );
 };

@@ -1,7 +1,7 @@
 import { auth } from '@/firebaseConfig';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { connectUserToStream, disconnectUserFromStream } from '../context/streamClient';
+import { connectUserToStream, disconnectUserFromStream } from '../services/stream';
 import { createUserProfile, updateUserStatus } from '../services/userService';
 
 interface AuthContextType {

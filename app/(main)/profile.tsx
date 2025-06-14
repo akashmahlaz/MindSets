@@ -2,19 +2,26 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { getAllUsers, UserProfile } from '../../services/userService';
+import { debugUsersCollection, getAllUsers, UserProfile } from '../../services/userService';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchUsers = async () => {
-    if (!user) return;
+  const [refreshing, setRefreshing] = useState(false);  const fetchUsers = async () => {
+    if (!user) {
+      console.log('No user found, cannot fetch users');
+      return;
+    }
     
     try {
       console.log('Fetching users...');
+      console.log('Current user UID:', user.uid);
+      console.log('Current user email:', user.email);
+      
+      // Debug: Check all users in collection
+      await debugUsersCollection();
+      
       const fetchedUsers = await getAllUsers(user.uid);
       setUsers(fetchedUsers);
       console.log('Users fetched:', fetchedUsers.length);
@@ -71,13 +78,14 @@ export default function ProfileScreen() {
       </View>
     </TouchableOpacity>
   );
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Profile</Text>
         <Text style={styles.currentUser}>Welcome, {user?.displayName || user?.email}</Text>
-      </View>      <View style={styles.section}>
+      </View>
+      
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Available Users</Text>
         {loading ? (
           <Text style={styles.loadingText}>Loading users...</Text>
