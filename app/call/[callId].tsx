@@ -1,7 +1,7 @@
 import { Call, CallContent, StreamCall, useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 export default function CallScreen() {
   const { callId: rawCallId } = useLocalSearchParams();
   const callId = Array.isArray(rawCallId) ? rawCallId[0] : rawCallId;

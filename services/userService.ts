@@ -1,18 +1,14 @@
 import { User } from 'firebase/auth';
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    serverTimestamp,
-    setDoc,
-    updateDoc,
-    where
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { chatClient } from './stream';
 
 export interface UserProfile {
   uid: string;
@@ -156,31 +152,71 @@ export const updateUserStatus = async (userId: string, status: 'online' | 'offli
   }
 };
 
-// Create Stream Chat users for users who exist in Firestore but not in Stream Chat
-export const createStreamChatUsers = async (): Promise<void> => {
+// Create Stream Chat user - proper implementation
+export const createStreamChatUser = async (userProfile: UserProfile): Promise<void> => {
   try {
-    const usersCollection = collection(db, 'users');
-    const querySnapshot = await getDocs(usersCollection);
-    
-    for (const doc of querySnapshot.docs) {
-      const userData = doc.data() as UserProfile;
-      
-      // Check if user already exists in Stream Chat
-      const userExists = await chatClient.queryUsers({ id: { $eq: userData.uid } });
-      
-      if (userExists.users.length === 0) {
-        // Create user in Stream Chat
-        await chatClient.upsertUser({
-          id: userData.uid,
-          name: userData.displayName,
-          email: userData.email,
-          image: userData.photoURL,
-        });
-        console.log('Stream Chat user created:', userData.uid);
-      }
+    console.log('Creating Stream Chat user for:', userProfile.uid);
+    const { chatClient, getStreamToken } = await import('./stream');
+    if (!chatClient || !chatClient.upsertUsers) {
+      console.error('Stream Chat client not initialized properly');
+      return;
+    }
+    const streamUserData = {
+      id: userProfile.uid,
+      name: userProfile.displayName,
+      image: userProfile.photoURL,
+    };
+    try {
+      await chatClient.upsertUsers([streamUserData]);
+      console.log('User created/updated in Stream Chat:', userProfile.uid);
+    } catch (apiError) {
+      console.error('Error creating user via API:', apiError);
     }
   } catch (error) {
-    console.error('Error creating Stream Chat users:', error);
+    console.error('Error with Stream Chat user creation:', error);
+    console.error('Error details:', error);
+  }
+};
+
+// Ensure both users exist in Stream Chat before creating a channel
+export const ensureStreamChatUsers = async (userIds: string[]): Promise<boolean> => {
+  try {
+    console.log('Ensuring Stream Chat users exist for IDs:', userIds);
+    const userProfiles = await Promise.all(
+      userIds.map(async (uid) => {
+        const profile = await getUserProfile(uid);
+        return profile;
+      })
+    );
+    const validProfiles = userProfiles.filter((p): p is UserProfile => p !== null);
+    await Promise.all(
+      validProfiles.map(async (profile) => {
+        await createStreamChatUser(profile);
+      })
+    );
+    return true;
+  } catch (error) {
+    console.error('Error ensuring Stream Chat users exist:', error);
+    return false;
+  }
+};
+
+// Start a chat with another user (ensure both users exist in Stream Chat)
+export const startChatWithUser = async (currentUserId: string, targetUserId: string): Promise<any> => {
+  try {
+    console.log(`Starting chat between ${currentUserId} and ${targetUserId}`);
+    await ensureStreamChatUsers([currentUserId, targetUserId]);
+    const { chatClient } = await import('./stream');
+    const channelId = [currentUserId, targetUserId].sort().join('-');
+    const channel = chatClient.channel('messaging', channelId, {
+      members: [currentUserId, targetUserId],
+      created_by_id: currentUserId,
+    });
+    await channel.watch();
+    console.log('Chat channel created/watched:', channelId);
+    return channel;
+  } catch (error) {
+    console.error('Error starting chat:', error);
     throw error;
   }
 };

@@ -18,7 +18,6 @@ export default function ProfileScreen() {
       console.log('Fetching users...');
       console.log('Current user UID:', user.uid);
       console.log('Current user email:', user.email);
-      
       // Debug: Check all users in collection
       await debugUsersCollection();
       

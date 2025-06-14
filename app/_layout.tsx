@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ChatProvider } from "@/context/ChatContext";
 import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
 import { Slot, useRouter } from 'expo-router';
@@ -19,17 +20,24 @@ console.warn = (...args) => {
   originalWarn.apply(console, args);
 };
 
-export default function RootLayout() {
+  // Import the necessary components from stream-chat-react-native
+  import { OverlayProvider } from 'stream-chat-react-native';
+
+  export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
-        <StreamProvider>
-          <VideoProvider>
-            <AuthGate>
-              <Slot />
-            </AuthGate>
-          </VideoProvider>
-        </StreamProvider>
+        <ChatProvider>
+          <OverlayProvider>
+            <StreamProvider>
+              <VideoProvider>
+                <AuthGate>
+                  <Slot />
+                </AuthGate>
+              </VideoProvider>
+            </StreamProvider>
+          </OverlayProvider>
+        </ChatProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );

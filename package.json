@@ -64,7 +64,8 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "stream-chat": "^9.6.1",
-    "stream-chat-expo": "^7.1.1"
+    "stream-chat-expo": "^7.1.1",
+    "stream-chat-react-native": "^7.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
