@@ -42,6 +42,19 @@ This document provides a comprehensive overview of the chat messaging features i
 - ✅ **Group Channels** - Multi-user group conversations
 - ✅ **Channel Filters** - Filter channels by status (all, unread, pinned, archived)
 
+## 🖥️ Platform Compatibility
+
+This implementation is fully compatible with:
+- ✅ **Windows** - Using PowerShell with semicolon (`;`) command chaining
+- ✅ **macOS** - Using Terminal with `&&` command chaining  
+- ✅ **Linux** - Using Bash with `&&` command chaining
+- ✅ **React Native** - iOS and Android mobile apps
+- ✅ **Web** - Browser-based testing and development
+
+### Windows-Specific Scripts
+- `npm test` - Run comprehensive test suite
+- `scripts/test-windows.bat` - Windows batch script for easy testing
+
 ## 📁 File Structure
 
 ```
@@ -296,6 +309,40 @@ useEffect(() => {
 - Permission-based access control
 - Secure file upload handling
 - Rate limiting and spam protection
+
+## 🧪 Testing
+
+### Comprehensive Test Suite
+A complete test suite has been implemented to verify all chat functionality:
+
+```bash
+# Run all tests (Windows compatible)
+npm test
+
+# Or use Windows batch script
+scripts/test-windows.bat
+```
+
+The test suite covers:
+- ✅ Channel Creation & Management (13 tests)
+- ✅ Member Operations (add/remove/roles)
+- ✅ Message Operations (send/search/reactions)
+- ✅ Real-time Features (typing/presence/notifications)
+- ✅ Advanced Features (muting/archiving/pinning)
+
+### Test Commands by Platform
+
+**Windows (PowerShell):**
+```powershell
+cd C:\path\to\streams ; npm test
+npm start ; npm run android
+```
+
+**macOS/Linux (Terminal):**
+```bash
+cd /path/to/streams && npm test
+npm start && npm run android
+```
 
 ## 🚀 Getting Started
 
