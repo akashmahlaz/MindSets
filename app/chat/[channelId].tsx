@@ -21,6 +21,7 @@ export default function ChatScreen() {
   const { chatClient, isChatConnected } = useChat();
   const { user } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Move hook to top level
   const [channel, setChannel] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
@@ -284,8 +285,6 @@ export default function ChatScreen() {
     );
   }
 
-  const insets = useSafeAreaInsets();
-
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
       {renderChannelHeader()}
@@ -304,13 +303,6 @@ export default function ChatScreen() {
             />
             <MessageInput 
               maxNumberOfFiles={5}
-              hasFilePicker={true}
-              hasImagePicker={true}
-              onSendMessage={async () => {
-                // Mark as read when sending a message
-                await markChannelAsRead(channel);
-                setUnreadCount(0);
-              }}
             />
           </View>
           <Thread />

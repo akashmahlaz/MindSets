@@ -32,8 +32,8 @@ export default function ChannelListScreen() {
   // Helper function to get channel display name
   const getChannelDisplayName = (channel: ChannelType): string => {
     // First check if channel has a custom name
-    if (channel.data?.name) {
-      return channel.data.name;
+    if ((channel.data as any)?.name) {
+      return (channel.data as any).name;
     }
 
     // For direct message channels, get the other user's name
@@ -44,13 +44,17 @@ export default function ChannelListScreen() {
       );
       
       if (otherMember?.user) {
-        return otherMember.user.name || otherMember.user.id || 'Unknown User';
+        return (otherMember.user as any).name || 
+               (otherMember.user as any).display_name || 
+               otherMember.user.id || 
+               'Unknown User';
       }
     }
 
     // Fallback to channel ID or generic name
     return channel.id || 'Unnamed Channel';
   };
+
   // Function to load channels
   const loadChannels = async () => {
     if (!chatClient || !user) return;
@@ -75,6 +79,7 @@ export default function ChannelListScreen() {
       setRefreshing(false);
     }
   };
+
   // Filter channels based on search query and active filter
   const filterChannels = (allChannels: ChannelType[], query: string, filter: string) => {
     let filtered = [...allChannels];
@@ -86,7 +91,7 @@ export default function ChannelListScreen() {
         const nameMatch = channelName.toLowerCase().includes(query.toLowerCase());
         
         const memberMatch = Object.values(channel.state?.members || {}).some((member: any) => 
-          member.user?.name?.toLowerCase().includes(query.toLowerCase())
+          ((member.user as any)?.name || (member.user as any)?.display_name || '')?.toLowerCase().includes(query.toLowerCase())
         );
         
         return nameMatch || memberMatch;
@@ -99,10 +104,10 @@ export default function ChannelListScreen() {
         filtered = filtered.filter(channel => getUnreadCount(channel) > 0);
         break;
       case 'pinned':
-        filtered = filtered.filter(channel => channel.data?.pinned);
+        filtered = filtered.filter(channel => (channel.data as any)?.pinned);
         break;
       case 'archived':
-        filtered = filtered.filter(channel => channel.data?.archived);
+        filtered = filtered.filter(channel => (channel.data as any)?.archived);
         break;
       default:
         // 'all' - no additional filtering
@@ -160,7 +165,7 @@ export default function ChannelListScreen() {
 
   const togglePinChannel = async (channel: ChannelType) => {
     try {
-      if (channel.data?.pinned) {
+      if ((channel.data as any)?.pinned) {
         await channelService.unpinChannel(channel);
       } else {
         await channelService.pinChannel(channel);
@@ -174,7 +179,7 @@ export default function ChannelListScreen() {
 
   const toggleArchiveChannel = async (channel: ChannelType) => {
     try {
-      if (channel.data?.archived) {
+      if ((channel.data as any)?.archived) {
         await channelService.unarchiveChannel(channel);
       } else {
         await channelService.archiveChannel(channel);
@@ -223,13 +228,14 @@ export default function ChannelListScreen() {
 
   const renderChannelItem = ({ item: channel }: { item: ChannelType }) => {
     const unreadCount = getUnreadCount(channel);
-    const isPinned = channel.data?.pinned;
-    const isArchived = channel.data?.archived;
+    const isPinned = (channel.data as any)?.pinned;
+    const isArchived = (channel.data as any)?.archived;
 
     return (
       <TouchableOpacity
         style={styles.channelItem}
-        onPress={() => navigateToChannel(channel)}        onLongPress={() => {
+        onPress={() => navigateToChannel(channel)}
+        onLongPress={() => {
           const channelDisplayName = getChannelDisplayName(channel);
           Alert.alert(
             'Channel Actions',
@@ -257,29 +263,32 @@ export default function ChannelListScreen() {
           );
         }}
       >
-        <Chat client={chatClient}>
-          <View style={styles.channelPreviewContainer}>
-            <ChannelPreviewMessenger 
-              channel={channel}
-              onSelect={() => navigateToChannel(channel)}
-            />
-            <View style={styles.channelIndicators}>
-              {isPinned && (
-                <Ionicons name="pin" size={16} color="#007AFF" style={styles.indicator} />
-              )}
-              {isArchived && (
-                <Ionicons name="archive" size={16} color="#FF9500" style={styles.indicator} />
-              )}
-              {unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadText}>
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Text>
-                </View>
-              )}
+        {chatClient && (
+          <Chat client={chatClient}>
+            <View style={styles.channelPreviewContainer}>
+              <ChannelPreviewMessenger 
+                channel={channel}
+                onSelect={() => navigateToChannel(channel)}
+                latestMessagePreview={undefined}
+              />
+              <View style={styles.channelIndicators}>
+                {isPinned && (
+                  <Ionicons name="pin" size={16} color="#007AFF" style={styles.indicator} />
+                )}
+                {isArchived && (
+                  <Ionicons name="archive" size={16} color="#FF9500" style={styles.indicator} />
+                )}
+                {unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadText}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
-          </View>
-        </Chat>
+          </Chat>
+        )}
       </TouchableOpacity>
     );
   };
@@ -336,7 +345,7 @@ export default function ChannelListScreen() {
       </Text>
       <TouchableOpacity 
         style={styles.createChannelButton}
-        onPress={() => router.push('/users')}
+        onPress={() => router.push('/(main)' as any)}
       >
         <Text style={styles.createChannelText}>Start New Chat</Text>
       </TouchableOpacity>
@@ -351,6 +360,7 @@ export default function ChannelListScreen() {
       </View>
     );
   }
+
   if (!chatClient || !isChatConnected) {
     return (
       <View style={styles.centerContainer}>
@@ -370,7 +380,7 @@ export default function ChannelListScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Chats</Text>
-        <TouchableOpacity onPress={() => router.push('/users')}>
+        <TouchableOpacity onPress={() => router.push('/(main)' as any)}>
           <Ionicons name="add-circle-outline" size={28} color="#007AFF" />
         </TouchableOpacity>
       </View>
