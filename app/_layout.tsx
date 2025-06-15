@@ -9,6 +9,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import "./global.css";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Initialize push notifications for Stream Video
+import "@/lib/initializePushNotifications";
+
 // Suppress specific warnings from Stream Video SDK
 const originalWarn = console.warn;
 console.warn = (...args) => {

@@ -1,5 +1,12 @@
-import { StreamVideo, StreamVideoClient } from '@stream-io/video-react-native-sdk';
+import { 
+  StreamVideo, 
+  StreamVideoClient,
+  StreamCall,
+  useCalls,
+  RingingCallContent
+} from '@stream-io/video-react-native-sdk';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import { createVideoClient } from '../services/stream';
 import { useAuth } from './AuthContext';
 
@@ -9,6 +16,25 @@ interface VideoContextType {
 }
 
 const VideoContext = createContext<VideoContextType | null>(null);
+
+// Component to handle ringing calls
+const RingingCalls = () => {
+  // collect all ringing kind of calls managed by the SDK
+  const calls = useCalls().filter((c) => c.ringing);
+  // for simplicity, we only take the first one but
+  // there could be multiple calls ringing at the same time
+  const ringingCall = calls[0];
+  
+  if (!ringingCall) return null;
+  
+  return (
+    <StreamCall call={ringingCall}>
+      <SafeAreaView style={StyleSheet.absoluteFill}>
+        <RingingCallContent />
+      </SafeAreaView>
+    </StreamCall>
+  );
+};
 
 export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -74,12 +100,12 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const value = {
     videoClient,
     isVideoConnected,
-  };
-  return (
+  };  return (
     <VideoContext.Provider value={value}>
       {videoClient ? (
         <StreamVideo client={videoClient}>
           {children}
+          <RingingCalls />
         </StreamVideo>
       ) : (
         children

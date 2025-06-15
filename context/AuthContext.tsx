@@ -2,6 +2,8 @@ import { auth } from '@/firebaseConfig';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createUserProfile, updateUserStatus } from '../services/userService';
+import { requestNotificationPermissions } from '../lib/requestPermissions';
+import { disablePushNotifications } from '../lib/pushNotificationHelpers';
 
 interface AuthContextType {
   user: User | null;
@@ -32,11 +34,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     await createUserWithEmailAndPassword(auth, email, password);
   };
-
   const logout = async () => {
     if (user) {
       await updateUserStatus(user.uid, 'offline');
     }
+    
+    // Disable push notifications when user logs out
+    await disablePushNotifications();
+    
     await signOut(auth);
   };
 
@@ -44,10 +49,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        
-        try {
+          try {
           // Create or update user profile in Firestore
           await createUserProfile(firebaseUser);
+          
+          // Request notification permissions when user signs in
+          await requestNotificationPermissions();
         } catch (error) {
           console.error('Error setting up user:', error);
         }
