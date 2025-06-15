@@ -1,6 +1,19 @@
+import "@/app/global.css";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { debugUsersCollection, getAllUsers, UserProfile } from '../../services/userService';
 
@@ -55,59 +68,85 @@ export default function ProfileScreen() {
       default: return 'gray';
     }
   };
-
   const renderUserItem = ({ item }: { item: UserProfile }) => (
     <TouchableOpacity 
-     
+      className="flex-row items-center p-4 bg-card border-b border-border"
       onPress={() => handleUserPress(item.uid)}
     >
-      <Image 
-        source={{ uri: item.photoURL || 'https://via.placeholder.com/50' }} 
-        
-      />
-      <View >
-        <Text>{item.displayName}</Text>
-        <Text>{item.email}</Text>
-        <View >
-          <View />
-          <Text>
+      <Avatar className="w-12 h-12 mr-3" alt={""}>
+        <AvatarImage source={{ uri: item.photoURL }} />
+        <AvatarFallback className="bg-primary">
+          <Text className="text-primary-foreground font-semibold">
+            {item.displayName?.charAt(0)?.toUpperCase() || 'U'}
+          </Text>
+        </AvatarFallback>
+      </Avatar>
+      <View className="flex-1">
+        <Text className="text-lg font-semibold text-foreground">{item.displayName}</Text>
+        <Text className="text-muted-foreground">{item.email}</Text>
+        <View className="flex-row items-center mt-1">
+          <View className={`w-2 h-2 rounded-full mr-2 ${
+            item.status === 'online' ? 'bg-green-500' : 
+            item.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
+          }`} />
+          <Text className="text-sm text-muted-foreground capitalize">
             {item.status}
           </Text>
         </View>
       </View>
     </TouchableOpacity>
   );
-  return (
-    <View >
-      <View >
-        <Text >Profile</Text>
-        <Text >Welcome, {user?.displayName || user?.email}</Text>
-      </View>
 
-      <View >
-        <Text >Available Users</Text>
-        {loading ? (
-          <Text >Loading users...</Text>
-        ) : (
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text className="text-muted-foreground mt-4">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Header */}
+      <Card className="m-4">
+        <CardHeader>
+          <Text className="text-2xl font-bold text-foreground">Profile</Text>
+          <Text className="text-muted-foreground">Welcome, {user?.displayName || user?.email}</Text>
+        </CardHeader>
+      </Card>
+
+      {/* Users List */}
+      <Card className="mx-4 flex-1">
+        <CardHeader>
+          <Text className="text-lg font-semibold text-foreground">Available Users</Text>
+        </CardHeader>
+        <CardContent className="flex-1">
           <FlatList
             data={users}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.uid}
-            
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             ListEmptyComponent={
-              <Text >No users found. Pull to refresh.</Text>
+              <View className="py-8 items-center">
+                <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+                <Text className="text-muted-foreground mt-2">No users found</Text>
+                <Text className="text-muted-foreground text-sm">Pull to refresh</Text>
+              </View>
             }
           />
-        )}
-      </View>
+        </CardContent>
+      </Card>
 
-      <TouchableOpacity  onPress={logout}>
-        <Text>Sign Out</Text>
-      </TouchableOpacity>
-    </View>
+      {/* Sign Out Button */}
+      <View className="p-4">
+        <Button onPress={logout} variant="destructive">
+          <Text className="text-destructive-foreground font-medium">Sign Out</Text>
+        </Button>
+      </View>
+    </SafeAreaView>
   );
 }
 

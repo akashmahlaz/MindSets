@@ -1,6 +1,6 @@
 // Initialize push notifications for Stream Video
-import { setPushConfig } from './setPushConfig';
 import { setFirebaseListeners } from './setFirebaseListeners';
+import { setPushConfig } from './setPushConfig';
 
 // Set up push notifications configuration
 setPushConfig();

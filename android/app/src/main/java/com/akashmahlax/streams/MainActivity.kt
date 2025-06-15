@@ -1,4 +1,8 @@
 package com.akashmahlax.streams
+import com.oney.WebRTCModule.WebRTCModuleOptions
+import androidx.lifecycle.Lifecycle
+import android.content.res.Configuration
+import com.streamvideo.reactnative.StreamVideoReactNative
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
@@ -21,7 +25,7 @@ class MainActivity : ReactActivity() {
     SplashScreenManager.registerOnActivity(this)
     // @generated end expo-splashscreen
     super.onCreate(null)
-  }
+  StreamVideoReactNative.setupCallActivity(this)}
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -62,4 +66,14 @@ class MainActivity : ReactActivity() {
       // because it's doing more than [Activity.moveTaskToBack] in fact.
       super.invokeDefaultOnBackPressed()
   }
+
+override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode)
+        if (lifecycle.currentState === Lifecycle.State.CREATED) {
+            // when user clicks on Close button of PIP
+            finishAndRemoveTask()
+        } else {
+            StreamVideoReactNative.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        }
+      }
 }

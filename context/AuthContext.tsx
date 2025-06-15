@@ -1,9 +1,9 @@
 import { auth } from '@/firebaseConfig';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createUserProfile, updateUserStatus } from '../services/userService';
-import { requestNotificationPermissions } from '../lib/requestPermissions';
 import { disablePushNotifications } from '../lib/pushNotificationHelpers';
+import { requestNotificationPermissions } from '../lib/requestPermissions';
+import { createUserProfile, updateUserStatus } from '../services/userService';
 
 interface AuthContextType {
   user: User | null;

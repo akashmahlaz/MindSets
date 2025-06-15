@@ -1,313 +1,92 @@
+import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
-import { channelService } from '@/services/channelService';
-import { ensureUserExists, getUnreadCount, markChannelAsRead, muteChannel, unmuteChannel } from '@/services/chatHelpers';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Channel, Chat, MessageInput, MessageList, Thread } from 'stream-chat-expo';
+import { Channel as StreamChannel } from 'stream-chat';
+import { Channel, MessageInput, MessageList } from 'stream-chat-expo';
 import { useChat } from '../../context/ChatContext';
 
-const LoadingIndicator = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <ActivityIndicator size="large" />
-    <Text>Loading...</Text>
-  </View>
-);
-
 export default function ChatScreen() {
-  const { channelId } = useLocalSearchParams<{ channelId: string }>();
+  const { channelId } = useLocalSearchParams();
   const { chatClient, isChatConnected } = useChat();
   const { user } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Move hook to top level
-  const [channel, setChannel] = useState<any>(null);
+  const insets = useSafeAreaInsets();
+  const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     const fetchChannel = async () => {
-      if (!channelId || !chatClient || !isChatConnected || !user) {
-        console.log('Missing requirements for chat:', {
-          channelId: !!channelId,
-          chatClient: !!chatClient,
-          isChatConnected,
-          userAvailable: !!user
-        });
+      if (!chatClient || !isChatConnected || !user || !channelId) {
         setLoading(false);
         return;
       }
-
       try {
-        console.log('Fetching channel:', channelId);
-
-        // Extract user IDs from channel ID if it's a direct message channel
-        if (channelId.startsWith('dm-')) {
-          const parts = channelId.split('-');
-          if (parts.length >= 3) {
-            const userIds = [parts[1], parts[2]];
-
-            // Ensure all users in the channel exist
-            for (const userId of userIds) {
-              if (userId !== user.uid) { // Skip current user
-                await ensureUserExists(userId, user);
-              }
-            }
-          }
+        // Always ensure both users are members for DMs
+        let members: string[] = [user.uid];
+        let channelIdStr: string = Array.isArray(channelId) ? channelId[0] : channelId;
+        if (typeof channelIdStr === 'string' && channelIdStr.startsWith('dm-')) {
+          const ids = channelIdStr.split('-').slice(1); // skip 'dm'
+          ids.forEach(id => { if (!members.includes(id)) members.push(id); });
         }
-
-        // Now create or get the channel using the channel service
-        const newChannel = await channelService.watchChannel('messaging', channelId);
-        setChannel(newChannel);
-        
-        // Set initial unread count
-        setUnreadCount(getUnreadCount(newChannel));
-        
-        // Check if channel is muted
-        const muteStatus = newChannel.muteStatus();
-        setIsMuted(!!muteStatus.muted);
-
-        // Mark channel as read when entering
-        await markChannelAsRead(newChannel);
-        setUnreadCount(0);
-
-        console.log('Channel loaded successfully');
+        const channelObj = chatClient.channel('messaging', channelIdStr, { members });
+        await channelObj.watch();
+        setChannel(channelObj);
       } catch (error) {
-        console.error('Error fetching channel:', error);
-        Alert.alert('Error', 'Failed to load channel. Please try again.');
+        Alert.alert('Error', 'Failed to load chat channel.');
       } finally {
         setLoading(false);
       }
     };
-    
     fetchChannel();
-  }, [channelId, chatClient, isChatConnected, user]);
+  }, [chatClient, isChatConnected, user, channelId]);
 
-  // Listen for channel events
-  useEffect(() => {
-    if (!channel) return;
+  if (loading || !channel) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text className="text-muted-foreground mt-4">Loading chat...</Text>
+      </View>
+    );
+  }
 
-    const handleNewMessage = () => {
-      setUnreadCount(getUnreadCount(channel));
-    };
-
-    const handleTypingStart = () => {
-      setIsTyping(true);
-    };
-
-    const handleTypingStop = () => {
-      setIsTyping(false);
-    };
-
-    const handleChannelUpdated = () => {
-      // Refresh channel data
-      console.log('Channel updated');
-    };
-
-    // Subscribe to channel events
-    channel.on('message.new', handleNewMessage);
-    channel.on('typing.start', handleTypingStart);
-    channel.on('typing.stop', handleTypingStop);
-    channel.on('channel.updated', handleChannelUpdated);
-
-    return () => {
-      // Cleanup event listeners
-      channel.off('message.new', handleNewMessage);
-      channel.off('typing.start', handleTypingStart);
-      channel.off('typing.stop', handleTypingStop);
-      channel.off('channel.updated', handleChannelUpdated);
-    };
-  }, [channel]);
-
-  const handleChannelAction = (action: string) => {
-    if (!channel) return;
-
-    switch (action) {
-      case 'mute':
-        toggleMute();
-        break;
-      case 'info':
-        // Navigate to channel info screen
-        router.push(`/chat/${channelId}/info`);
-        break;
-      case 'leave':
-        handleLeaveChannel();
-        break;
-      default:
-        break;
-    }
-  };
-
-  const toggleMute = async () => {
-    if (!channel) return;
-
-    try {
-      if (isMuted) {
-        await unmuteChannel(channel);
-        setIsMuted(false);
-        Alert.alert('Success', 'Channel unmuted');
-      } else {
-        await muteChannel(channel);
-        setIsMuted(true);
-        Alert.alert('Success', 'Channel muted');
+  // Modern header with back, channel name, and placeholder for actions
+  const getHeaderTitle = () => {
+    if (!channel) return 'Chat';
+    // If DM, show the other user's name
+    if ((channel.id as string).startsWith('dm-') && channel.state?.members) {
+      const members = Object.values(channel.state.members);
+      const otherMember = members.find((m: any) => m.user?.id !== user?.uid);
+      if (otherMember?.user) {
+        return otherMember.user.name || otherMember.user.id || 'Chat';
       }
-    } catch (error) {
-      console.error('Error toggling mute:', error);
-      Alert.alert('Error', 'Failed to update mute status');
     }
+    // Otherwise, show channel name
+    return (channel.data as any)?.name || 'Chat';
   };
 
-  const handleLeaveChannel = () => {
-    Alert.alert(
-      'Leave Channel',
-      'Are you sure you want to leave this channel?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Leave',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (channel && user) {
-                await channelService.removeMembers(channel, [user.uid]);
-                router.back();
-              }
-            } catch (error) {
-              console.error('Error leaving channel:', error);
-              Alert.alert('Error', 'Failed to leave channel');
-            }
-          }
-        }
-      ]
-    );
-  };
-
-  const renderChannelHeader = () => {
-    if (!channel) return null;
-
-    return (
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-        backgroundColor: '#fff'
-      }}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        
-        <View style={{ flex: 1, marginLeft: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
-            {channel.data?.name || 'Chat'}
-          </Text>
-          {isTyping && (
-            <Text style={{ fontSize: 12, color: '#666' }}>
-              Someone is typing...
-            </Text>
-          )}
-          {unreadCount > 0 && (
-            <Text style={{ fontSize: 12, color: '#007AFF' }}>
-              {unreadCount} unread message{unreadCount > 1 ? 's' : ''}
-            </Text>
-          )}
-        </View>
-
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => handleChannelAction('mute')}
-            style={{ marginRight: 16 }}
-          >
-            <Ionicons 
-              name={isMuted ? "volume-mute" : "volume-high"} 
-              size={24} 
-              color={isMuted ? "#FF3B30" : "#000"} 
-            />
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            onPress={() => handleChannelAction('info')}
-            style={{ marginRight: 16 }}
-          >
-            <Ionicons name="information-circle-outline" size={24} color="#000" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => handleChannelAction('leave')}>
-            <Ionicons name="exit-outline" size={24} color="#FF3B30" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  if (loading) return <LoadingIndicator />;
-  
-  if (!chatClient || !isChatConnected) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Chat not connected. Please try again.</Text>
-        <TouchableOpacity
-          onPress={() => setLoading(true)}
-          style={{
-            marginTop: 16,
-            padding: 12,
-            backgroundColor: '#007AFF',
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: 'white' }}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-  
-  if (!channel) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Channel not found.</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            marginTop: 16,
-            padding: 12,
-            backgroundColor: '#007AFF',
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: 'white' }}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const renderHeader = () => (
+    <View className="flex-row items-center p-4 border-b border-border bg-card" style={{ paddingTop: insets.top }}>
+      <TouchableOpacity onPress={() => router.back()}>
+        <Text style={{ fontSize: 18 }}>{"<"}</Text>
+      </TouchableOpacity>
+      <Text className="text-lg font-bold text-foreground flex-1 text-center">
+        {getHeaderTitle()}
+      </Text>
+      <View style={{ width: 24 }} />
+    </View>
+  );
 
   return (
-    <View style={{ flex: 1, paddingTop: insets.top }}>
-      {renderChannelHeader()}
-      <Chat client={chatClient}>
-        <Channel 
-          channel={channel}
-          enforceUniqueReaction={true}
-          maxTimeBetweenGroupedMessages={60000} // 1 minute
-        >
-          <View style={{ flex: 1 }}>
-            <MessageList 
-              onThreadSelect={(thread) => {
-                // Handle thread selection if needed
-                console.log('Thread selected:', thread);
-              }}
-            />
-            <MessageInput 
-              maxNumberOfFiles={5}
-            />
-          </View>
-          <Thread />
-        </Channel>
-      </Chat>
+    <View className="flex-1 bg-background">
+      {renderHeader()}
+      <Channel channel={channel}>
+        <MessageList />
+        <MessageInput />
+        <Text>Debug: Message Input Rendered</Text>
+      </Channel>
     </View>
   );
 }

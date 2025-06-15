@@ -75,28 +75,37 @@ export const ensureUserExists = async (userId: string, currentUser: User): Promi
   }
 };
 
-// Helper function to create or get a 1-on-1 chat channel
-export const createOrGetDirectChannel = async (currentUser: User, otherUserId: string) => {
-  if (!chatClient.userID) {
-    throw new Error('Not connected to Stream Chat');
-  }
-
+// Create or get a direct message channel between two users
+export const createOrGetDirectChannel = async (
+  currentUser: User,
+  targetUserId: string
+): Promise<Channel> => {
   try {
-    // First ensure the other user exists
-    const userExists = await ensureUserExists(otherUserId, currentUser);
-    if (!userExists) {
-      throw new Error(`Failed to ensure user ${otherUserId} exists in Stream Chat`);
-    }
+    // Ensure both users exist in Stream
+    await ensureUserExists(currentUser.uid, currentUser);
+    await ensureUserExists(targetUserId, currentUser);
 
-    // Use the channel service to create/get the direct message channel
-    const channel = await channelService.createDirectMessageChannel(
-      currentUser.uid,
-      otherUserId
-    );
+    // Create a deterministic channel ID for direct messages
+    const channelId = `dm-${currentUser.uid}-${targetUserId}`;
+
+    // Try to get existing channel
+    let channel = await channelService.watchChannel('messaging', channelId);
+
+    if (!channel) {
+      // Create new channel if it doesn't exist
+      channel = await channelService.createChannelWithId(
+        'messaging',
+        channelId,
+        {
+          members: [currentUser.uid, targetUserId],
+          created_by_id: currentUser.uid,
+        }
+      );
+    }
 
     return channel;
   } catch (error) {
-    console.error('Error creating or getting direct channel:', error);
+    console.error('Error creating/getting direct channel:', error);
     throw error;
   }
 };
@@ -272,7 +281,7 @@ export const getChannelMembers = async (
 export const searchChannels = async (
   currentUserId: string,
   searchQuery: string,
-  filters: ChannelFilters = {},
+  filters: any = {},
   limit: number = 20
 ): Promise<Channel[]> => {
   try {
@@ -313,9 +322,9 @@ export const leaveChannel = async (
 };
 
 // Mute/Unmute a channel
-export const muteChannel = async (channel: Channel, userId?: string): Promise<void> => {
+export const muteChannel = async (channel: Channel): Promise<void> => {
   try {
-    await channel.mute({ user_id: userId });
+    await channel.mute();
     console.log('Channel muted');
   } catch (error) {
     console.error('Error muting channel:', error);
@@ -323,9 +332,9 @@ export const muteChannel = async (channel: Channel, userId?: string): Promise<vo
   }
 };
 
-export const unmuteChannel = async (channel: Channel, userId?: string): Promise<void> => {
+export const unmuteChannel = async (channel: Channel): Promise<void> => {
   try {
-    await channel.unmute({ user_id: userId });
+    await channel.unmute();
     console.log('Channel unmuted');
   } catch (error) {
     console.error('Error unmuting channel:', error);

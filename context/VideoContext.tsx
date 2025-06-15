@@ -1,9 +1,9 @@
-import { 
-  StreamVideo, 
-  StreamVideoClient,
-  StreamCall,
-  useCalls,
-  RingingCallContent
+import {
+    RingingCallContent,
+    StreamCall,
+    StreamVideo,
+    StreamVideoClient,
+    useCalls
 } from '@stream-io/video-react-native-sdk';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';

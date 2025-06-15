@@ -1,5 +1,5 @@
-import { PermissionsAndroid, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 export const requestNotificationPermissions = async () => {
   try {

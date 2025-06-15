@@ -1,109 +1,50 @@
+import "@/app/global.css";
+import { useChat } from '@/context/ChatContext';
 import { Ionicons } from '@expo/vector-icons';
-import type {
-    MaterialTopTabNavigationEventMap,
-    MaterialTopTabNavigationOptions,
-} from '@react-navigation/material-top-tabs';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import {
-    useTheme,
-    type ParamListBase,
-    type TabNavigationState,
-} from '@react-navigation/native';
-import { withLayoutContext } from 'expo-router';
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { Chat, OverlayProvider } from 'stream-chat-expo';
 
-const { Navigator } = createMaterialTopTabNavigator();
-
-const MaterialTopTabs = withLayoutContext<
-  MaterialTopTabNavigationOptions,
-  typeof Navigator,
-  TabNavigationState<ParamListBase>,
-  MaterialTopTabNavigationEventMap
->(Navigator);
 
 export default function ChatTabsLayout() {
-  const { colors } = useTheme();
-  
+  const { chatClient, isChatConnected } = useChat();
+
+  if (!chatClient || !isChatConnected) {
+    return null;
+  }
+
   return (
-    <MaterialTopTabs
-      initialRouteName='index'
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: 'grey',
-        tabBarLabelStyle: {
-          fontSize: 14,
-          textTransform: 'capitalize',
-          fontWeight: '600',
-        },
-        tabBarIndicatorStyle: {
-          backgroundColor: colors.primary,
-          height: 3,
-        },
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          elevation: 0,
-          shadowOpacity: 0,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        tabBarScrollEnabled: true,        tabBarItemStyle: { 
-          width: 'auto', 
-          minWidth: 120,
-          paddingHorizontal: 16,
-        },
-      }}
-    >
-      <MaterialTopTabs.Screen
-        name='index'
-        options={{
-          title: 'All Chats',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "chatbubbles" : "chatbubbles-outline"} 
-              size={20} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      <MaterialTopTabs.Screen
-        name='unread'
-        options={{
-          title: 'Unread',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "mail" : "mail-outline"} 
-              size={20} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      <MaterialTopTabs.Screen
-        name='groups'
-        options={{
-          title: 'Groups',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "people" : "people-outline"} 
-              size={20} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      <MaterialTopTabs.Screen
-        name='pinned'
-        options={{
-          title: 'Pinned',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "bookmark" : "bookmark-outline"} 
-              size={20} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-    </MaterialTopTabs>
+    <OverlayProvider value={{ style: { colors: { primary: '#6366F1' } } }}>
+      <Chat client={chatClient}>
+        <Tabs
+          screenOptions={{
+            tabBarActiveTintColor: '#6366F1',
+            tabBarInactiveTintColor: '#9CA3AF',
+            tabBarLabelStyle: { textTransform: 'none', fontWeight: 'bold', fontSize: 15 },
+            tabBarStyle: { backgroundColor: '#FFFFFF', borderTopWidth: 0, elevation: 0 },
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'All Chats',
+              tabBarIcon: ({ color }) => (
+                <Ionicons name="chatbubbles" size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="unread"
+            options={{
+              title: 'Unread',
+              tabBarIcon: ({ color }) => (
+                <Ionicons name="mail-unread" size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen name="[channelId]" options={{ href: null }} />
+          <Tabs.Screen name="[channelId]/info" options={{ href: null }} />
+        </Tabs>
+      </Chat>
+    </OverlayProvider>
   );
 }

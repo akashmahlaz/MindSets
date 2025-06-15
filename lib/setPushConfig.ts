@@ -1,10 +1,10 @@
-import {
-  StreamVideoClient,
-  StreamVideoRN,
-  User,
-} from "@stream-io/video-react-native-sdk";
 import { AndroidImportance } from "@notifee/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+    StreamVideoClient,
+    StreamVideoRN,
+    User,
+} from "@stream-io/video-react-native-sdk";
 import { getStreamToken } from "../services/stream";
 
 // Stream API key from your dashboard

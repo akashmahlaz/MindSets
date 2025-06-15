@@ -3,7 +3,7 @@ import { useChat } from '@/context/ChatContext';
 import { createOrGetDirectChannel } from '@/services/chatHelpers';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
 export const useStartChat = () => {
   const { user } = useAuth();
@@ -46,9 +46,17 @@ export const useStartChat = () => {
       setIsStartingChat(false);
     }
   };
-
   return {
     startChat,
     isStartingChat,
   };
 };
+
+// Default export component required for Expo Router
+export default function UsersChat() {
+  return (
+    <View className="flex-1 justify-center items-center">
+      <Text>Users Chat Utility</Text>
+    </View>
+  );
+}
