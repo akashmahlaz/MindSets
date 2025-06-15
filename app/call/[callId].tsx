@@ -39,20 +39,20 @@ export default function CallScreen() {
     joinCall();
   }, [callId, videoClient]);
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+    <View >
       {isLoading && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View>
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={{ color: '#fff', marginTop: 10 }}>Joining call...</Text>
+          <Text> calling...</Text>
         </View>
       )}
       
       {error && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#fff', textAlign: 'center', margin: 20 }}>
+        <View >
+          <Text>
             {error}
           </Text>
-          <Text style={{ color: '#fff', textAlign: 'center' }}>
+          <Text >
             Returning to previous screen...
           </Text>
         </View>

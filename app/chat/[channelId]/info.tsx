@@ -202,7 +202,7 @@ export default function ChannelInfoScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.memberItem}
+       
         onLongPress={() => {
           if (isAdmin && !isCurrentUser) {
             Alert.alert(
@@ -226,15 +226,15 @@ export default function ChannelInfoScreen() {
       >
         <Image
           source={{ uri: member.user.image || `https://getstream.io/random_png/?name=${member.user.name}` }}
-          style={styles.memberAvatar}
+          
         />
-        <View style={styles.memberInfo}>
-          <Text style={styles.memberName}>{member.user.name}</Text>
+        <View >
+          <Text>{member.user.name}</Text>
           {isModerator && (
-            <Text style={styles.moderatorBadge}>Moderator</Text>
+            <Text>Moderator</Text>
           )}
           {isCurrentUser && (
-            <Text style={styles.youBadge}>You</Text>
+            <Text>You</Text>
           )}
         </View>
         {isAdmin && !isCurrentUser && (
@@ -246,73 +246,73 @@ export default function ChannelInfoScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
+      <View>
         <ActivityIndicator size="large" />
-        <Text style={styles.loadingText}>Loading channel info...</Text>
+        <Text>Loading channel info...</Text>
       </View>
     );
   }
 
   if (!channel) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.errorText}>Channel not found</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Go Back</Text>
+      <View >
+        <Text>Channel not found</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View >
       {/* Header */}
-      <View style={styles.header}>
+      <View>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Channel Info</Text>
-        <View style={{ width: 24 }} />
+        <Text>Channel Info</Text>
+        <View />
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView >
         {/* Channel Name */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Channel Name</Text>
+        <View >
+          <Text>Channel Name</Text>
           {editingName ? (
-            <View style={styles.editContainer}>
+            <View>
               <TextInput
-                style={styles.textInput}
+             
                 value={channelName}
                 onChangeText={setChannelName}
                 placeholder="Enter channel name"
                 autoFocus
               />
-              <View style={styles.editActions}>
+              <View >
                 <TouchableOpacity
-                  style={[styles.editButton, styles.cancelButton]}
+                 
                   onPress={() => {
                     setEditingName(false);
                     setChannelName(channel.data?.name || '');
                   }}
                 >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.editButton, styles.saveButton]}
+                  
                   onPress={handleUpdateChannelName}
                 >
-                  <Text style={styles.saveButtonText}>Save</Text>
+                  <Text>Save</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
             <TouchableOpacity
-              style={styles.infoRow}
+             
               onPress={() => isAdmin && setEditingName(true)}
               disabled={!isAdmin}
             >
-              <Text style={styles.infoText}>
+              <Text>
                 {channelName || 'No name set'}
               </Text>
               {isAdmin && (
@@ -324,10 +324,10 @@ export default function ChannelInfoScreen() {
 
         {/* Channel Description */}
         {isAdmin && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
+          <View>
+            <Text>Description</Text>
             <TextInput
-              style={[styles.textInput, styles.multilineInput]}
+             
               value={channelDescription}
               onChangeText={setChannelDescription}
               placeholder="Add a description"
@@ -339,11 +339,9 @@ export default function ChannelInfoScreen() {
         )}
 
         {/* Members */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              Members ({members.length})
-            </Text>
+        <View>
+          <View>
+            <Text>Members ({members.length})</Text>
             {isAdmin && (
               <TouchableOpacity onPress={() => router.push('/users')}>
                 <Ionicons name="add" size={24} color="#007AFF" />
@@ -359,18 +357,18 @@ export default function ChannelInfoScreen() {
         </View>
 
         {/* Actions */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleMuteChannel}>
+        <View>
+          <TouchableOpacity onPress={handleMuteChannel}>
             <Ionicons name="volume-mute" size={20} color="#666" />
-            <Text style={styles.actionText}>Mute Channel</Text>
+            <Text>Mute Channel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionButton, styles.dangerAction]} 
+           
             onPress={handleLeaveChannel}
           >
             <Ionicons name="exit" size={20} color="#FF3B30" />
-            <Text style={[styles.actionText, styles.dangerText]}>Leave Channel</Text>
+            <Text>Leave Channel</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -378,165 +376,3 @@ export default function ChannelInfoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-  },
-  section: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  editContainer: {
-    marginTop: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  multilineInput: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  editActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 8,
-  },
-  editButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  cancelButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-  },
-  cancelButtonText: {
-    color: '#666',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: '500',
-  },
-  memberItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  memberAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  memberInfo: {
-    flex: 1,
-  },
-  memberName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  moderatorBadge: {
-    fontSize: 12,
-    color: '#007AFF',
-    marginTop: 2,
-  },
-  youBadge: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  dangerAction: {
-    borderBottomWidth: 0,
-  },
-  actionText: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 12,
-  },
-  dangerText: {
-    color: '#FF3B30',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#e74c3c',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-});

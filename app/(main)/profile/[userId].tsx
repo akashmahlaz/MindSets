@@ -134,38 +134,38 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
+      <View>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading user profile...</Text>
+        <Text>Loading user profile...</Text>
       </View>
     );
   }
 
   if (!userData) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.errorText}>User not found</Text>
+      <View >
+        <Text>User not found</Text>
         <Button title="Go Back" onPress={() => router.back()} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View >
       <Image 
         source={{ uri: userData.photoURL || 'https://via.placeholder.com/150' }} 
-        style={styles.profileImage}
+        
       />
-      <Text style={styles.name}>{userData.displayName}</Text>
-      <Text style={styles.email}>{userData.email}</Text>
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusDot, { backgroundColor: userData.status === 'online' ? 'green' : userData.status === 'away' ? 'orange' : 'gray' }]} />
-        <Text style={[styles.status, { color: userData.status === 'online' ? 'green' : userData.status === 'away' ? 'orange' : 'gray' }]}>
+      <Text >{userData.displayName}</Text>
+      <Text >{userData.email}</Text>
+      <View >
+        <View  />
+        <Text >
           {userData.status}
         </Text>
       </View>
       
-      <View style={styles.buttonContainer}>
+      <View>
         <Button title="Video Call" onPress={() => startCall(true)} />
         <Button title="Voice Call" onPress={() => startCall(false)} />
         <Button title="Chat" onPress={startChat} />
@@ -174,62 +174,3 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    marginBottom: 20,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  email: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
-  },
-  status: {
-    fontSize: 16,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  buttonContainer: {
-    gap: 10,
-    width: '100%',
-  },
-  loadingText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    fontSize: 18,
-    color: '#ff4444',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-});

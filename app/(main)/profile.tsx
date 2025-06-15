@@ -58,19 +58,19 @@ export default function ProfileScreen() {
 
   const renderUserItem = ({ item }: { item: UserProfile }) => (
     <TouchableOpacity 
-      style={styles.userItem} 
+     
       onPress={() => handleUserPress(item.uid)}
     >
       <Image 
         source={{ uri: item.photoURL || 'https://via.placeholder.com/50' }} 
-        style={styles.userAvatar}
+        
       />
-      <View style={styles.userInfo}>
-        <Text style={styles.userName}>{item.displayName}</Text>
-        <Text style={styles.userEmail}>{item.email}</Text>
-        <View style={styles.statusContainer}>
-          <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
-          <Text style={[styles.userStatus, { color: getStatusColor(item.status) }]}>
+      <View >
+        <Text>{item.displayName}</Text>
+        <Text>{item.email}</Text>
+        <View >
+          <View />
+          <Text>
             {item.status}
           </Text>
         </View>
@@ -78,135 +78,36 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   );
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-        <Text style={styles.currentUser}>Welcome, {user?.displayName || user?.email}</Text>
+    <View >
+      <View >
+        <Text >Profile</Text>
+        <Text >Welcome, {user?.displayName || user?.email}</Text>
       </View>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Available Users</Text>
+
+      <View >
+        <Text >Available Users</Text>
         {loading ? (
-          <Text style={styles.loadingText}>Loading users...</Text>
+          <Text >Loading users...</Text>
         ) : (
           <FlatList
             data={users}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.uid}
-            style={styles.userList}
+            
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No users found. Pull to refresh.</Text>
+              <Text >No users found. Pull to refresh.</Text>
             }
           />
         )}
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Text style={styles.logoutText}>Sign Out</Text>
+      <TouchableOpacity  onPress={logout}>
+        <Text>Sign Out</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  header: {
-    marginBottom: 30,
-    paddingTop: 50,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  currentUser: {
-    fontSize: 16,
-    color: '#666',
-  },
-  section: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 15,
-  },
-  userList: {
-    flex: 1,
-  },
-  userItem: {
-    flexDirection: 'row',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#f9f9f9',
-    marginBottom: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  userAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-  },
-  userInfo: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 5,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 5,
-  },
-  userStatus: {
-    fontSize: 14,
-    fontWeight: '400',
-  },
-  loadingText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-    marginTop: 50,
-  },
-  emptyText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-    marginTop: 50,
-  },
-  logoutButton: {
-    backgroundColor: '#ff4444',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  logoutText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
