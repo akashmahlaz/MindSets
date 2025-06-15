@@ -85,7 +85,9 @@ export default function ChatScreen() {
       <Channel channel={channel}>
         <MessageList />
         <MessageInput />
-        <Text>Debug: Message Input Rendered</Text>
+        <View style={{ height: 50, backgroundColor: 'red' }}>
+          <Text>Debug: Message Input Rendered</Text>
+        </View>
       </Channel>
     </View>
   );
