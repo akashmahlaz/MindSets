@@ -24,11 +24,10 @@ export default function ChatScreen() {
         return;
       }
       try {
-        // Always ensure both users are members for DMs
         let members: string[] = [user.uid];
         let channelIdStr: string = Array.isArray(channelId) ? channelId[0] : channelId;
         if (typeof channelIdStr === 'string' && channelIdStr.startsWith('dm-')) {
-          const ids = channelIdStr.split('-').slice(1); // skip 'dm'
+          const ids = channelIdStr.split('-').slice(1);
           ids.forEach(id => { if (!members.includes(id)) members.push(id); });
         }
         const channelObj = chatClient.channel('messaging', channelIdStr, { members });
@@ -52,10 +51,8 @@ export default function ChatScreen() {
     );
   }
 
-  // Modern header with back, channel name, and placeholder for actions
   const getHeaderTitle = () => {
     if (!channel) return 'Chat';
-    // If DM, show the other user's name
     if ((channel.id as string).startsWith('dm-') && channel.state?.members) {
       const members = Object.values(channel.state.members);
       const otherMember = members.find((m: any) => m.user?.id !== user?.uid);
@@ -63,30 +60,34 @@ export default function ChatScreen() {
         return otherMember.user.name || otherMember.user.id || 'Chat';
       }
     }
-    // Otherwise, show channel name
     return (channel.data as any)?.name || 'Chat';
   };
 
-  const renderHeader = () => (
-    <View className="flex-row items-center p-4 border-b border-border bg-card" style={{ paddingTop: insets.top }}>
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={{ fontSize: 18 }}>{"<"}</Text>
-      </TouchableOpacity>
-      <Text className="text-lg font-bold text-foreground flex-1 text-center">
-        {getHeaderTitle()}
-      </Text>
-      <View style={{ width: 24 }} />
-    </View>
-  );
-
   return (
     <View className="flex-1 bg-background">
-      {renderHeader()}
+      {/* Header */}
+      <View className={`flex-row items-center p-4 border-b border-border bg-card pt-[${insets.top}px]`}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text className="text-lg">{"<"}</Text>
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-foreground flex-1 text-center">
+          {getHeaderTitle()}
+        </Text>
+        <View className="w-6" />
+      </View>
+
+      {/* Chat Area */}
       <Channel channel={channel}>
-        <MessageList />
-        <MessageInput />
-        <View style={{ height: 50, backgroundColor: 'red' }}>
-          <Text>Debug: Message Input Rendered</Text>
+        <View className="flex-1 pb-20">  {/* pb-20 accounts for input height */}
+          <MessageList />
+        </View>
+        <View className={`pb-[${insets.bottom}px] bg-card border-t border-border`}>
+          <MessageInput />
+        </View>
+        <View style={{ height: insets.bottom }} />
+        <Text>test</Text>
+        <View style={{ height: insets.bottom }}>
+          <Text>test</Text>
         </View>
       </Channel>
     </View>

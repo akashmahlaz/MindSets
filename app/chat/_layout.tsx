@@ -1,13 +1,14 @@
 import "@/app/global.css";
 import { useChat } from '@/context/ChatContext';
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
 import { Chat, OverlayProvider } from 'stream-chat-expo';
 
-
 export default function ChatTabsLayout() {
   const { chatClient, isChatConnected } = useChat();
+  const pathname = usePathname();
+  const isChatScreen = pathname.includes('/chat/') && pathname !== '/chat/';
 
   if (!chatClient || !isChatConnected) {
     return null;
