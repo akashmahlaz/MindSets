@@ -4,8 +4,9 @@ import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useColorScheme } from '@/lib/useColorScheme';
 import "./global.css";
 
 // Initialize push notifications for Stream Video
@@ -52,6 +53,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // This component checks if the user is authenticated
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { isDarkColorScheme } = useColorScheme();
 
   useEffect(() => {
     if (loading) return; // Don't navigate while loading
@@ -67,6 +69,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+        />
         <StreamProvider>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" />

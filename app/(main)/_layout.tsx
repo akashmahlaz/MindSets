@@ -1,32 +1,48 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from '@/lib/useColorScheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colorScheme, isDarkColorScheme } = useColorScheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+    <>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+      />
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: isDarkColorScheme ? '#ffffff' : '#0a7ea4',
+          tabBarInactiveTintColor: isDarkColorScheme ? '#9BA1A6' : '#687076',
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarBackground: TabBarBackground,
+          tabBarStyle: {
+            backgroundColor: isDarkColorScheme ? '#151718' : '#ffffff',
+            borderTopColor: isDarkColorScheme ? '#2a2a2a' : '#e5e7eb',
+            borderTopWidth: 1,
+            height: Platform.OS === 'ios' ? 85 : 65,
+            paddingBottom: Platform.OS === 'ios' ? 25 : 10,
+            paddingTop: 8,
+            ...Platform.select({
+              ios: {
+                shadowColor: isDarkColorScheme ? '#000' : '#000',
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: isDarkColorScheme ? 0.3 : 0.1,
+                shadowRadius: 8,
+              },
+              android: {
+                elevation: 8,
+              },
+            }),
           },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
+        }}>      <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
@@ -41,5 +57,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }

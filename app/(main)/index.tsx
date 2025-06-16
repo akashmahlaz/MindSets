@@ -14,24 +14,24 @@ import {
   Alert,
   FlatList,
   RefreshControl,
-  SafeAreaView,
+  StatusBar,
   Text,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useColorScheme } from '@/lib/useColorScheme';
 
 export default function OverviewScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { chatClient, isChatConnected, connectToChat } = useChat();
-  const videoClient = useStreamVideoClient();
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const videoClient = useStreamVideoClient();  const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const colorScheme = useColorScheme();
+  const { isDarkColorScheme } = useColorScheme();
 
   const fetchUsers = async () => {
     try {
@@ -216,12 +216,15 @@ export default function OverviewScreen() {
       </Card>
     </TouchableOpacity>
   );
-
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+      />
       <View className="flex-1">
         {/* Header */}
-        <View className="px-4 pt-4 pb-2">
+        <View className="px-4 pt-2 pb-2">
           <View className="flex-row items-center justify-between mb-4">
             <View>
               <Text className="text-2xl font-bold text-foreground">

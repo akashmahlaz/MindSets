@@ -55,6 +55,7 @@ export default function SignInScreen() {
       <TextInput placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" style={{ borderWidth: 1, marginBottom: 10, padding: 10 }} />
       <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={{ borderWidth: 1, marginBottom: 10, padding: 10 }} />
       <Button title="Sign In" onPress={handleEmailSignIn} />
+      
       <Button title="Sign In with Google" onPress={handleGoogleSignIn} />
       <Apple.AppleAuthenticationButton
         buttonType={Apple.AppleAuthenticationButtonType.SIGN_IN}
