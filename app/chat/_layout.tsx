@@ -1,6 +1,5 @@
 import "@/app/global.css";
 import { useChat } from '@/context/ChatContext';
-import { getStreamChatTheme } from '@/lib/streamThemeNew';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, usePathname } from 'expo-router';
@@ -31,9 +30,7 @@ export default function ChatTabsLayout() {
         backgroundColor={statusBarBg}
         translucent={false}
       />
-      <OverlayProvider value={{ 
-        style: getStreamChatTheme(isDarkColorScheme)
-      }}>
+      <OverlayProvider>
         <Chat client={chatClient}>
           <Tabs
             screenOptions={{

@@ -1,6 +1,5 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
-import { getStreamChatTheme } from '@/lib/streamThemeNew';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -104,15 +103,15 @@ export default function ChatScreen() {
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={70}
+        keyboardVerticalOffset={0}
       >
-        <OverlayProvider value={{ style: getStreamChatTheme(isDarkColorScheme) }}>
+        <OverlayProvider >
           <Channel 
             channel={channel}
             disableKeyboardCompatibleView={true}
             keyboardVerticalOffset={0}
           >
-            <View className="flex-1">
+            <View className="flex-1 p-0 m-0">
               <MessageList />
             </View>
             <MessageInput />
