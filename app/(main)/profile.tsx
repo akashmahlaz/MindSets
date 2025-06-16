@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Image,
     RefreshControl,
     SafeAreaView,
     Text,
@@ -116,6 +117,34 @@ export default function ProfileScreen() {
           <Text className="text-muted-foreground">Welcome, {user?.displayName || user?.email}</Text>
         </CardHeader>
       </Card>
+      
+      {/* User Info */}
+      <Card className="mx-4 mb-4">
+        <CardHeader>
+          <Text className="text-lg font-semibold text-foreground">User Information</Text>
+        </CardHeader>
+        <CardContent>
+          <Text className="text-sm text-muted-foreground">Email: {user?.email}</Text>
+          <Text className="text-sm text-muted-foreground">UID: {user?.uid}</Text>
+          <Text className="text-sm text-muted-foreground">Name: {user?.displayName}</Text>
+            {(user?.photoURL || 'https://placehold.co/600x400?text=Hello+World') && 
+            <Image 
+              className="w-24 bg-slate-400 h-24 rounded-full" 
+              source={{ uri: user?.photoURL || 'https://placehold.co/600x400?text=Hello+World' }} 
+            />
+            }
+        </CardContent>
+      </Card>
+
+      <View>
+        <Text className="text-sm text-muted-foreground">All Chats</Text>
+        <View className="flex-row items-center justify-between p-4 bg-card border-b border-border">
+          <Text className="text-lg font-semibold text-foreground">Chats</Text>
+          <TouchableOpacity onPress={() => router.push('/chat')}>
+            <Text className="text-primary">View All</Text>
+          </TouchableOpacity>
+          </View>
+      </View>
 
       {/* Users List */}
       <Card className="mx-4 flex-1">
