@@ -1,6 +1,6 @@
 import "@/app/global.css";
 import { useChat } from '@/context/ChatContext';
-import { getStreamChatTheme } from '@/lib/streamTheme';
+import { getStreamChatTheme } from '@/lib/streamThemeNew';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
