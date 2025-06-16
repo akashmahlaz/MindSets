@@ -13,11 +13,10 @@ export default function ChatTabsLayout() {
   const pathname = usePathname();
   const { colorScheme, isDarkColorScheme } = useColorScheme();
   const isChatScreen = pathname.includes('/chat/') && pathname !== '/chat/' && pathname !== '/chat/unread';
-
   // Match colors with CSS design tokens
-  const backgroundColor = isDarkColorScheme ? 'hsl(224, 71%, 4%)' : 'hsl(0, 0%, 100%)'; // --background
-  const borderColor = isDarkColorScheme ? 'hsl(215, 27%, 17%)' : 'hsl(220, 13%, 91%)'; // --border
-  const statusBarBg = isDarkColorScheme ? '#0f172a' : '#ffffff';
+  const backgroundColor = isDarkColorScheme ? '#000000' : '#ffffff'; // Pure black/white for consistency
+  const borderColor = isDarkColorScheme ? '#242424' : 'hsl(220, 13%, 91%)'; // --border
+  const statusBarBg = isDarkColorScheme ? '#000000' : '#ffffff';
 
   if (!chatClient || !isChatConnected) {
     return null;

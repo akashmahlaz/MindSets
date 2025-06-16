@@ -58,7 +58,7 @@ export default function CallScreen() {
       <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
         <StatusBar 
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+          backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
         />
         <View className="flex-1 justify-center items-center">
           <Text className="text-foreground text-lg">Joining call...</Text>

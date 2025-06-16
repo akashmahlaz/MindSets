@@ -7,15 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Channel } from 'stream-chat';
@@ -135,7 +135,7 @@ export default function UnreadChannelsScreen() {
       <SafeAreaView className="flex-1 justify-center items-center bg-background" edges={['top']}>
         <StatusBar 
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+          backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
         />
         <ActivityIndicator size="large" color="#6366F1" />
         <Text className="text-muted-foreground mt-4">Loading channels...</Text>
@@ -147,7 +147,7 @@ export default function UnreadChannelsScreen() {
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
       />
       {/* Header */}
       <View className="p-4 border-b border-border">

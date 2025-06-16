@@ -48,7 +48,7 @@ export default function ChatScreen() {
     return (      <View className="flex-1 bg-slate-50 dark:bg-slate-900" style={{ paddingTop: insets.top }}>
         <StatusBar 
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
-          backgroundColor={isDarkColorScheme ? "#0f172a" : "#f8fafc"} 
+          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"} 
         />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#3b82f6" />

@@ -1,6 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ensure full black background for dark mode */
+html {
+  background-color: #ffffff;
+}
+
+html.dark {
+  background-color: #000000;
+}
+
+body {
+  background-color: inherit;
+}
+
   @layer base {
       :root {
         --background: 0 0% 98%;
@@ -28,27 +42,25 @@
         --warning-foreground: 355 7% 97%;
         --info: 221 83% 53%;
         --info-foreground: 355 7% 97%;
-      }
-
-      .dark:root {
-        --background: 224 71% 4%;
+      }      .dark:root {
+        --background: 0 0% 0%;
         --foreground: 210 20% 98%;
-        --card: 224 71% 4%;
+        --card: 0 0% 9%;
         --card-foreground: 210 20% 98%;
-        --popover: 224 71% 4%;
+        --popover: 0 0% 9%;
         --popover-foreground: 210 20% 98%;
         --primary: 210 20% 98%;
-        --primary-foreground: 220 9% 46%;
-        --secondary: 215 27% 17%;
+        --primary-foreground: 0 0% 0%;
+        --secondary: 0 0% 14%;
         --secondary-foreground: 210 20% 98%;
-        --muted: 215 27% 17%;
+        --muted: 0 0% 14%;
         --muted-foreground: 217 10% 65%;
-        --accent: 215 27% 17%;
+        --accent: 0 0% 14%;
         --accent-foreground: 210 20% 98%;
         --destructive: 0 76% 60%;
         --destructive-foreground: 210 20% 98%;
-        --border: 215 27% 17%;
-        --input: 215 27% 17%;
+        --border: 0 0% 14%;
+        --input: 0 0% 14%;
         --ring: 263 70% 50%;
         --success: 142 76% 36%;
         --success-foreground: 355 7% 97%;

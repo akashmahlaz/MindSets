@@ -10,11 +10,10 @@ import { useColorScheme } from '@/lib/useColorScheme';
 
 export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
-
   // Match colors with CSS design tokens
-  const backgroundColor = isDarkColorScheme ? 'hsl(224, 71%, 4%)' : 'hsl(0, 0%, 100%)'; // --background and --card
-  const borderColor = isDarkColorScheme ? 'hsl(215, 27%, 17%)' : 'hsl(220, 13%, 91%)'; // --border
-  const statusBarBg = isDarkColorScheme ? '#0f172a' : '#ffffff'; // Matching the background
+  const backgroundColor = isDarkColorScheme ? '#000000' : '#ffffff'; // Pure black/white for consistency
+  const borderColor = isDarkColorScheme ? '#242424' : 'hsl(220, 13%, 91%)'; // --border
+  const statusBarBg = isDarkColorScheme ? '#000000' : '#ffffff'; // Matching the background
 
   return (
     <SafeAreaProvider>

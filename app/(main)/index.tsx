@@ -12,13 +12,13 @@ import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -217,13 +217,17 @@ export default function OverviewScreen() {
       </Card>
     </TouchableOpacity>
   );  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView 
+      className="flex-1 bg-background" 
+      edges={['top']} 
+      style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}
+    >
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
+        backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
         translucent={false}
       />
-      <View className="flex-1">
+      <View className="flex-1 bg-background">
         {/* Header */}
         <View className="px-4 pt-2 pb-2">
           <View className="flex-row items-center justify-between mb-4">

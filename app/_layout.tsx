@@ -68,10 +68,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Show loading spinner while checking auth state
   if (loading) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar 
+      <GestureHandlerRootView style={{ flex: 1 }}>        <StatusBar 
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
         />
         <StreamProvider>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
