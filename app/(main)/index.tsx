@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
+import { useColorScheme } from '@/lib/useColorScheme';
 import { UserProfile, getAllUsers } from '@/services/userService';
 import { Ionicons } from '@expo/vector-icons';
 import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
@@ -13,6 +14,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Platform,
   RefreshControl,
   StatusBar,
   Text,
@@ -20,13 +22,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useColorScheme } from '@/lib/useColorScheme';
 
 export default function OverviewScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { chatClient, isChatConnected, connectToChat } = useChat();
-  const videoClient = useStreamVideoClient();  const [users, setUsers] = useState<UserProfile[]>([]);
+  const { chatClient, isChatConnected, connectToChat } = useChat();  const videoClient = useStreamVideoClient();
+  
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -215,12 +217,12 @@ export default function OverviewScreen() {
         </CardContent>
       </Card>
     </TouchableOpacity>
-  );
-  return (
+  );  return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
+        translucent={false}
       />
       <View className="flex-1">
         {/* Header */}
@@ -270,8 +272,9 @@ export default function OverviewScreen() {
           keyExtractor={(item) => item.uid}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          contentContainerStyle={{ paddingBottom: 20 }}
+          }          contentContainerStyle={{ 
+            flexGrow: 1
+          }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View className="flex-1 justify-center items-center mt-20">

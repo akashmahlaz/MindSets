@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import { useColorScheme } from '@/lib/useColorScheme';
 import {
     Call,
     CallContent,
@@ -6,13 +8,14 @@ import {
 } from '@stream-io/video-react-native-sdk';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, StatusBar, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CallScreen() {
   const { callId } = useLocalSearchParams<{ callId: string }>();
   const [call, setCall] = useState<Call | null>(null);
   const client = useStreamVideoClient();
+  const { isDarkColorScheme } = useColorScheme();
 
   useEffect(() => {
     if (!client || !callId) return;
@@ -52,24 +55,34 @@ export default function CallScreen() {
 
   if (!call) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Joining call...</Text>
+      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+        <StatusBar 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        />
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-foreground text-lg">Joining call...</Text>
         </View>
       </SafeAreaView>
     );
   }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <StatusBar 
+        barStyle="light-content"
+        backgroundColor="#000000"
+      />
       <StreamCall call={call}>
-        <View style={styles.callContainer}>
-          <View style={styles.topControls}>
-            <Pressable 
-              style={styles.backButton} 
+        <View className="flex-1 relative">
+          <View className="absolute top-12 left-5 z-50">
+            <Button 
+              variant="secondary"
               onPress={handleEndCall}
+              className="bg-black/50 border-white/20"
             >
-              <Text style={styles.backButtonText}>← Back</Text>
-            </Pressable>
+              <Text className="text-white">← Back</Text>
+            </Button>
           </View>
           <CallContent
             onHangupCallHandler={handleEndCall}
@@ -79,38 +92,3 @@ export default function CallScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#fff',
-    fontSize: 18,
-  },
-  callContainer: {
-    flex: 1,
-  },
-  topControls: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 100,
-  },
-  backButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});

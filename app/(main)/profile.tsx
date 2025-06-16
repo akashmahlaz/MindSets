@@ -20,8 +20,9 @@ import { debugUsersCollection, getAllUsers, UserProfile } from '../../services/u
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);  const fetchUsers = async () => {
+  const [loading, setLoading] = useState(true);  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUsers = async () => {
     if (!user) {
       console.log('No user found, cannot fetch users');
       return;
@@ -121,14 +122,15 @@ export default function ProfileScreen() {
         <CardHeader>
           <Text className="text-lg font-semibold text-foreground">Available Users</Text>
         </CardHeader>
-        <CardContent className="flex-1">
-          <FlatList
+        <CardContent className="flex-1">          <FlatList
             data={users}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.uid}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
+            }            contentContainerStyle={{
+              flexGrow: 1
+            }}
             ListEmptyComponent={
               <View className="py-8 items-center">
                 <Ionicons name="people-outline" size={48} color="#9CA3AF" />

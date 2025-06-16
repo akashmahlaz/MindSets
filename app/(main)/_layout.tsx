@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -10,53 +11,62 @@ import { useColorScheme } from '@/lib/useColorScheme';
 export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
 
+  // Match colors with CSS design tokens
+  const backgroundColor = isDarkColorScheme ? 'hsl(224, 71%, 4%)' : 'hsl(0, 0%, 100%)'; // --background and --card
+  const borderColor = isDarkColorScheme ? 'hsl(215, 27%, 17%)' : 'hsl(220, 13%, 91%)'; // --border
+  const statusBarBg = isDarkColorScheme ? '#0f172a' : '#ffffff'; // Matching the background
+
   return (
-    <>
+    <SafeAreaProvider>
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "#151718" : "#ffffff"}
+        backgroundColor={statusBarBg}
+        translucent={false}
       />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: isDarkColorScheme ? '#ffffff' : '#0a7ea4',
-          tabBarInactiveTintColor: isDarkColorScheme ? '#9BA1A6' : '#687076',
+          tabBarInactiveTintColor: isDarkColorScheme ? 'hsl(217, 10%, 65%)' : 'hsl(220, 9%, 46%)', // --muted-foreground
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarBackground: TabBarBackground,
           tabBarStyle: {
-            backgroundColor: isDarkColorScheme ? '#151718' : '#ffffff',
-            borderTopColor: isDarkColorScheme ? '#2a2a2a' : '#e5e7eb',
+            backgroundColor: backgroundColor,
+            borderTopColor: borderColor,
             borderTopWidth: 1,
-            height: Platform.OS === 'ios' ? 85 : 65,
-            paddingBottom: Platform.OS === 'ios' ? 25 : 10,
-            paddingTop: 8,
+            // Let Expo Router handle positioning and safe areas automatically
             ...Platform.select({
               ios: {
                 shadowColor: isDarkColorScheme ? '#000' : '#000',
                 shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: isDarkColorScheme ? 0.3 : 0.1,
+                shadowOpacity: isDarkColorScheme ? 0.3 : 0.08,
                 shadowRadius: 8,
               },
               android: {
-                elevation: 8,
+                elevation: 12,
+                shadowColor: isDarkColorScheme ? '#000' : '#000',
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: isDarkColorScheme ? 0.4 : 0.1,
+                shadowRadius: 6,
               },
             }),
           },
-        }}>      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-    </>
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+          }}
+        />
+      </Tabs>
+    </SafeAreaProvider>
   );
 }

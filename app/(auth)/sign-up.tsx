@@ -1,9 +1,14 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
-import * as Google from 'expo-auth-session/providers/google';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useColorScheme } from '@/lib/useColorScheme';
 import * as Apple from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
 import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, OAuthProvider, signInWithCredential } from 'firebase/auth';
+import { useState } from 'react';
+import { Platform, StatusBar, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { app } from '../../firebaseConfig';
 
 export default function SignUpScreen() {
@@ -12,6 +17,7 @@ export default function SignUpScreen() {
   const [error, setError] = useState('');
   const router = useRouter();
   const auth = getAuth(app);
+  const { isDarkColorScheme } = useColorScheme();
 
   // Google
   const [_, __, promptAsync] = Google.useAuthRequest({
@@ -51,22 +57,71 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={{ padding: 20, marginTop: 80 }}>
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" style={{ borderWidth: 1, marginBottom: 10, padding: 10 }} />
-      <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={{ borderWidth: 1, marginBottom: 10, padding: 10 }} />
-      <Button title="Sign Up" onPress={handleEmailSignUp} />
-      <Button title="Sign Up with Google" onPress={handleGoogleSignUp} />
-      <Apple.AppleAuthenticationButton
-        buttonType={Apple.AppleAuthenticationButtonType.SIGN_UP}
-        buttonStyle={Apple.AppleAuthenticationButtonStyle.BLACK}
-        cornerRadius={5}
-        style={{ width: 200, height: 44, marginTop: 10 }}
-        onPress={handleAppleSignUp}
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
       />
-      {error ? <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text> : null}
-      <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
-        <Text style={{ marginTop: 20, color: 'blue', textAlign: 'center' }}>Already have an account? Sign In</Text>
-      </TouchableOpacity>
-    </View>
+      <View className="flex-1 justify-center px-6">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+            <CardDescription className="text-center">
+              Sign up to get started with your new account
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <Input
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            
+            <Button onPress={handleEmailSignUp} className="w-full">
+              <Text className="text-primary-foreground font-medium">Sign Up</Text>
+            </Button>
+            
+            <View className="relative">
+              <View className="absolute inset-0 flex items-center">
+                <View className="w-full border-t border-border" />
+              </View>
+              <View className="relative flex justify-center text-xs uppercase">
+                <Text className="bg-background px-2 text-muted-foreground">Or continue with</Text>
+              </View>
+            </View>
+            
+            <Button variant="outline" onPress={handleGoogleSignUp} className="w-full">
+              <Text className="text-foreground font-medium">Sign Up with Google</Text>
+            </Button>
+            
+            {Platform.OS === 'ios' && (
+              <Apple.AppleAuthenticationButton
+                buttonType={Apple.AppleAuthenticationButtonType.SIGN_UP}
+                buttonStyle={Apple.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={8}
+                style={{ width: '100%', height: 44 }}
+                onPress={handleAppleSignUp}
+              />
+            )}
+            
+            {error ? (
+              <Text className="text-destructive text-center text-sm">{error}</Text>
+            ) : null}
+            
+            <Button variant="ghost" onPress={() => router.replace('/(auth)/sign-in')} className="w-full">
+              <Text className="text-primary font-medium">Already have an account? Sign In</Text>
+            </Button>
+          </CardContent>
+        </Card>
+      </View>
+    </SafeAreaView>
   );
 }

@@ -2,11 +2,11 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
 import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
+import { useColorScheme } from '@/lib/useColorScheme';
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, StatusBar, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useColorScheme } from '@/lib/useColorScheme';
 import "./global.css";
 
 // Initialize push notifications for Stream Video
