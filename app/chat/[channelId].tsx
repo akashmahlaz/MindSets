@@ -109,7 +109,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={70}
       >
         <OverlayProvider value={{ style: getStreamChatTheme(isDarkMode) }}>
           <Channel 
@@ -120,9 +120,7 @@ export default function ChatScreen() {
             <View className="flex-1">
               <MessageList />
             </View>
-            <View style={{ backgroundColor: isDarkMode ? '#000000' : '#F2F2F7' }}>
-              <MessageInput />
-            </View>
+            <MessageInput />
           </Channel>
         </OverlayProvider>
       </KeyboardAvoidingView>

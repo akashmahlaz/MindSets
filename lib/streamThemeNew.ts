@@ -10,7 +10,7 @@ export const getStreamChatTheme = (isDark: boolean): DeepPartial<Theme> => ({
     // Background colors
     white: isDark ? '#1C1C1E' : '#FFFFFF',
     white_snow: isDark ? '#000000' : '#F2F2F7',
-    grey_gainsboro: isDark ? '#3A3A3C' : '#E5E5EA',
+    grey_gainsboro: isDark ? 'transparent' : '#E5E5EA',
     grey_whisper: isDark ? '#2C2C2E' : '#F2F2F7',
     
     // Text colors - High contrast for better readability
@@ -20,32 +20,38 @@ export const getStreamChatTheme = (isDark: boolean): DeepPartial<Theme> => ({
     
     // Message colors - Make sent messages blue
     blue_alice: '#007AFF', // Use blue for sent messages
-    transparent: 'transparent',
-      // Border colors
-    border: isDark ? '#3A3A3C' : '#C6C6C8',
+    transparent: 'transparent',    // Border colors
+    border: isDark ? 'transparent' : '#C6C6C8',
   },
   messageSimple: {
-    content: {
-      container: {
+    content: {      container: {
         borderRadius: 18,
         marginVertical: 4,
         maxWidth: '75%',
         shadowColor: isDark ? '#000000' : '#000000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: isDark ? 0.3 : 0.06,
-        shadowRadius: 2,
-        elevation: 1,
-      },
-      textContainer: {
+        shadowOpacity: isDark ? 0.2 : 0.06,
+        shadowRadius: isDark ? 0 : 2,
+        elevation: isDark ? 0 : 1,
+        // Ensure no borders in container
+        borderWidth: 0,
+        borderColor: 'transparent',
+      },textContainer: {
         borderRadius: 18,
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF',
         borderWidth: isDark ? 0 : 0.5,
         borderColor: isDark ? 'transparent' : '#E5E5EA',
-      },
-      wrapper: {
+        // Explicitly remove border in dark mode
+        ...(isDark && {
+          borderWidth: 0,
+          borderColor: 'transparent',
+        }),
+      },      wrapper: {
         backgroundColor: 'transparent',
+        borderWidth: 0,
+        borderColor: 'transparent',
       },
       markdown: {
         text: {
@@ -135,8 +141,8 @@ export const getStreamChatTheme = (isDark: boolean): DeepPartial<Theme> => ({
     },
     image: {
       borderRadius: 16,
-    },
-  },  messageList: {
+    },  },
+  messageList: {
     container: {
       backgroundColor: isDark ? '#000000' : '#F2F2F7',
       paddingHorizontal: 12,
