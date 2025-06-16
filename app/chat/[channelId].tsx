@@ -1,10 +1,11 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
 import { getStreamChatTheme } from '@/lib/streamThemeNew';
+import { useColorScheme } from '@/lib/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Channel as StreamChannel } from 'stream-chat';
 import { Channel, MessageInput, MessageList, OverlayProvider } from 'stream-chat-expo';
@@ -13,11 +14,9 @@ import { useChat } from '../../context/ChatContext';
 export default function ChatScreen() {
   const { channelId } = useLocalSearchParams();
   const { chatClient, isChatConnected } = useChat();
-  const { user } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const { colorScheme, isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -47,11 +46,10 @@ export default function ChatScreen() {
   }, [chatClient, isChatConnected, user, channelId]);
 
   if (loading || !channel) {
-    return (
-      <View className="flex-1 bg-slate-50 dark:bg-slate-900" style={{ paddingTop: insets.top }}>
+    return (      <View className="flex-1 bg-slate-50 dark:bg-slate-900" style={{ paddingTop: insets.top }}>
         <StatusBar 
-          barStyle={isDarkMode ? "light-content" : "dark-content"} 
-          backgroundColor={isDarkMode ? "#0f172a" : "#f8fafc"} 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
+          backgroundColor={isDarkColorScheme ? "#0f172a" : "#f8fafc"} 
         />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#3b82f6" />
@@ -74,21 +72,18 @@ export default function ChatScreen() {
     }
     return (channel.data as any)?.name || 'Chat';
   };
-
-  return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900">
+  return (    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900" edges={['top', 'bottom']}>
       <StatusBar 
-        barStyle={isDarkMode ? "light-content" : "dark-content"} 
-        backgroundColor={isDarkMode ? "#1e293b" : "#ffffff"} 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkColorScheme ? "#1e293b" : "#ffffff"} 
       />
       
       {/* Professional Header */}
       <View className="flex-row items-center px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center mr-3"
-        >
-          <Ionicons name="chevron-back" size={20} color={isDarkMode ? "#cbd5e1" : "#475569"} />
+          className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center mr-3"        >
+          <Ionicons name="chevron-back" size={20} color={isDarkColorScheme ? "#cbd5e1" : "#475569"} />
         </TouchableOpacity>
         
         <View className="flex-1">
@@ -111,7 +106,7 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={70}
       >
-        <OverlayProvider value={{ style: getStreamChatTheme(isDarkMode) }}>
+        <OverlayProvider value={{ style: getStreamChatTheme(isDarkColorScheme) }}>
           <Channel 
             channel={channel}
             disableKeyboardCompatibleView={true}

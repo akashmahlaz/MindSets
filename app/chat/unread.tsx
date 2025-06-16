@@ -1,6 +1,7 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
+import { useColorScheme } from '@/lib/useColorScheme';
 import { getUnreadCount, markChannelAsRead } from '@/services/chatHelpers';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -10,18 +11,20 @@ import {
   Alert,
   FlatList,
   RefreshControl,
-  SafeAreaView,
+  StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Channel } from 'stream-chat';
 import { ChannelPreviewMessenger } from 'stream-chat-expo';
 
 export default function UnreadChannelsScreen() {
   const { chatClient, isChatConnected } = useChat();
   const { user } = useAuth();
+  const { isDarkColorScheme } = useColorScheme();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [filteredChannels, setFilteredChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,10 +130,13 @@ export default function UnreadChannelsScreen() {
       </TouchableOpacity>
     );
   };
-
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-background">
+      <SafeAreaView className="flex-1 justify-center items-center bg-background" edges={['top']}>
+        <StatusBar 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        />
         <ActivityIndicator size="large" color="#6366F1" />
         <Text className="text-muted-foreground mt-4">Loading channels...</Text>
       </SafeAreaView>
@@ -138,7 +144,11 @@ export default function UnreadChannelsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+      />
       {/* Header */}
       <View className="p-4 border-b border-border">
         <Text className="text-2xl font-bold text-foreground">Unread Messages</Text>

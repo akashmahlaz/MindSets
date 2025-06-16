@@ -1,24 +1,31 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
+import { useColorScheme } from '@/lib/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
 import {
   ActivityIndicator,
-  SafeAreaView,
+  StatusBar,
   Text,
   View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChannelList } from 'stream-chat-expo';
 
 export default function ChannelListScreen() {
   const { chatClient, isChatConnected } = useChat();
   const { user } = useAuth();
+  const { isDarkColorScheme } = useColorScheme();
 
   if (!chatClient || !isChatConnected || !user) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-background">
+      <SafeAreaView className="flex-1 justify-center items-center bg-background" edges={['top']}>
+        <StatusBar 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        />
         <ActivityIndicator size="large" color="#6366F1" />
         <Text className="text-muted-foreground mt-4">Loading channels...</Text>
       </SafeAreaView>
@@ -39,9 +46,12 @@ export default function ChannelListScreen() {
     presence: true,
     limit: 30,
   };
-
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+      />
       {/* Header */}
       <View className="p-4 border-b border-border">
         <Text className="text-2xl font-bold text-foreground">Messages</Text>
