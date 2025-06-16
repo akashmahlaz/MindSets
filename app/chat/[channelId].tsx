@@ -1,11 +1,13 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
+import { streamChatTheme } from '@/lib/streamTheme';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Channel as StreamChannel } from 'stream-chat';
-import { Channel, MessageInput, MessageList } from 'stream-chat-expo';
+import { Channel, MessageInput, MessageList, OverlayProvider } from 'stream-chat-expo';
 import { useChat } from '../../context/ChatContext';
 
 export default function ChatScreen() {
@@ -44,9 +46,25 @@ export default function ChatScreen() {
 
   if (loading || !channel) {
     return (
-      <View className="flex-1 justify-center items-center bg-background">
-        <ActivityIndicator size="large" color="#6366F1" />
-        <Text className="text-muted-foreground mt-4">Loading chat...</Text>
+      <View style={{ 
+        flex: 1, 
+        backgroundColor: '#f8fafc',
+        paddingTop: insets.top 
+      }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text style={{
+            color: '#64748b',
+            marginTop: 16,
+            fontSize: 16,
+            fontWeight: '500'
+          }}>Loading chat...</Text>
+        </View>
       </View>
     );
   }
@@ -64,32 +82,88 @@ export default function ChatScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      {/* Header */}
-      <View className={`flex-row items-center p-4 border-b border-border bg-card pt-[${insets.top}px]`}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text className="text-lg">{"<"}</Text>
+    <View style={{ 
+      flex: 1, 
+      backgroundColor: '#f8fafc',
+      paddingTop: insets.top 
+    }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      
+      {/* Professional Header */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#ffffff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2
+      }}>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: '#f1f5f9',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 12
+          }}
+        >
+          <Ionicons name="chevron-back" size={20} color="#475569" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-foreground flex-1 text-center">
-          {getHeaderTitle()}
-        </Text>
-        <View className="w-6" />
+        
+        <View style={{ flex: 1 }}>
+          <Text style={{
+            fontSize: 18,
+            fontWeight: '600',
+            color: '#1e293b',
+            marginBottom: 2
+          }}>
+            {getHeaderTitle()}
+          </Text>
+          <Text style={{
+            fontSize: 13,
+            color: '#64748b'
+          }}>
+            Online now
+          </Text>
+        </View>
+        
+        <TouchableOpacity style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: '#f1f5f9',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Ionicons name="call" size={18} color="#3b82f6" />
+        </TouchableOpacity>
       </View>
 
-      {/* Chat Area */}
-      <Channel channel={channel}>
-        <View className="flex-1 pb-20">  {/* pb-20 accounts for input height */}
-          <MessageList />
-        </View>
-        <View className={`pb-[${insets.bottom}px] bg-card border-t border-border`}>
-          <MessageInput />
-        </View>
-        <View style={{ height: insets.bottom }} />
-        <Text>test</Text>
-        <View style={{ height: insets.bottom }}>
-          <Text>test</Text>
-        </View>
-      </Channel>
+      {/* Chat Area with proper theming */}
+      <OverlayProvider value={{ style: streamChatTheme }}>
+        <Channel channel={channel}>
+          <View style={{ flex: 1 }}>
+            <MessageList />
+          </View>
+          <View style={{
+            backgroundColor: '#ffffff',
+            borderTopWidth: 1,
+            borderTopColor: '#e2e8f0',
+            paddingBottom: insets.bottom
+          }}>
+            <MessageInput />
+          </View>
+        </Channel>
+      </OverlayProvider>
     </View>
   );
 }

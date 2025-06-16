@@ -1,5 +1,6 @@
 import "@/app/global.css";
 import { useChat } from '@/context/ChatContext';
+import { streamChatTheme } from '@/lib/streamTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
@@ -8,21 +9,37 @@ import { Chat, OverlayProvider } from 'stream-chat-expo';
 export default function ChatTabsLayout() {
   const { chatClient, isChatConnected } = useChat();
   const pathname = usePathname();
-  const isChatScreen = pathname.includes('/chat/') && pathname !== '/chat/';
+  const isChatScreen = pathname.includes('/chat/') && pathname !== '/chat/' && pathname !== '/chat/unread';
 
   if (!chatClient || !isChatConnected) {
     return null;
-  }
-
-  return (
-    <OverlayProvider value={{ style: { colors: { primary: '#6366F1' } } }}>
+  }  return (
+    <OverlayProvider value={{ 
+      style: streamChatTheme
+    }}>
       <Chat client={chatClient}>
         <Tabs
           screenOptions={{
-            tabBarActiveTintColor: '#6366F1',
-            tabBarInactiveTintColor: '#9CA3AF',
-            tabBarLabelStyle: { textTransform: 'none', fontWeight: 'bold', fontSize: 15 },
-            tabBarStyle: { backgroundColor: '#FFFFFF', borderTopWidth: 0, elevation: 0 },
+            headerShown: false,
+            tabBarActiveTintColor: '#3b82f6',
+            tabBarInactiveTintColor: '#64748b',
+            tabBarLabelStyle: { 
+              textTransform: 'none', 
+              fontWeight: '600', 
+              fontSize: 12 
+            },
+            tabBarStyle: isChatScreen ? { display: 'none' } : { 
+              backgroundColor: '#ffffff', 
+              borderTopWidth: 1,
+              borderTopColor: '#e2e8f0',
+              elevation: 8,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              paddingBottom: 5,
+              height: 65
+            },
           }}>
           <Tabs.Screen
             name="index"
