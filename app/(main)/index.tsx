@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
 import { useColorScheme } from '@/lib/useColorScheme';
@@ -161,7 +162,6 @@ export default function OverviewScreen() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
   const renderUserItem = ({ item }: { item: UserProfile }) => (
     <TouchableOpacity
       onPress={() => handleUserPress(item)}
@@ -216,7 +216,71 @@ export default function OverviewScreen() {
         </CardContent>
       </Card>
     </TouchableOpacity>
-  );  return (
+  );
+
+  const renderUserSkeleton = () => (
+    <Card className="mx-4 mb-3 bg-card border border-border">
+      <CardContent className="p-4">
+        <View className="flex-row items-center space-x-3">
+          <View className="relative">
+            <Skeleton className="w-12 h-12 rounded-full" />
+            <Skeleton className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full" />
+          </View>
+          <View className="flex-1">
+            <Skeleton className="w-32 h-5 rounded mb-1" />
+            <Skeleton className="w-40 h-4 rounded mb-1" />
+            <Skeleton className="w-16 h-3 rounded" />
+          </View>
+          <View className="flex-row space-x-2">
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="w-8 h-8 rounded-full" />
+          </View>
+        </View>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView 
+        className="flex-1 bg-background" 
+        edges={['top']} 
+        style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}
+      >
+        <StatusBar 
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
+          translucent={false}
+        />
+        <View className="flex-1 bg-background">
+          {/* Header Skeleton */}
+          <View className="px-4 pt-2 pb-2">
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Skeleton className="w-40 h-8 rounded mb-2" />
+                <Skeleton className="w-48 h-5 rounded" />
+              </View>
+              <View className="flex-row items-center space-x-2">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-full" />
+              </View>
+            </View>
+            <Skeleton className="w-full h-12 rounded" />
+          </View>
+
+          {/* Users List Skeleton */}
+          <View className="flex-1">
+            {[...Array(6)].map((_, index) => (
+              <View key={index}>
+                {renderUserSkeleton()}
+              </View>
+            ))}
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }return (
     <SafeAreaView 
       className="flex-1 bg-background" 
       edges={['top']} 
