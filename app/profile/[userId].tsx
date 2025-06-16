@@ -84,6 +84,39 @@ export default function ProfileScreen() {
     fetchUser();
   }, [userId, chatClient]);
 
+   const startChat = async (targetUser: UserProfile) => {
+      if (!user || !chatClient) {
+        Alert.alert('Error', 'Chat not available');
+        return;
+      }
+  
+      if (!isChatConnected) {
+        try {
+          await connectToChat();
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          Alert.alert('Error', 'Failed to connect to chat');
+          return;
+        }
+      }
+      
+      try {
+        // Create a deterministic channel ID for direct messages
+        const sortedMembers = [user.uid, targetUser.uid].sort();
+        const channelId = `dm-${sortedMembers.join('-')}`;
+        
+        const channel = chatClient.channel('messaging', channelId, {
+          members: [user.uid, targetUser.uid],
+        });
+        
+        await channel.watch();
+        router.push(`/chat/${channelId}` as any);
+      } catch (error) {
+        console.error('Error starting chat:', error);
+        Alert.alert('Error', 'Failed to start chat');
+      }
+    };
+
   const handleStartChat = async () => {
     if (!user || !chatClient || !isChatConnected) {
       Alert.alert('Error', 'Please try again later');
@@ -205,7 +238,7 @@ export default function ProfileScreen() {
             </CardHeader>
             <CardContent className="space-y-3">
               <TouchableOpacity
-                onPress={handleStartChat}
+                onPress={() => startChat(userData)}
                 className="flex-row items-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
               >
                 <View className="w-12 h-12 bg-blue-500 rounded-full items-center justify-center mr-4">

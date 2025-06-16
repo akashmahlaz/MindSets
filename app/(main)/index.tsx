@@ -194,7 +194,7 @@ export default function OverviewScreen() {
             </View>
             <View className="flex-row space-x-2">
               <TouchableOpacity
-                onPress={() => startChat(item)}
+                onPress={() => (item)}
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
                 <Ionicons name="chatbubble" size={16} color="#3B82F6" />
@@ -262,10 +262,10 @@ export default function OverviewScreen() {
             </View>
           </View>
           <Input
-            placeholder="Search users..."
+            placeholder  ="Search users..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            className="mb-4"
+            className="mb-4 dark:bg-slate-800 dark:text-slate-400"
           />
         </View>
 

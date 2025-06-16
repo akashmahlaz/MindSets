@@ -45,9 +45,8 @@ export default function ChannelListScreen() {
     watch: true,
     presence: true,
     limit: 30,
-  };
-  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+  };  return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']} style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}>
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
@@ -63,6 +62,9 @@ export default function ChannelListScreen() {
         options={options}
         onSelect={(channel) => {
           router.push(`/chat/${channel.id}`);
+        }}
+        additionalFlatListProps={{
+          style: { backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }
         }}
         EmptyStateIndicator={() => (
           <View className="flex-1 justify-center items-center p-8">

@@ -29,12 +29,66 @@ console.warn = (...args) => {
 // Import the necessary components from stream-chat-react-native
 import { OverlayProvider } from 'stream-chat-react-native';
 
+function StreamChatWrapper({ children }: { children: React.ReactNode }) {
+  const { isDarkColorScheme } = useColorScheme();
+  
+  const darkTheme = {
+    colors: {
+      bg_gradient_end: '#000000',
+      bg_gradient_start: '#000000',
+      black: '#000000',
+      blue_alice: '#1a1a1a',
+      border: '#242424',
+      grey: '#666666',
+      grey_gainsboro: '#2a2a2a',
+      grey_whisper: '#1a1a1a',
+      icon: '#ffffff',
+      modal: '#000000',
+      overlay: '#000000',
+      shadow_icon: '#000000',
+      targetedMessageBackground: '#1a1a1a',
+      text: '#ffffff',
+      white: '#000000',
+      white_smoke: '#1a1a1a',
+      white_snow: '#1a1a1a',
+    },
+  };
+
+  const lightTheme = {
+    colors: {
+      bg_gradient_end: '#ffffff',
+      bg_gradient_start: '#ffffff',
+      black: '#000000',
+      blue_alice: '#f0f4f7',
+      border: '#e0e0e0',
+      grey: '#7a7a7a',
+      grey_gainsboro: '#dbdbdb',
+      grey_whisper: '#ecebeb',
+      icon: '#000000',
+      modal: '#ffffff',
+      overlay: '#ffffff',
+      shadow_icon: '#00000080',
+      targetedMessageBackground: '#faf9fa',
+      text: '#000000',
+      white: '#ffffff',
+      white_smoke: '#f8f8f8',
+      white_snow: '#fcfcfc',
+    },
+  };
+
+  return (
+    <OverlayProvider value={{ style: isDarkColorScheme ? darkTheme : lightTheme }}>
+      {children}
+    </OverlayProvider>
+  );
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
         <ChatProvider>
-          <OverlayProvider>
+          <StreamChatWrapper>
             <StreamProvider>
               <VideoProvider>
                 <AuthGate>
@@ -42,7 +96,7 @@ export default function RootLayout() {
                 </AuthGate>
               </VideoProvider>
             </StreamProvider>
-          </OverlayProvider>
+          </StreamChatWrapper>
         </ChatProvider>
       </AuthProvider>
     </GestureHandlerRootView>

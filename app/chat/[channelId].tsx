@@ -43,16 +43,16 @@ export default function ChatScreen() {
     };
     fetchChannel();
   }, [chatClient, isChatConnected, user, channelId]);
-
   if (loading || !channel) {
-    return (      <View className="flex-1 bg-slate-50 dark:bg-slate-900" style={{ paddingTop: insets.top }}>
+    return (
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <StatusBar 
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
           backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"} 
         />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#3b82f6" />
-          <Text className="text-slate-600 dark:text-slate-400 mt-4 text-base font-medium">
+          <Text className="text-muted-foreground mt-4 text-base font-medium">
             Loading chat...
           </Text>
         </View>
@@ -70,48 +70,46 @@ export default function ChatScreen() {
       }
     }
     return (channel.data as any)?.name || 'Chat';
-  };
-  return (    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900" edges={['top', 'bottom']}>
+  };  return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <StatusBar 
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
-        backgroundColor={isDarkColorScheme ? "#1e293b" : "#ffffff"} 
+        backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"} 
       />
       
       {/* Professional Header */}
-      <View className="flex-row items-center px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
-        <TouchableOpacity 
+      <View className="flex-row items-center px-4 py-3 bg-card border-b border-border shadow-sm">        <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center mr-3"        >
-          <Ionicons name="chevron-back" size={20} color={isDarkColorScheme ? "#cbd5e1" : "#475569"} />
+          className="w-10 h-10 rounded-full bg-secondary justify-center items-center mr-3"
+        >
+          <Ionicons name="chevron-back" size={20} color={isDarkColorScheme ? "#ffffff" : "#000000"} />
         </TouchableOpacity>
         
         <View className="flex-1">
-          <Text className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-0.5">
+          <Text className="text-lg font-semibold text-foreground mb-0.5">
             {getHeaderTitle()}
           </Text>
-          <Text className="text-sm text-slate-500 dark:text-slate-400">
+          <Text className="text-sm text-muted-foreground">
             Online now
           </Text>
         </View>
         
-        <TouchableOpacity className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center">
+        <TouchableOpacity className="w-10 h-10 rounded-full bg-secondary justify-center items-center">
           <Ionicons name="call" size={18} color="#3b82f6" />
         </TouchableOpacity>
-      </View>
-
-      {/* Chat Area with proper theming and keyboard handling */}
+      </View>      {/* Chat Area with proper theming and keyboard handling */}
       <KeyboardAvoidingView 
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
       >
-        <OverlayProvider >
+        <OverlayProvider>
           <Channel 
             channel={channel}
             disableKeyboardCompatibleView={true}
             keyboardVerticalOffset={0}
           >
-            <View className="flex-1 p-0 m-0">
+            <View className="flex-1 p-0 m-0" style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}>
               <MessageList />
             </View>
             <MessageInput />
