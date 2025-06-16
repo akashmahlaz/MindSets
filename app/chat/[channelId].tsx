@@ -4,8 +4,8 @@ import { streamChatTheme } from '@/lib/streamTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Channel as StreamChannel } from 'stream-chat';
 import { Channel, MessageInput, MessageList, OverlayProvider } from 'stream-chat-expo';
 import { useChat } from '../../context/ChatContext';
@@ -82,10 +82,9 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={{ 
+    <SafeAreaView style={{ 
       flex: 1, 
-      backgroundColor: '#f8fafc',
-      paddingTop: insets.top 
+      backgroundColor: '#f8fafc'
     }}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       
@@ -148,22 +147,27 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Chat Area with proper theming */}
-      <OverlayProvider value={{ style: streamChatTheme }}>
-        <Channel channel={channel}>
-          <View style={{ flex: 1 }}>
-            <MessageList />
-          </View>
-          <View style={{
-            backgroundColor: '#ffffff',
-            borderTopWidth: 1,
-            borderTopColor: '#e2e8f0',
-            paddingBottom: insets.bottom
-          }}>
-            <MessageInput />
-          </View>
-        </Channel>
-      </OverlayProvider>
-    </View>
+      {/* Chat Area with proper theming and keyboard handling */}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
+        <OverlayProvider value={{ style: streamChatTheme }}>
+          <Channel channel={channel}>
+            <View style={{ flex: 1 }}>
+              <MessageList />
+            </View>
+            <View style={{
+              backgroundColor: '#ffffff',
+              borderTopWidth: 1,
+              borderTopColor: '#e2e8f0'
+            }}>
+              <MessageInput />
+            </View>
+          </Channel>
+        </OverlayProvider>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
