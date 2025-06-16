@@ -2,18 +2,18 @@ import "@/app/global.css";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { createOrGetDirectChannel } from '@/services/chatHelpers';
 import { Ionicons } from '@expo/vector-icons';
 import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
@@ -26,62 +26,59 @@ export default function ProfileScreen() {
   const { user } = useAuth();
   const { chatClient, isChatConnected, connectToChat } = useChat();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const insets = useSafeAreaInsets();  const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [profileUser, setProfileUser] = useState<any>(null);
 
   useEffect(() => {
     const loadUserData = async () => {
       if (!userId) {
         console.log('No userId provided');
+        setError(true);
         setLoading(false);
         return;
       }
 
       try {
+        setLoading(true);
+        setError(false);
         console.log('Loading user data for:', userId);
+        
+        // Load user profile data
         const profile = await getUserProfile(userId as string);
+        
+        // Also fetch user from Stream Chat if chatClient is available
+        let streamUser = null;
+        if (chatClient) {
+          try {
+            const response = await chatClient.queryUsers({ id: userId as string });
+            if (response.users.length > 0) {
+              streamUser = response.users[0];
+              setProfileUser(streamUser);
+            }
+          } catch (streamError) {
+            console.error('Error fetching Stream user:', streamError);
+            // Don't fail the whole operation if Stream fails
+          }
+        }
+        
         if (profile) {
           setUserData(profile);
           console.log('User data loaded:', profile);
         } else {
           console.log('User not found:', userId);
-          Alert.alert('Error', 'User not found');
+          setError(true);
         }
       } catch (error) {
         console.error('Error loading user data:', error);
-        Alert.alert('Error', 'Failed to load user data');
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
 
     loadUserData();
-  }, [userId]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!userId || !chatClient) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Query the user from Stream Chat
-        const response = await chatClient.queryUsers({ id: userId as string });
-        if (response.users.length > 0) {
-          setProfileUser(response.users[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        Alert.alert('Error', 'Failed to load user profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
   }, [userId, chatClient]);
 
    const startChat = async (targetUser: UserProfile) => {
@@ -156,17 +153,82 @@ export default function ProfileScreen() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background justify-center items-center">
-        <ActivityIndicator size="large" color="#6366F1" />
-        <Text className="text-muted-foreground mt-4">Loading user profile...</Text>
+      <SafeAreaView className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+        <View className="flex-1">
+          {/* Header Skeleton */}
+          <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className="w-20 h-6 rounded" />
+            <View className="w-10" />
+          </View>
+
+          <View className="flex-1 px-4 py-6">
+            {/* Profile Card Skeleton */}
+            <Card className="mb-6">
+              <CardContent className="items-center py-8">
+                {/* Avatar Skeleton */}
+                <View className="relative mb-4">
+                  <Skeleton className="w-24 h-24 rounded-full" />
+                  <Skeleton className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full" />
+                </View>
+                
+                {/* Name and Email Skeleton */}
+                <Skeleton className="w-32 h-7 rounded mb-2" />
+                <Skeleton className="w-40 h-5 rounded mb-2" />
+                
+                {/* Status Skeleton */}
+                <View className="flex-row items-center">
+                  <Skeleton className="w-2 h-2 rounded-full mr-2" />
+                  <Skeleton className="w-16 h-4 rounded" />
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons Skeleton */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="w-20 h-6 rounded" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Message Button Skeleton */}
+                <View className="flex-row items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-900/20">
+                  <Skeleton className="w-12 h-12 rounded-full mr-4" />
+                  <View className="flex-1">
+                    <Skeleton className="w-20 h-5 rounded mb-1" />
+                    <Skeleton className="w-28 h-4 rounded" />
+                  </View>
+                  <Skeleton className="w-5 h-5 rounded" />
+                </View>
+
+                {/* Voice Call Button Skeleton */}
+                <View className="flex-row items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-900/20">
+                  <Skeleton className="w-12 h-12 rounded-full mr-4" />
+                  <View className="flex-1">
+                    <Skeleton className="w-24 h-5 rounded mb-1" />
+                    <Skeleton className="w-32 h-4 rounded" />
+                  </View>
+                  <Skeleton className="w-5 h-5 rounded" />
+                </View>
+
+                {/* Video Call Button Skeleton */}
+                <View className="flex-row items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-900/20">
+                  <Skeleton className="w-12 h-12 rounded-full mr-4" />
+                  <View className="flex-1">
+                    <Skeleton className="w-26 h-5 rounded mb-1" />
+                    <Skeleton className="w-30 h-4 rounded" />
+                  </View>
+                  <Skeleton className="w-5 h-5 rounded" />
+                </View>
+              </CardContent>
+            </Card>
+          </View>
+        </View>
       </SafeAreaView>
     );
-  }
-
-  if (!userData) {
+  }  // Only show error state if loading is complete AND there's an error AND no userData
+  if (!loading && (!userData || error)) {
     return (
       <SafeAreaView className="flex-1 bg-background justify-center items-center px-6">
         <Ionicons name="person-circle-outline" size={80} color="#9CA3AF" />
@@ -183,6 +245,11 @@ export default function ProfileScreen() {
         </Button>
       </SafeAreaView>
     );
+  }
+
+  // Only render profile if we have userData
+  if (!userData) {
+    return null; // This should not happen, but prevents TypeScript errors
   }
 
   return (
