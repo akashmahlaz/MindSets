@@ -1,21 +1,24 @@
 import "@/app/global.css";
 import { useChat } from '@/context/ChatContext';
-import { streamChatTheme } from '@/lib/streamTheme';
+import { getStreamChatTheme } from '@/lib/streamTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
+import { useColorScheme } from 'react-native';
 import { Chat, OverlayProvider } from 'stream-chat-expo';
 
 export default function ChatTabsLayout() {
   const { chatClient, isChatConnected } = useChat();
   const pathname = usePathname();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const isChatScreen = pathname.includes('/chat/') && pathname !== '/chat/' && pathname !== '/chat/unread';
 
   if (!chatClient || !isChatConnected) {
     return null;
   }  return (
     <OverlayProvider value={{ 
-      style: streamChatTheme
+      style: getStreamChatTheme(isDarkMode)
     }}>
       <Chat client={chatClient}>
         <Tabs

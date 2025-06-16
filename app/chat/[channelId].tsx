@@ -1,10 +1,10 @@
 import "@/app/global.css";
 import { useAuth } from '@/context/AuthContext';
-import { streamChatTheme } from '@/lib/streamTheme';
+import { getStreamChatTheme } from '@/lib/streamTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Channel as StreamChannel } from 'stream-chat';
 import { Channel, MessageInput, MessageList, OverlayProvider } from 'stream-chat-expo';
@@ -16,6 +16,8 @@ export default function ChatScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,24 +48,16 @@ export default function ChatScreen() {
 
   if (loading || !channel) {
     return (
-      <View style={{ 
-        flex: 1, 
-        backgroundColor: '#f8fafc',
-        paddingTop: insets.top 
-      }}>
-        <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
+      <View className="flex-1 bg-slate-50 dark:bg-slate-900" style={{ paddingTop: insets.top }}>
+        <StatusBar 
+          barStyle={isDarkMode ? "light-content" : "dark-content"} 
+          backgroundColor={isDarkMode ? "#0f172a" : "#f8fafc"} 
+        />
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={{
-            color: '#64748b',
-            marginTop: 16,
-            fontSize: 16,
-            fontWeight: '500'
-          }}>Loading chat...</Text>
+          <Text className="text-slate-600 dark:text-slate-400 mt-4 text-base font-medium">
+            Loading chat...
+          </Text>
         </View>
       </View>
     );
@@ -82,67 +76,31 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={{ 
-      flex: 1, 
-      backgroundColor: '#f8fafc'
-    }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900">
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkMode ? "#1e293b" : "#ffffff"} 
+      />
       
       {/* Professional Header */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#ffffff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e2e8f0',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 2
-      }}>
+      <View className="flex-row items-center px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <TouchableOpacity 
           onPress={() => router.back()}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: '#f1f5f9',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 12
-          }}
+          className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center mr-3"
         >
-          <Ionicons name="chevron-back" size={20} color="#475569" />
+          <Ionicons name="chevron-back" size={20} color={isDarkMode ? "#cbd5e1" : "#475569"} />
         </TouchableOpacity>
         
-        <View style={{ flex: 1 }}>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: '600',
-            color: '#1e293b',
-            marginBottom: 2
-          }}>
+        <View className="flex-1">
+          <Text className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-0.5">
             {getHeaderTitle()}
           </Text>
-          <Text style={{
-            fontSize: 13,
-            color: '#64748b'
-          }}>
+          <Text className="text-sm text-slate-500 dark:text-slate-400">
             Online now
           </Text>
         </View>
         
-        <TouchableOpacity style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: '#f1f5f9',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
+        <TouchableOpacity className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 justify-center items-center">
           <Ionicons name="call" size={18} color="#3b82f6" />
         </TouchableOpacity>
       </View>
@@ -151,20 +109,17 @@ export default function ChatScreen() {
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
       >
-        <OverlayProvider value={{ style: streamChatTheme }}>
-          <Channel channel={channel}>
-            <View style={{ flex: 1 }}>
+        <OverlayProvider value={{ style: getStreamChatTheme(isDarkMode) }}>
+          <Channel 
+            channel={channel}
+            disableKeyboardCompatibleView={true}
+          >
+            <View className="flex-1 bg-slate-50 dark:bg-slate-900">
               <MessageList />
             </View>
-            <View style={{
-              backgroundColor: '#ffffff',
-              borderTopWidth: 1,
-              borderTopColor: '#e2e8f0'
-            }}>
-              <MessageInput />
-            </View>
+            <MessageInput />
           </Channel>
         </OverlayProvider>
       </KeyboardAvoidingView>

@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ef62984e-5f4a-426d-957d-85602b5ecea1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/chat/[channelId].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/chat/[channelId].tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/chat/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/chat/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/streamTheme.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/streamTheme.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +76,7 @@
       <workItem from="1749899420995" duration="3683000" />
       <workItem from="1749976773207" duration="3805000" />
       <workItem from="1749983687739" duration="25000" />
-      <workItem from="1750044604985" duration="380000" />
+      <workItem from="1750044604985" duration="1697000" />
     </task>
     <servers />
   </component>
