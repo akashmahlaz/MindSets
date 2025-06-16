@@ -14,12 +14,11 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
-  Platform,
   RefreshControl,
   StatusBar,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

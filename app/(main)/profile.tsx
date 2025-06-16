@@ -6,13 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    SafeAreaView,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { debugUsersCollection, getAllUsers, UserProfile } from '../../services/userService';
