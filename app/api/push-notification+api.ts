@@ -115,9 +115,16 @@ async function sendSingleNotification(params: {
         },
         data: {
           ...data,
+          click_action: 'FLUTTER_NOTIFICATION_CLICK',
+        },        android: {
+          notification: {
+            channel_id: channelId || 'default',
+            sound: 'default',
+            icon: 'ic_notification',
+            color: '#1976D2',
+            click_action: 'FLUTTER_NOTIFICATION_CLICK',
+          },
         },
-        // Start with absolute minimal Android config
-        android: {},
         apns: {
           payload: {
             aps: {
@@ -126,7 +133,13 @@ async function sendSingleNotification(params: {
                 body,
               },
               sound: 'default',
+              'content-available': 1,
+              badge: 1,
             },
+          },
+          headers: {
+            'apns-priority': '10',
+            'apns-push-type': 'alert',
           },
         },
       },

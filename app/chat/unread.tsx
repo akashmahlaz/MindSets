@@ -11,7 +11,7 @@ import {
     Alert,
     FlatList,
     RefreshControl,
-    StatusBar,
+   StatusBar,
     Text,
     TextInput,
     TouchableOpacity,

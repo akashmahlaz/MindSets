@@ -206,18 +206,24 @@ export const getUserPushToken = async (userId: string): Promise<string | null> =
 // Get push tokens for multiple users (for batch notifications)
 export const getUsersPushTokens = async (userIds: string[]): Promise<{ userId: string; token: string }[]> => {
   try {
+    console.log('🔍 getUsersPushTokens called for users:', userIds);
     const tokens: { userId: string; token: string }[] = [];
     
     for (const userId of userIds) {
+      console.log(`🔍 Getting push token for user: ${userId}`);
       const token = await getUserPushToken(userId);
       if (token) {
+        console.log(`✅ Found push token for ${userId}: ${token.substring(0, 20)}...`);
         tokens.push({ userId, token });
+      } else {
+        console.log(`❌ No push token found for user: ${userId}`);
       }
     }
     
+    console.log(`📊 Total tokens retrieved: ${tokens.length} out of ${userIds.length} users`);
     return tokens;
   } catch (error) {
-    console.error('Error getting users push tokens:', error);
+    console.error('❌ Error getting users push tokens:', error);
     return [];
   }
 };

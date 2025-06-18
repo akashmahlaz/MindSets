@@ -1,4 +1,5 @@
 import { auth } from '@/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { disablePushNotifications } from '../lib/pushNotificationHelpers';
@@ -44,12 +45,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await disablePushNotifications();
     
     await signOut(auth);
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-          try {
+        
+        // Store user ID for push token updates
+        await AsyncStorage.setItem('@userId', firebaseUser.uid);
+        
+        try {
           // Create or update user profile in Firestore
           await createUserProfile(firebaseUser);
           
@@ -61,12 +65,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (pushToken) {
             await updateUserPushToken(firebaseUser.uid, pushToken);
             console.log('✅ Push token stored for user:', firebaseUser.uid);
+          } else {
+            console.log('⚠️ No push token received during initialization');
           }
         } catch (error) {
           console.error('Error setting up user:', error);
         }
       } else {
         setUser(null);
+        // Clear stored user ID
+        await AsyncStorage.removeItem('@userId');
       }
       setLoading(false);
     });

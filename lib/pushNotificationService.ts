@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import { updateUserPushToken } from '../services/userService';
 
 export interface SendNotificationParams {
   token?: string;
@@ -25,6 +27,7 @@ export interface NotificationResponse {
 export class PushNotificationService {
   private static instance: PushNotificationService;
   private fcmToken: string | null = null;
+  private tokenRefreshUnsubscribe: (() => void) | null = null;
   private readonly baseUrl = process.env.EXPO_PUBLIC_API_URL || '';
 
   private constructor() {}
@@ -34,56 +37,71 @@ export class PushNotificationService {
       PushNotificationService.instance = new PushNotificationService();
     }
     return PushNotificationService.instance;
-  }  /**
+  }
+
+  /**
    * Initialize push notifications and get FCM token
    */
   async initialize(): Promise<string | null> {
     try {
-      // Request permission for both platforms
+      // Request permission
       const authStatus = await messaging().requestPermission();
       const enabled =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;      if (enabled) {
+        // Get FCM token
+        const token = await messaging().getToken();
+        this.fcmToken = token;
+        console.log('FCM Token:', token);
+        
+        // Get user ID from AsyncStorage
+        const userId = await AsyncStorage.getItem('@userId');
+        if (userId && token) {
+          await updateUserPushToken(userId, token);
+          console.log('✅ Push token saved for user:', userId);
+        } else {
+          console.log('⚠️ Failed to get FCM token:', !userId ? 'No user ID' : 'No token');
+        }
+        
+        // Setup token refresh listener
+        this.tokenRefreshUnsubscribe = messaging().onTokenRefresh(async (newToken) => {
+          console.log('FCM Token Refreshed:', newToken);
+          this.fcmToken = newToken;
+          const currentUserId = await AsyncStorage.getItem('@userId');
+          if (currentUserId) {
+            await updateUserPushToken(currentUserId, newToken);
+          }
+        });
 
-      if (!enabled) {
-        console.log('Push notification permission denied');
+        // Set up message listeners
+        this.setupMessageListeners();
+
+        return token;
+      } else {
+        console.log('⚠️ Push notification permission denied');
         return null;
       }
-
-      // Get FCM token
-      const token = await messaging().getToken();
-      this.fcmToken = token;
-      
-      console.log('FCM Token:', token);
-      
-      // Listen for token refresh
-      messaging().onTokenRefresh(this.onTokenRefresh.bind(this));
-
-      // Set up message listeners
-      this.setupMessageListeners();
-
-      return token;
     } catch (error) {
-      console.error('Error initializing push notifications:', error);
+      console.error('Failed to initialize push notifications:', error);
       return null;
     }
   }
-
   /**
    * Get current FCM token
    */
   getToken(): string | null {
     return this.fcmToken;
   }
-
   /**
-   * Handle token refresh
+   * Handle token refresh (legacy method - now handled in initialize)
    */
-  private onTokenRefresh(token: string) {
+  private async onTokenRefresh(token: string) {
     console.log('FCM Token refreshed:', token);
     this.fcmToken = token;
-    // You can send the new token to your backend here
-    this.updateTokenOnServer(token);
+    const userId = await AsyncStorage.getItem('@userId');
+    if (userId) {
+      await updateUserPushToken(userId, token);
+    }
   }
 
   /**
@@ -147,6 +165,7 @@ export class PushNotificationService {
       }
     }
   }
+
   /**
    * Send notification using your Expo API route
    */
@@ -173,9 +192,9 @@ export class PushNotificationService {
 
   /**
    * Send notification to current device (for testing)
-   */
-  async sendTestNotification(): Promise<NotificationResponse> {
-    if (!this.fcmToken) {
+   */  async sendTestNotification(): Promise<NotificationResponse> {
+    const token = this.getToken();
+    if (!token) {
       return {
         success: false,
         error: 'No FCM token available',
@@ -183,7 +202,7 @@ export class PushNotificationService {
     }
 
     return this.sendNotification({
-      token: this.fcmToken,
+      token,
       title: '🧪 Test Notification',
       body: 'Your push notification system is working!',
       data: {
@@ -242,10 +261,17 @@ export class PushNotificationService {
   async clearToken(): Promise<void> {
     try {
       await messaging().deleteToken();
-      this.fcmToken = null;
+      this.tokenRefreshUnsubscribe = null;
       console.log('FCM token cleared');
     } catch (error) {
       console.error('Error clearing FCM token:', error);
+    }
+  }
+
+  cleanup() {
+    if (this.tokenRefreshUnsubscribe) {
+      this.tokenRefreshUnsubscribe();
+      this.tokenRefreshUnsubscribe = null;
     }
   }
 }
