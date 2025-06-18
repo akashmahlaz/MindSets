@@ -2,8 +2,9 @@ import { auth } from '@/firebaseConfig';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { disablePushNotifications } from '../lib/pushNotificationHelpers';
+import { pushNotificationService } from '../lib/pushNotificationService';
 import { requestNotificationPermissions } from '../lib/requestPermissions';
-import { createUserProfile, updateUserStatus } from '../services/userService';
+import { createUserProfile, updateUserPushToken, updateUserStatus } from '../services/userService';
 
 interface AuthContextType {
   user: User | null;
@@ -44,7 +45,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     await signOut(auth);
   };
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -55,6 +55,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           // Request notification permissions when user signs in
           await requestNotificationPermissions();
+          
+          // Initialize push notifications and store token
+          const pushToken = await pushNotificationService.initialize();
+          if (pushToken) {
+            await updateUserPushToken(firebaseUser.uid, pushToken);
+            console.log('✅ Push token stored for user:', firebaseUser.uid);
+          }
         } catch (error) {
           console.error('Error setting up user:', error);
         }

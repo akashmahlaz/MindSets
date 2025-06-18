@@ -117,37 +117,51 @@ export default function OverviewScreen() {
     }
   };
 
-  // Start chat function
+  // Start chat function with better debugging
   const startChat = async (targetUser: UserProfile) => {
+    console.log('🚀 Starting chat with user:', targetUser.displayName, targetUser.uid);
+    
     if (!user || !chatClient) {
+      console.error('❌ Chat not available - missing user or chatClient');
       Alert.alert('Error', 'Chat not available');
       return;
     }
 
+    console.log('✅ User and chatClient available');
+    console.log('Chat connected:', isChatConnected);
+
     if (!isChatConnected) {
+      console.log('🔄 Not connected to chat, attempting to connect...');
       try {
         await connectToChat();
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait a bit for connection to establish
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log('✅ Connected to chat successfully');
       } catch (error) {
+        console.error('❌ Failed to connect to chat:', error);
         Alert.alert('Error', 'Failed to connect to chat');
         return;
       }
     }
     
     try {
-      // Create a deterministic channel ID for direct messages
-      const sortedMembers = [user.uid, targetUser.uid].sort();
-      const channelId = `dm-${sortedMembers.join('-')}`;
+      console.log('🔄 Creating/getting channel...');
       
-      const channel = chatClient.channel('messaging', channelId, {
-        members: [user.uid, targetUser.uid],
-      });
+      // Use the improved createOrGetDirectChannel function
+      const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
+      const channel = await createOrGetDirectChannel(user, targetUser.uid);
       
-      await channel.watch();
-      router.push(`/chat/${channelId}` as any);
+      console.log('✅ Channel created/retrieved:', channel.id);
+        // Navigate to the chat screen
+      router.push(`/chat/${channel.id}` as any);
+      console.log('✅ Navigated to chat screen');
+      
     } catch (error) {
-      console.error('Error starting chat:', error);
-      Alert.alert('Error', 'Failed to start chat');
+      console.error('❌ Error starting chat:', error);
+      Alert.alert(
+        'Chat Error', 
+        `Failed to start chat with ${targetUser.displayName}. Please try again.`
+      );
     }
   };
 
@@ -192,9 +206,8 @@ export default function OverviewScreen() {
                 {item.status}
               </Text>
             </View>
-            <View className="flex-row space-x-2">
-              <TouchableOpacity
-                onPress={() => (item)}
+            <View className="flex-row space-x-2">              <TouchableOpacity
+                onPress={() => startChat(item)}
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
                 <Ionicons name="chatbubble" size={16} color="#3B82F6" />
@@ -302,6 +315,12 @@ export default function OverviewScreen() {
               <Text className="text-muted-foreground">
                 Connect with your contacts
               </Text>
+              <View >
+                <Text>Last seen: 2 hours ago</Text>
+                <TouchableOpacity onPress={() => router.push('/push-test')}>
+                  <Text className="text-blue-500">Change settings</Text>
+                </TouchableOpacity> 
+              </View>
             </View>
             <View className="flex-row items-center space-x-2">
               <TouchableOpacity

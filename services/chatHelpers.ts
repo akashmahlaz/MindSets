@@ -81,31 +81,56 @@ export const createOrGetDirectChannel = async (
   targetUserId: string
 ): Promise<Channel> => {
   try {
-    // Ensure both users exist in Stream
-    await ensureUserExists(currentUser.uid, currentUser);
-    await ensureUserExists(targetUserId, currentUser);
+    console.log(`Creating/getting direct channel between ${currentUser.uid} and ${targetUserId}`);
+    
+    // Create a sorted channel ID for consistency
+    const channelId = [currentUser.uid, targetUserId].sort().join('-');
+    
+    console.log('Channel ID:', channelId);
 
-    // Create a deterministic channel ID for direct messages
-    const channelId = `dm-${currentUser.uid}-${targetUserId}`;
+    // Try to create/get the channel directly
+    // Stream will handle creating users if they don't exist when they connect
+    const channel = chatClient.channel('messaging', channelId, {
+      members: [currentUser.uid, targetUserId],
+      created_by_id: currentUser.uid,
+    });
 
-    // Try to get existing channel
-    let channel = await channelService.watchChannel('messaging', channelId);
-
-    if (!channel) {
-      // Create new channel if it doesn't exist
-      channel = await channelService.createChannelWithId(
-        'messaging',
-        channelId,
-        {
+    // Watch the channel (this creates it if it doesn't exist)
+    await channel.watch();
+    
+    console.log('✅ Channel created/watched successfully:', channelId);
+    return channel;  } catch (error) {
+    console.error('Error creating/getting direct channel:', error);
+    
+    // If the error is due to target user not existing, try a simpler approach
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+      console.log('Target user may not exist in Stream yet, creating minimal user reference');
+      
+      try {
+        // Create a minimal user entry for the target user
+        await chatClient.upsertUser({
+          id: targetUserId,
+          name: `User ${targetUserId.substring(0, 8)}`, // Temporary name
+          role: 'user',
+        });
+        
+        // Try creating the channel again
+        const channelId = [currentUser.uid, targetUserId].sort().join('-');
+        const channel = chatClient.channel('messaging', channelId, {
           members: [currentUser.uid, targetUserId],
           created_by_id: currentUser.uid,
-        }
-      );
+        });
+        
+        await channel.watch();
+        console.log('✅ Channel created successfully after user creation');
+        return channel;
+      } catch (retryError) {
+        console.error('Failed to create channel even after user creation:', retryError);
+        throw retryError;
+      }
     }
-
-    return channel;
-  } catch (error) {
-    console.error('Error creating/getting direct channel:', error);
+    
     throw error;
   }
 };

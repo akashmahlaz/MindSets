@@ -9,8 +9,8 @@ import { ActivityIndicator, StatusBar, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import "./global.css";
 
-// Initialize push notifications for Stream Video
-import "@/lib/initializePushNotifications";
+// Initialize push notifications using the new service
+import { PushNotificationInitializer } from "@/hooks/usePushNotifications";
 
 // Suppress specific warnings from Stream Video SDK
 const originalWarn = console.warn;
@@ -91,9 +91,11 @@ export default function RootLayout() {
           <StreamChatWrapper>
             <StreamProvider>
               <VideoProvider>
-                <AuthGate>
-                  <Slot />
-                </AuthGate>
+                <PushNotificationInitializer>
+                  <AuthGate>
+                    <Slot />
+                  </AuthGate>
+                </PushNotificationInitializer>
               </VideoProvider>
             </StreamProvider>
           </StreamChatWrapper>

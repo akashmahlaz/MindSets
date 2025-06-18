@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { StreamChat } from 'stream-chat';
+import { chatNotificationService } from '../services/chatNotificationService';
 import { getStreamToken } from '../services/stream';
 import { useAuth } from './AuthContext';
 
@@ -25,6 +26,20 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [isChatConnected, setIsChatConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+
+  // Store event handler references for cleanup
+  const eventHandlers = {
+    onMessage: (event: any) => {
+      console.log('New message event received:', event.message?.text);
+      chatNotificationService.handleNewMessage(event);
+    },
+    onTyping: (event: any) => {
+      chatNotificationService.handleTypingStart(event);
+    },
+    onMemberAdded: (event: any) => {
+      chatNotificationService.handleMemberAdded(event);
+    },
+  };
 
   const connectToChat = async () => {
     if (!user || isConnecting || isChatConnected) {
@@ -55,10 +70,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           image: user.photoURL || `https://getstream.io/random_png/?name=${user.displayName || user.email}`,
         },
         token
-      );
-
-      setIsChatConnected(true);
+      );      setIsChatConnected(true);
       console.log('Successfully connected to Stream Chat');
+      
+      // Set up message event listeners for push notifications
+      setupMessageEventListeners();
     } catch (error) {
       console.error('Error connecting to Stream Chat:', error);
       setIsChatConnected(false);
@@ -67,11 +83,39 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       setIsConnecting(false);
     }
   };
+  // Set up event listeners for push notifications
+  const setupMessageEventListeners = () => {
+    if (!chatClient) return;
 
+    console.log('Setting up chat message event listeners for push notifications');
+
+    // Listen for new messages
+    chatClient.on('message.new', eventHandlers.onMessage);
+
+    // Optional: Listen for other events
+    chatClient.on('typing.start', eventHandlers.onTyping);
+    chatClient.on('member.added', eventHandlers.onMemberAdded);
+
+    console.log('✅ Chat event listeners set up successfully');
+  };
+
+  // Clean up event listeners
+  const removeMessageEventListeners = () => {
+    if (!chatClient) return;
+
+    console.log('Removing chat message event listeners');
+    chatClient.off('message.new', eventHandlers.onMessage);
+    chatClient.off('typing.start', eventHandlers.onTyping);
+    chatClient.off('member.added', eventHandlers.onMemberAdded);
+  };
   const disconnectFromChat = async () => {
     if (chatClient.userID && isChatConnected) {
       try {
         console.log('Disconnecting from Stream Chat');
+        
+        // Remove event listeners before disconnecting
+        removeMessageEventListeners();
+        
         await chatClient.disconnectUser();
         setIsChatConnected(false);
         console.log('Successfully disconnected from Stream Chat');
@@ -80,7 +124,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   };
-
   // Auto-connect when user is available
   useEffect(() => {
     if (user && !isChatConnected && !isConnecting) {
@@ -91,6 +134,13 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       disconnectFromChat();
     }
   }, [user?.uid]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      removeMessageEventListeners();
+    };
+  }, []);
 
   const value: ChatContextType = {
     chatClient: isChatConnected ? chatClient : null,

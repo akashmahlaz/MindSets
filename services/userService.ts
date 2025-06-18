@@ -18,6 +18,8 @@ export interface UserProfile {
   status: 'online' | 'offline' | 'away';
   lastSeen: any;
   createdAt: any;
+  pushToken?: string; // Add push token field
+  pushTokenUpdatedAt?: any; // Track when token was last updated
 }
 
 // Create or update user profile in Firestore
@@ -25,10 +27,9 @@ export const createUserProfile = async (user: User): Promise<void> => {
   try {
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
-    
-    if (!userDoc.exists()) {
+      if (!userDoc.exists()) {
       // Create new user profile
-      await setDoc(userRef, {
+      const userProfile = {
         uid: user.uid,
         displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
         email: user.email,
@@ -36,8 +37,19 @@ export const createUserProfile = async (user: User): Promise<void> => {
         status: 'online',
         lastSeen: serverTimestamp(),
         createdAt: serverTimestamp(),
-      });
+      };
+      
+      await setDoc(userRef, userProfile);
       console.log('User profile created:', user.uid);
+      
+      // Create user in Stream Chat when creating new profile
+      try {
+        await createStreamChatUser(userProfile as UserProfile);
+        console.log('✅ Stream Chat user created for:', user.uid);
+      } catch (streamError) {
+        console.error('⚠️ Failed to create Stream Chat user:', streamError);
+        // Don't throw error here as user profile creation should succeed even if Stream fails
+      }
     } else {
       // Update existing user status
       await updateDoc(userRef, {
@@ -45,6 +57,15 @@ export const createUserProfile = async (user: User): Promise<void> => {
         lastSeen: serverTimestamp(),
       });
       console.log('User status updated:', user.uid);
+      
+      // Ensure user exists in Stream Chat for existing users too
+      try {
+        const existingProfile = userDoc.data() as UserProfile;
+        await createStreamChatUser(existingProfile);
+        console.log('✅ Stream Chat user ensured for existing user:', user.uid);
+      } catch (streamError) {
+        console.error('⚠️ Failed to ensure Stream Chat user:', streamError);
+      }
     }
   } catch (error) {
     console.error('Error creating/updating user profile:', error);
@@ -89,8 +110,7 @@ export const getAllUsers = async (currentUserId: string): Promise<UserProfile[]>
     const users: UserProfile[] = [];
     
     console.log('Total documents in users collection:', querySnapshot.size);
-    
-    querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc) => {
       const userData = doc.data() as UserProfile;
       console.log('Found user:', userData.uid, userData.displayName || userData.email);
       
@@ -102,7 +122,6 @@ export const getAllUsers = async (currentUserId: string): Promise<UserProfile[]>
     
     // Sort by lastSeen in memory
     users.sort((a, b) => {
-      if (!a.lastSeen && !b.lastSeen) return 0;
       if (!a.lastSeen) return 1;
       if (!b.lastSeen) return -1;
       return b.lastSeen.toMillis() - a.lastSeen.toMillis();
@@ -152,29 +171,90 @@ export const updateUserStatus = async (userId: string, status: 'online' | 'offli
   }
 };
 
+// Update user push token
+export const updateUserPushToken = async (userId: string, pushToken: string): Promise<void> => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      pushToken,
+      pushTokenUpdatedAt: serverTimestamp(),
+    });
+    console.log('Push token updated for user:', userId);
+  } catch (error) {
+    console.error('Error updating push token:', error);
+    throw error;
+  }
+};
+
+// Get user push token
+export const getUserPushToken = async (userId: string): Promise<string | null> => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data() as UserProfile;
+      return userData.pushToken || null;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user push token:', error);
+    return null;
+  }
+};
+
+// Get push tokens for multiple users (for batch notifications)
+export const getUsersPushTokens = async (userIds: string[]): Promise<{ userId: string; token: string }[]> => {
+  try {
+    const tokens: { userId: string; token: string }[] = [];
+    
+    for (const userId of userIds) {
+      const token = await getUserPushToken(userId);
+      if (token) {
+        tokens.push({ userId, token });
+      }
+    }
+    
+    return tokens;
+  } catch (error) {
+    console.error('Error getting users push tokens:', error);
+    return [];
+  }
+};
+
 // Create Stream Chat user - proper implementation
 export const createStreamChatUser = async (userProfile: UserProfile): Promise<void> => {
   try {
     console.log('Creating Stream Chat user for:', userProfile.uid);
-    const { chatClient, getStreamToken } = await import('./stream');
-    if (!chatClient || !chatClient.upsertUsers) {
-      console.error('Stream Chat client not initialized properly');
+    
+    // Import stream services
+    const { chatClient } = await import('./stream');
+    
+    if (!chatClient) {
+      console.error('Stream Chat client not available');
       return;
     }
+
     const streamUserData = {
       id: userProfile.uid,
       name: userProfile.displayName,
       image: userProfile.photoURL,
+      role: 'user', // Ensure user has proper role
     };
+
     try {
-      await chatClient.upsertUsers([streamUserData]);
-      console.log('User created/updated in Stream Chat:', userProfile.uid);
-    } catch (apiError) {
-      console.error('Error creating user via API:', apiError);
+      // Use upsertUser (singular) instead of upsertUsers (plural)
+      const result = await chatClient.upsertUser(streamUserData);
+      console.log('✅ User created/updated in Stream Chat:', userProfile.uid, result);
+    } catch (apiError: any) {
+      console.error('❌ Error creating user via Stream API:', apiError);
+      // If it's a permission error, try a different approach
+      if (apiError.message?.includes('permissions') || apiError.message?.includes('auth')) {
+        console.log('⚠️ Permission issue, user will be created when they connect to chat');
+      }
     }
   } catch (error) {
     console.error('Error with Stream Chat user creation:', error);
-    console.error('Error details:', error);
   }
 };
 
