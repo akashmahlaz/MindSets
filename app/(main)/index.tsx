@@ -1,4 +1,6 @@
 import "@/app/global.css";
+import CounsellorDashboard from '@/components/dashboard/CounsellorDashboard';
+import UserDashboard from '@/components/dashboard/UserDashboard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,7 +11,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
 import { useVideo } from '@/context/VideoContext';
 import { useColorScheme } from '@/lib/useColorScheme';
-import { UserProfile, getAllUsers } from '@/services/userService';
+import { getAllUsers } from '@/services/userService';
+import { UserProfile } from '@/types/user';
 import { Ionicons } from '@expo/vector-icons';
 import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { useRouter } from 'expo-router';
@@ -27,11 +30,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OverviewScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { chatClient, isChatConnected, connectToChat } = useChat();
-  const { createCall, isVideoConnected } = useVideo();
+  const { user, userProfile } = useAuth();
+  const { chatClient, isChatConnected, connectToChat } = useChat();  const { createCall, isVideoConnected } = useVideo();
   const videoClient = useStreamVideoClient();
   
+  // Debug: Log user profile info
+  console.log('OverviewScreen - userProfile:', userProfile);
+  console.log('OverviewScreen - isProfileComplete:', userProfile?.isProfileComplete);
+  console.log('OverviewScreen - role:', userProfile?.role);
+  
+  // Show role-based dashboard if user profile is complete
+  if (userProfile?.isProfileComplete) {
+    console.log('OverviewScreen - Showing role-based dashboard for role:', userProfile.role);
+    if (userProfile.role === 'counsellor') {
+      return <CounsellorDashboard />;
+    } else if (userProfile.role === 'user') {
+      return <UserDashboard />;
+    }
+  }
+  
+  console.log('OverviewScreen - Showing fallback interface');
+  // Fallback to existing interface for incomplete profiles or legacy users
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -202,7 +221,7 @@ export default function OverviewScreen() {
           <View className="flex-row items-center space-x-3">
             <View className="relative">
               <Avatar className="w-12 h-12" alt={`${item.displayName} avatar`}>
-                <AvatarImage source={{ uri: item.photoURL }} />
+                <AvatarImage source={{ uri: item.photoURL || undefined }} />
                 <AvatarFallback className="bg-primary">
                   <Text className="text-primary-foreground font-medium">
                     {getInitials(item.displayName)}

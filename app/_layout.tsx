@@ -118,7 +118,7 @@ export default function RootLayout() {
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   // This component checks if the user is authenticated
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
 
@@ -126,11 +126,17 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     if (loading) return; // Don't navigate while loading
 
     if (!user) {
-      router.replace('/(auth)/sign-in');
+      router.replace('/(auth)/role-selection');
     } else {
-      router.replace('/');
+      // Check if user needs to complete their profile
+      if (userProfile && !userProfile.isProfileComplete) {
+        // Could redirect to profile completion screen here
+        router.replace('/');
+      } else {
+        router.replace('/');
+      }
     }
-  }, [user, loading, router]);
+  }, [user, userProfile, loading, router]);
 
   // Show loading spinner while checking auth state
   if (loading) {

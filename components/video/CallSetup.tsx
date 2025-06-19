@@ -81,7 +81,7 @@ export const CallSetup: React.FC<CallSetupProps> = ({
       <Card style={styles.card}>
         <CardHeader style={styles.cardHeader}>
           <View style={styles.userInfo}>
-            <Avatar style={styles.avatar}>
+            <Avatar style={styles.avatar} alt="User Avatar">
               {targetUser.image ? (
                 <AvatarImage source={{ uri: targetUser.image }} />
               ) : (

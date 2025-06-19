@@ -5,14 +5,18 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { disablePushNotifications } from '../lib/pushNotificationHelpers';
 import { pushNotificationService } from '../lib/pushNotificationService';
 import { requestNotificationPermissions } from '../lib/requestPermissions';
-import { createUserProfile, updateUserPushToken, updateUserStatus } from '../services/userService';
+import { createUserProfile, createEnhancedUserProfile, updateUserPushToken, updateUserStatus, getUserProfile } from '../services/userService';
+import { UserProfile, UserRole } from '../types/user';
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signUpEnhanced: (email: string, password: string, profileData: Partial<UserProfile>, role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +31,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const signIn = async (email: string, password: string) => {
@@ -35,6 +40,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     await createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const signUpEnhanced = async (email: string, password: string, profileData: Partial<UserProfile>, role: UserRole) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await createEnhancedUserProfile(userCredential.user, profileData, role);
+  };
+
+  const refreshUserProfile = async () => {
+    if (user) {
+      const profile = await getUserProfile(user.uid);
+      setUserProfile(profile);
+    }
   };
   const logout = async () => {
     if (user) {
@@ -57,6 +74,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Create or update user profile in Firestore
           await createUserProfile(firebaseUser);
           
+          // Fetch enhanced user profile
+          const profile = await getUserProfile(firebaseUser.uid);
+          setUserProfile(profile);
+          
           // Request notification permissions when user signs in
           await requestNotificationPermissions();
           
@@ -73,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         setUser(null);
+        setUserProfile(null);
         // Clear stored user ID
         await AsyncStorage.removeItem('@userId');
       }
@@ -82,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, logout }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signIn, signUp, signUpEnhanced, logout, refreshUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

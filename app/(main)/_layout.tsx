@@ -50,12 +50,24 @@ export default function TabLayout() {
               },
             }),
           },
-        }}>
-        <Tabs.Screen
+        }}>        <Tabs.Screen
           name="index"
           options={{
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="Counselors"
+          options={{
+            title: 'Counselors',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
+          }}
+        />        <Tabs.Screen
+          name="sessions"
+          options={{
+            title: 'Sessions',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />,
           }}
         />
         <Tabs.Screen

@@ -65,14 +65,13 @@ const CallScreenContent: React.FC = () => {
     <View style={styles.container}>
       <CallContent
         onHangupCallHandler={handleHangup}
-        landscape={false}
-        supportedReactions={[
-          { type: 'like', icon: '👍', name: 'like' },
-          { type: 'love', icon: '❤️', name: 'love' },
-          { type: 'haha', icon: '😂', name: 'haha' },
-          { type: 'wow', icon: '😮', name: 'wow' },
-          { type: 'sad', icon: '😢', name: 'sad' },
-          { type: 'angry', icon: '😠', name: 'angry' },
+        landscape={false}        supportedReactions={[
+          { type: 'like', icon: '👍' },
+          { type: 'love', icon: '❤️' },
+          { type: 'haha', icon: '😂' },
+          { type: 'wow', icon: '😮' },
+          { type: 'sad', icon: '😢' },
+          { type: 'angry', icon: '😠' },
         ]}
       />
     </View>

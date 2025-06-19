@@ -39,10 +39,7 @@ export class ChannelService {
     channelId: string,
     options: CreateChannelOptions = {}
   ): Promise<Channel> {
-    try {
-      const channel = this.client.channel(channelType, channelId, {
-        name: options.name,
-        image: options.image,
+    try {      const channel = this.client.channel(channelType, channelId, {
         members: options.members,
         ...options.data,
       });
@@ -62,11 +59,8 @@ export class ChannelService {
     members: string[],
     options: CreateChannelOptions = {}
   ): Promise<Channel> {
-    try {
-      const channel = this.client.channel(channelType, {
+    try {      const channel = this.client.channel(channelType, undefined, {
         members,
-        name: options.name,
-        image: options.image,
         ...options.data,
       });
 
@@ -85,18 +79,14 @@ export class ChannelService {
     channelId: string,
     options: CreateChannelOptions = {}
   ): Promise<Channel> {
-    try {
-      const channel = this.client.channel(channelType, channelId, {
+    try {      const channel = this.client.channel(channelType, channelId, {
         members: options.members,
-        name: options.name,
-        image: options.image,
         ...options.data,
       });
 
       const state = await channel.watch();
       console.log(`Channel watched: ${channelId}`, {
         members: state.members,
-        online: state.online,
         watchers: Object.keys(state.watchers || {}).length,
       });
       
@@ -120,13 +110,12 @@ export class ChannelService {
     } catch (error) {
       console.error('Error querying channels:', error);
       throw error;
-    }
-  }
+    }  }
 
   // 5. Update Channel (Full Update)
   async updateChannel(
     channel: Channel,
-    data: UpdateChannelOptions,
+    data: Partial<Record<string, any>>,
     message?: { text: string; user_id?: string }
   ): Promise<void> {
     try {

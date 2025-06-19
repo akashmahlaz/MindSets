@@ -3,30 +3,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { createOrGetDirectChannel } from '@/services/chatHelpers';
+import { useAuth } from '@/context/AuthContext';
+import { useChat } from '@/context/ChatContext';
+import { useVideo } from '@/context/VideoContext';
+import { getUserProfile } from '@/services/userService';
+import { UserProfile } from '@/types/user';
 import { Ionicons } from '@expo/vector-icons';
-import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../context/AuthContext';
-import { useChat } from '../../context/ChatContext';
-import { getUserProfile, UserProfile } from '../../services/userService';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
-  const videoClient = useStreamVideoClient();
   const { user } = useAuth();
   const { chatClient, isChatConnected, connectToChat } = useChat();
+  const { createCall } = useVideo();
   const router = useRouter();
-  const insets = useSafeAreaInsets();  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const insets = useSafeAreaInsets();
+  const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [profileUser, setProfileUser] = useState<any>(null);
@@ -113,7 +108,6 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Failed to start chat');
       }
     };
-
   const handleStartChat = async () => {
     if (!user || !chatClient || !isChatConnected) {
       Alert.alert('Error', 'Please try again later');
@@ -122,8 +116,11 @@ export default function ProfileScreen() {
 
     try {
       setLoading(true);
-      const channel = await createOrGetDirectChannel(user, userId as string);
-      router.push(`/chat/${channel.id}`);
+      // Navigate to chat for now - we'll implement direct message creation later
+      router.push({
+        pathname: '/users/chat',
+        params: { userId: userId }
+      } as any);
     } catch (error) {
       console.error('Error starting chat:', error);
       Alert.alert('Error', 'Failed to start chat. Please try again.');
@@ -273,7 +270,7 @@ export default function ProfileScreen() {
             <CardContent className="items-center py-8">
               <View className="relative mb-4">
                 <Avatar className="w-24 h-24" alt={userData.displayName || 'User Avatar'}>
-                  <AvatarImage source={{ uri: userData.photoURL }} />
+                  <AvatarImage source={{ uri: userData.photoURL || undefined }} />
                   <AvatarFallback className="bg-primary">
                     <Text className="text-primary-foreground text-2xl font-bold">
                       {getInitials(userData.displayName)}

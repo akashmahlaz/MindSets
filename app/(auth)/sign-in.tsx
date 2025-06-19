@@ -115,8 +115,7 @@ export default function SignInScreen() {
             {error ? (
               <Text className="text-destructive text-center text-sm">{error}</Text>
             ) : null}
-            
-            <Button variant="ghost" onPress={() => router.replace('/(auth)/sign-up')} className="w-full">
+              <Button variant="ghost" onPress={() => router.replace('/(auth)/role-selection')} className="w-full">
               <Text className="text-primary font-medium">Don't have an account? Sign Up</Text>
             </Button>
           </CardContent>

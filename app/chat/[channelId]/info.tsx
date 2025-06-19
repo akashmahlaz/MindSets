@@ -16,11 +16,10 @@ import {
     FlatList,
     Image,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -64,10 +63,10 @@ export default function ChannelInfoScreen() {
       const channelInstance = chatClient.channel('messaging', channelId);
       await channelInstance.watch();
       setChannel(channelInstance);
-      
-      // Set channel data
-      setChannelName(channelInstance.data?.name || '');
-      setChannelDescription(channelInstance.data?.description || '');
+        // Set channel data - use type assertion for custom data
+      const channelData = channelInstance.data as any;
+      setChannelName(channelData?.name || channelInstance.id || '');
+      setChannelDescription(channelData?.description || '');
       
       // Check if current user is admin/creator
       const isCreator = channelInstance.data?.created_by_id === user.uid;
@@ -342,8 +341,7 @@ export default function ChannelInfoScreen() {
         <View>
           <View>
             <Text>Members ({members.length})</Text>
-            {isAdmin && (
-              <TouchableOpacity onPress={() => router.push('/users')}>
+            {isAdmin && (              <TouchableOpacity onPress={() => console.log('Add members not implemented')}>
                 <Ionicons name="add" size={24} color="#007AFF" />
               </TouchableOpacity>
             )}

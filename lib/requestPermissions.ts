@@ -8,12 +8,10 @@ export const requestNotificationPermissions = async () => {
       await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
     } else if (Platform.OS === 'ios') {
       // Request notification permission for iOS
-      await Notifications.requestPermissionsAsync({
-        ios: {
+      await Notifications.requestPermissionsAsync({        ios: {
           allowAlert: true,
           allowBadge: true,
           allowSound: true,
-          allowAnnouncements: true,
         },
       });
     }

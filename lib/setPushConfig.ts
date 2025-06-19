@@ -1,5 +1,6 @@
 import notifee, { AndroidImportance } from '@notifee/react-native';
 import {
+    StreamVideoClient,
     StreamVideoRN
 } from "@stream-io/video-react-native-sdk";
 
@@ -16,25 +17,20 @@ export async function setPushConfig() {
     vibration: true,
     lights: true,
   });
-
+  
   // Configure Stream Video push notifications
   await StreamVideoRN.setPushConfig({
+    isExpo: true,
     ios: {
-      incomingCall: {
-        channelId: 'incoming-calls',
-        sound: 'incoming_call.wav',
-        title: 'Incoming Call',
-        body: 'Tap to answer',
-      },
+      pushProviderName: 'firebase',
     },
     android: {
-      incomingCall: {
-        channelId: 'incoming-calls',
-        sound: 'incoming_call',
-        title: 'Incoming Call',
-        body: 'Tap to answer',
-        importance: AndroidImportance.HIGH,
-      },
+      pushProviderName: 'firebase',
+      smallIcon: 'ic_notification',
+    },
+    createStreamVideoClient: async () => {
+      // This will be handled by the VideoContext
+      return new StreamVideoClient({ apiKey: STREAM_API_KEY });
     },
   });
 }
