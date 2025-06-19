@@ -99,7 +99,6 @@ export default function OverviewScreen() {
     
     return callId;
   };
-
   // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
@@ -114,21 +113,17 @@ export default function OverviewScreen() {
       const callId = generateCallId(user.uid, targetUser.uid);
       console.log('Generated call ID:', callId, 'Length:', callId.length);
       
-      // Create the call using our enhanced video context
+      // Create the ringing call using our enhanced video context
       const call = await createCall(callId, [targetUser.uid], isVideo);
       
       if (call) {
         console.log('Call created successfully:', call.cid);
+        console.log('Ringing notifications sent to:', targetUser.displayName);
         
-        // Navigate to call screen with proper parameters
-        router.push({
-          pathname: '/call/[callId]',
-          params: {
-            callId: call.id,
-            callType: call.type,
-            isVideo: isVideo.toString(),
-          },
-        } as any);
+        // DO NOT navigate immediately - let the RingingCalls component handle the UI
+        // The Stream Video SDK will automatically show the outgoing call UI
+        // and navigate to call screen only after the call is accepted
+        
       } else {
         throw new Error('Failed to create call');
       }

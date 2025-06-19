@@ -1,4 +1,6 @@
 import {
+  IncomingCall,
+  OutgoingCall,
   RingingCallContent,
   StreamCall,
   StreamVideo,
@@ -22,7 +24,7 @@ interface VideoContextType {
 
 const VideoContext = createContext<VideoContextType | null>(null);
 
-// Component to handle incoming ringing calls for receivers
+// Component to handle incoming and outgoing ringing calls
 const RingingCalls = () => {
   const { user } = useAuth();
   // collect all ringing kind of calls managed by the SDK
@@ -30,12 +32,7 @@ const RingingCalls = () => {
   
   // Add debugging
   console.log('RingingCalls: Current user:', user?.uid);
-  console.log('RingingCalls: All calls:', useCalls().length);
   console.log('RingingCalls: Ringing calls:', calls.length);
-  calls.forEach((call, index) => {
-    console.log(`RingingCalls: Call ${index}:`, call.cid, 'ringing:', call.ringing);
-    console.log(`RingingCalls: Call ${index} custom data:`, call.state.custom);
-  });
   
   // for simplicity, we only take the first one but
   // there could be multiple calls ringing at the same time
@@ -49,20 +46,15 @@ const RingingCalls = () => {
   
   console.log('RingingCalls: Call creator:', callCreator, 'Current user:', user.uid, 'Is creator:', isCallCreatedByMe);
 
-  // If user is the creator, they should already be in the call screen
-  // so don't show ringing interface
-  if (isCallCreatedByMe) {
-    console.log('RingingCalls: User is creator, not showing ringing interface');
-    return null;
-  }
-
-  console.log('RingingCalls: Showing ringing interface for incoming call');
-  
   return (
     <StreamCall call={ringingCall}>
       <SafeAreaView style={StyleSheet.absoluteFill}>
-        {/* Only show incoming call interface for receivers */}
-        <RingingCallContent />
+        {/* Use proper incoming/outgoing call components instead of generic RingingCallContent */}
+        {isCallCreatedByMe ? (
+          <OutgoingCall />
+        ) : (
+          <IncomingCall />
+        )}
       </SafeAreaView>
     </StreamCall>
   );
@@ -131,7 +123,7 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     initVideoClient();
-  }, [user?.uid]); // Only depend on user ID changes  // Create a new call and auto-join the creator, send ring to others
+  }, [user?.uid]); // Only depend on user ID changes  // Create a ringing call (DO NOT auto-join creator)
   const createCall = async (callId: string, members: string[], isVideo: boolean = true) => {
     if (!videoClient || !user) {
       console.error('Video client not initialized or user not available');
@@ -148,9 +140,11 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
       const allMembers = [
         { user_id: user.uid },
         ...members.map(memberId => ({ user_id: memberId }))
-      ];      // Use getOrCreate with ring: true to ensure proper ringing
+      ];
+
+      // Use getOrCreate with ring: true - this is the correct Stream Video pattern
       await call.getOrCreate({
-        ring: true, // This ensures ringing notifications are sent
+        ring: true, // This sends ringing notifications to members
         video: isVideo,
         data: {
           members: allMembers,
@@ -160,16 +154,15 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
             createdBy: user.uid, // Track who created the call
           },
         },
-      });
-
-      console.log('VideoContext: Call created with ring=true');
+      });      console.log('VideoContext: Call created with ring=true');
       console.log('VideoContext: Members who should receive ringing:', members);
+      console.log('VideoContext: Call ID:', call.id, 'CID:', call.cid);
 
-      // Creator automatically joins the call
-      await call.join();
+      // DO NOT auto-join the creator - let them join manually through UI
+      // This allows proper ringing flow where both parties see appropriate UI
       setCurrentCall(call);
 
-      console.log('Call created with ringing, creator joined:', call.cid);
+      console.log('Call created with ringing (creator not auto-joined):', call.cid);
       return call;
     } catch (err) {
       console.error('Error creating call:', err);
