@@ -3,14 +3,25 @@ import { ChatProvider } from "@/context/ChatContext";
 import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
 import { useColorScheme } from '@/lib/useColorScheme';
+import { setupVideoPushConfig } from "@/lib/videoPushConfig";
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, StatusBar, View } from 'react-native';
+import { ActivityIndicator, AppRegistry, StatusBar, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import "./global.css";
 
 // Initialize push notifications using the new service
 import { PushNotificationInitializer } from "@/hooks/usePushNotifications";
+
+// Initialize video push configuration on app start
+setupVideoPushConfig();
+
+// Register headless task for foreground service
+AppRegistry.registerHeadlessTask('app.notifee.foreground-service-headless-task', () => () => {
+  console.log('Foreground service headless task running');
+  // Keep the task alive
+  return Promise.resolve();
+});
 
 // Suppress specific warnings from Stream Video SDK
 const originalWarn = console.warn;

@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VideoCallTester } from '@/components/video/VideoCallTester';
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
+import { useVideo } from '@/context/VideoContext';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { UserProfile, getAllUsers } from '@/services/userService';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +28,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function OverviewScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { chatClient, isChatConnected, connectToChat } = useChat();  const videoClient = useStreamVideoClient();
+  const { chatClient, isChatConnected, connectToChat } = useChat();
+  const { createCall, isVideoConnected } = useVideo();
+  const videoClient = useStreamVideoClient();
   
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
@@ -78,42 +82,59 @@ export default function OverviewScreen() {
       pathname: '/profile/[userId]',
       params: { userId: selectedUser.uid }
     });
+  };  // Generate a short call ID that fits within 64 character limit
+  const generateCallId = (userId1: string, userId2: string) => {
+    // Take first 8 characters of each user ID and add timestamp
+    const user1Short = userId1.substring(0, 8);
+    const user2Short = userId2.substring(0, 8);
+    const timestamp = Date.now().toString(36); // Base36 is shorter
+    const callId = `${user1Short}-${user2Short}-${timestamp}`;
+    
+    // Ensure it's under 64 characters
+    if (callId.length > 64) {
+      // Fallback to even shorter format
+      const shortTimestamp = timestamp.substring(0, 6);
+      return `${user1Short.substring(0, 6)}-${user2Short.substring(0, 6)}-${shortTimestamp}`;
+    }
+    
+    return callId;
   };
 
   // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
-    if (!videoClient || !user?.uid) {
-      Alert.alert('Error', 'Video client not available');
+    if (!isVideoConnected || !user?.uid) {
+      Alert.alert('Error', 'Video service not available. Please try again.');
       return;
     }
     
     try {
-      const callId = `call-${Date.now()}`;
-      const call = videoClient.call('default', callId);
-        // Create the call with both users as members and enable ringing
-      await call.getOrCreate({
-        ring: true, // This triggers the ring for other participants
-        data: {
-          members: [
-            { user_id: user.uid }, 
-            { user_id: targetUser.uid }
-          ],
-        },
-      });
+      console.log('Starting call with:', targetUser.displayName, 'isVideo:', isVideo);
       
-      // Join the call after creating it
-      await call.join();
+      // Generate unique call ID that's under 64 characters
+      const callId = generateCallId(user.uid, targetUser.uid);
+      console.log('Generated call ID:', callId, 'Length:', callId.length);
       
-      if (isVideo) {
-        await call.camera.enable();
+      // Create the call using our enhanced video context
+      const call = await createCall(callId, [targetUser.uid], isVideo);
+      
+      if (call) {
+        console.log('Call created successfully:', call.cid);
+        
+        // Navigate to call screen with proper parameters
+        router.push({
+          pathname: '/call/[callId]',
+          params: {
+            callId: call.id,
+            callType: call.type,
+            isVideo: isVideo.toString(),
+          },
+        } as any);
+      } else {
+        throw new Error('Failed to create call');
       }
-      await call.microphone.enable();
-      
-      // Navigate to call screen
-      router.push(`/call/${callId}` as any);
     } catch (error) {
       console.error('Error starting call:', error);
-      Alert.alert('Error', 'Failed to start call');
+      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
     }
   };
 
@@ -343,13 +364,15 @@ export default function OverviewScreen() {
                 </Avatar>
               </TouchableOpacity>
             </View>
-          </View>
-          <Input
+          </View>          <Input
             placeholder  ="Search users..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             className="mb-4 dark:bg-slate-800 dark:text-slate-400"
           />
+
+          {/* Video Call Testing Component - Remove in production */}
+          {__DEV__ && <VideoCallTester />}
         </View>
 
         <FlatList

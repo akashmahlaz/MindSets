@@ -35,7 +35,8 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "WAKE_LOCK",
-        "FOREGROUND_SERVICE"
+        "FOREGROUND_SERVICE",
+        "POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -51,9 +52,13 @@
           "ringingPushNotifications": {
             "disableVideoIos": false,
             "includesCallsInRecentsIos": false,
-            "showWhenLockedAndroid": true
+            "showWhenLockedAndroid": true,
+            "androidNotificationOptions": {
+              "smallIcon": "ic_launcher",
+              "largeIcon": "ic_launcher"
+            }
           },
-          "androidKeepCallAlive": true
+          "androidKeepCallAlive": false
         }
       ],
       "@config-plugins/react-native-callkeep",
