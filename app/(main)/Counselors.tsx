@@ -1,5 +1,4 @@
 import "@/app/global.css";
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
@@ -82,14 +81,13 @@ export default function CounselorsScreen() {
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
-        className="bg-white dark:bg-card rounded-2xl mr-4 shadow-lg border border-gray-100 dark:border-border active:opacity-95"
-        style={{ width: 220, elevation: 6 }}
+        className="bg-white dark:bg-transparent rounded-2xl mr-4 shadow-lg border border-gray-50 dark:border-border active:opacity-95"
+        style={{ width: 160, elevation: 6 }}
       >
-        {/* Card Content */}
-        <View className="overflow-hidden rounded-2xl">
-          {/* Profile Image - Smaller but still prominent */}
+        <View className="overflow-hidden bg-transparent rounded-2xl">
+          {/* Profile Image - Reduced height */}
           <View className="relative">
-            <View className="w-full h-44 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <View className="w-full bg-transparent h-32 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
               {counsellor.photoURL ? (
                 <Image
                   source={{ uri: counsellor.photoURL }}
@@ -98,60 +96,49 @@ export default function CounselorsScreen() {
                 />
               ) : (
                 <View className="w-full h-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800/30 dark:to-indigo-800/30">
-                  <View className="w-20 h-20 rounded-full bg-white/20 items-center justify-center">
-                    <Text className="text-4xl">👨‍⚕️</Text>
+                  <View className="w-16 h-16 rounded-full bg-white/20 items-center justify-center">
+                    <Text className="text-3xl">👨‍⚕️</Text>
                   </View>
                 </View>
               )}
             </View>
-            {/* Professional badge/status */}
-            <View className={`absolute top-3 right-3 px-2 py-1 rounded-full shadow-md ${counsellor.status === 'online' ? 'bg-green-500' :
+            {/* Status badge */}
+            <View className={`absolute top-2 right-2 px-2 py-0.5 rounded-full shadow-md ${
+              counsellor.status === 'online' ? 'bg-green-500' :
               counsellor.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
-              }`}>
-              <Text className="text-white text-xs font-medium">
+            }`}>
+              <Text className="text-white text-[10px] font-medium">
                 {counsellor.status === 'online' ? 'Available' :
-                  counsellor.status === 'away' ? 'Away' : 'Offline'}
+                 counsellor.status === 'away' ? 'Away' : 'Offline'}
               </Text>
             </View>
           </View>
-          {/* Professional Info - Compact but readable */}
-          <View className="p-4">
-            <View className="items-center mb-4">
-              <Text className="text-lg font-bold text-gray-900 dark:text-foreground text-center mb-1" numberOfLines={1}>
-                {counsellor.displayName}
-              </Text>
-              <Text className="text-xs text-gray-600 dark:text-muted-foreground text-center leading-relaxed mb-2" numberOfLines={2}>
-                {counsellor.specializations?.slice(0, 1).map(spec =>
-                  spec === 'anxiety' ? 'Specializes in anxiety' :
-                    spec === 'depression' ? 'Focuses on depression' :
-                      spec === 'stress-management' ? 'Expert in stress issues' :
-                        spec === 'relationship-issues' ? 'Relationship counseling' :
-                          spec === 'trauma-therapy' ? 'Trauma specialist' :
-                            `Specializes in ${spec.replace('-', ' ')}`
-                )[0] || 'General counseling specialist'}
-              </Text>
-              {/* Professional credentials - More compact */}
-              <View className="flex-row items-center space-x-3 mb-3">
-                {counsellor.yearsExperience && (
-                  <View className="flex-row items-center">
-                    <Ionicons name="school-outline" size={12} color="#6B7280" />
-                    <Text className="text-xs text-gray-500 dark:text-muted-foreground ml-1">
-                      {counsellor.yearsExperience}y
-                    </Text>
-                  </View>
-                )}
-                {counsellor.averageRating && (
-                  <View className="flex-row items-center">
-                    <Ionicons name="star" size={12} color="#FCD34D" />
-                    <Text className="text-xs text-gray-500 dark:text-muted-foreground ml-1">
-                      {counsellor.averageRating.toFixed(1)}
-                    </Text>
-                  </View>
-                )}
-              </View>
+          {/* Compact Info Section */}
+          <View className="p-3">
+        <Text className="text-base font-bold text-gray-900 dark:text-foreground text-center mb-1" numberOfLines={1}>
+          {counsellor.displayName}
+        </Text>
+        <Text className="text-[10px] text-gray-600 dark:text-muted-foreground text-center mb-2" numberOfLines={1}>
+          {counsellor.specializations?.[0]?.replace('-', ' ') || 'General counseling'}
+        </Text>
+        <View className="flex-row justify-center space-x-3">
+          {counsellor.yearsExperience && (
+            <View className="flex-row items-center">
+          <Ionicons name="school-outline" size={10} color="#6B7280" />
+          <Text className="text-[10px] text-gray-500 dark:text-muted-foreground ml-1">
+            {counsellor.yearsExperience}y
+          </Text>
             </View>
-            {/* Action Buttons - More compact */}
-
+          )}
+          {counsellor.averageRating && (
+            <View className="flex-row items-center">
+          <Ionicons name="star" size={10} color="#FCD34D" />
+          <Text className="text-[10px] text-gray-500 dark:text-muted-foreground ml-1">
+            {counsellor.averageRating.toFixed(1)}
+          </Text>
+            </View>
+          )}
+        </View>
           </View>
         </View>
       </Pressable>

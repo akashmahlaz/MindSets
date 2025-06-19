@@ -55,6 +55,8 @@ export interface UserProfileData extends BaseUserProfile {
 
 // Counsellor-specific profile data
 export interface CounsellorProfileData extends BaseUserProfile {
+  bio: string;
+  credentials: string;
   role: 'counsellor';
   // Professional information
   firstName: string;
