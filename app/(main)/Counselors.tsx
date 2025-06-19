@@ -74,71 +74,52 @@ export default function CounselorsScreen() {
       counsellor.specializations?.some(spec =>
         spec.toLowerCase().includes(searchQuery.toLowerCase())
       ))
-  );
-
-  const renderCounsellorCard = (counsellor: CounsellorProfileData) => {
+  );  const renderCounsellorCard = (counsellor: CounsellorProfileData) => {
     return (
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
-        className="bg-white dark:bg-transparent rounded-2xl mr-4 shadow-lg border border-gray-50 dark:border-border active:opacity-95"
-        style={{ width: 160, elevation: 6 }}
+        className="mr-4 active:opacity-95"
+        style={{ width: 150 }}
       >
-        <View className="overflow-hidden bg-transparent rounded-2xl">
-          {/* Profile Image - Reduced height */}
-          <View className="relative">
-            <View className="w-full bg-transparent h-32 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
-              {counsellor.photoURL ? (
-                <Image
-                  source={{ uri: counsellor.photoURL }}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-full h-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800/30 dark:to-indigo-800/30">
-                  <View className="w-16 h-16 rounded-full bg-white/20 items-center justify-center">
-                    <Text className="text-3xl">👨‍⚕️</Text>
-                  </View>
-                </View>
-              )}
-            </View>
-            {/* Status badge */}
-            <View className={`absolute top-2 right-2 px-2 py-0.5 rounded-full shadow-md ${
-              counsellor.status === 'online' ? 'bg-green-500' :
-              counsellor.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
-            }`}>
-              <Text className="text-white text-[10px] font-medium">
-                {counsellor.status === 'online' ? 'Available' :
-                 counsellor.status === 'away' ? 'Away' : 'Offline'}
-              </Text>
-            </View>
+        <View>
+          {/* Profile Image - Rounded Rectangle */}
+          <View className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3">
+            {counsellor.photoURL ? (
+              <Image
+                source={{ uri: counsellor.photoURL }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="w-full h-full items-center justify-center bg-gray-200 dark:bg-gray-700">
+                <Text className="text-5xl">👨‍⚕️</Text>
+              </View>
+            )}
           </View>
-          {/* Compact Info Section */}
-          <View className="p-3">
-        <Text className="text-base font-bold text-gray-900 dark:text-foreground text-center mb-1" numberOfLines={1}>
-          {counsellor.displayName}
-        </Text>
-        <Text className="text-[10px] text-gray-600 dark:text-muted-foreground text-center mb-2" numberOfLines={1}>
-          {counsellor.specializations?.[0]?.replace('-', ' ') || 'General counseling'}
-        </Text>
-        <View className="flex-row justify-center space-x-3">
-          {counsellor.yearsExperience && (
-            <View className="flex-row items-center">
-          <Ionicons name="school-outline" size={10} color="#6B7280" />
-          <Text className="text-[10px] text-gray-500 dark:text-muted-foreground ml-1">
-            {counsellor.yearsExperience}y
-          </Text>
-            </View>
-          )}
-          {counsellor.averageRating && (
-            <View className="flex-row items-center">
-          <Ionicons name="star" size={10} color="#FCD34D" />
-          <Text className="text-[10px] text-gray-500 dark:text-muted-foreground ml-1">
-            {counsellor.averageRating.toFixed(1)}
-          </Text>
-            </View>
-          )}
-        </View>
+          
+          {/* Info Section */}
+          <View>
+            <Text 
+              className="text-lg font-bold text-gray-900 dark:text-white mb-1" 
+              numberOfLines={1}
+            >
+              Dr. {counsellor.displayName}
+            </Text>
+            <Text 
+              className="text-sm text-gray-600 dark:text-gray-400" 
+              numberOfLines={2}
+            >
+              {counsellor.specializations?.[0] === 'anxiety' && 'Specializes in anxiety'}
+              {counsellor.specializations?.[0] === 'depression' && 'Focuses on depression'}
+              {counsellor.specializations?.[0] === 'relationship' && 'Relationship counseling'}
+              {counsellor.specializations?.[0] === 'trauma' && 'Trauma specialist'}
+              {counsellor.specializations?.[0] === 'stress-management' && 'Stress management expert'}
+              {!counsellor.specializations?.[0] && 'General counseling'}
+              {counsellor.specializations?.[0] && 
+               !['anxiety', 'depression', 'relationship', 'trauma', 'stress-management'].includes(counsellor.specializations[0]) && 
+               `Specializes in ${counsellor.specializations[0].replace('-', ' ')}`}
+            </Text>
           </View>
         </View>
       </Pressable>
@@ -214,25 +195,21 @@ export default function CounselorsScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 4 }}
               >
-                <View className="flex-row">
-                  {[...Array(3)].map((_, index) => (<View
-                    key={index}
-                    className="bg-card rounded-2xl mr-4 border border-border overflow-hidden"
-                    style={{ width: 220 }}
-                  >
-                    {/* Skeleton Image */}
-                    <View className="w-full h-44 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                <View className="flex-row">                  {[...Array(3)].map((_, index) => (
+                    <View
+                      key={index}
+                      className="mr-4"
+                      style={{ width: 180 }}
+                    >
+                      {/* Skeleton Image */}
+                      <View className="w-full h-48 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse mb-3" />
 
-                    {/* Skeleton Content */}
-                    <View className="p-4">
-                      <View className="items-center space-y-1 mb-3">
-                        <View className="w-28 h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <View className="w-20 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <View className="w-16 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      {/* Skeleton Content */}
+                      <View>
+                        <View className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
+                        <View className="w-28 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                       </View>
-                      <View className="w-full h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                     </View>
-                  </View>
                   ))}
                 </View>
               </ScrollView>
