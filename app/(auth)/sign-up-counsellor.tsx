@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { H2, P } from '@/components/ui/typography';
 import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { CounsellorProfileData, LICENSE_TYPES, MENTAL_HEALTH_CONCERNS, THERAPY_APPROACHES } from '@/types/user';
@@ -155,52 +156,60 @@ export default function CounsellorSignUpScreen() {
 
   const renderStep1 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Personal Information</H2>
+      <P className="mb-4">Let's start with your basic information.</P>
       <View className="space-y-2">
-        <Label>First Name</Label>
+        <Label className="font-semibold text-base">First Name</Label>
         <Input
           value={formData.firstName}
           onChangeText={(text) => setFormData(prev => ({ ...prev, firstName: text }))}
           placeholder="Enter your first name"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Last Name</Label>
+        <Label className="font-semibold text-base">Last Name</Label>
         <Input
           value={formData.lastName}
           onChangeText={(text) => setFormData(prev => ({ ...prev, lastName: text }))}
           placeholder="Enter your last name"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Professional Email</Label>
+        <Label className="font-semibold text-base">Professional Email</Label>
         <Input
           value={formData.email}
           onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
           placeholder="Enter your professional email"
           keyboardType="email-address"
           autoCapitalize="none"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Password</Label>
+        <Label className="font-semibold text-base">Password</Label>
         <Input
           value={formData.password}
           onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
           placeholder="Create a secure password"
           secureTextEntry
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Confirm Password</Label>
+        <Label className="font-semibold text-base">Confirm Password</Label>
         <Input
           value={formData.confirmPassword}
           onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
           placeholder="Confirm your password"
           secureTextEntry
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
@@ -212,23 +221,21 @@ export default function CounsellorSignUpScreen() {
 
   const renderStep2 = () => (
     <CardContent className="space-y-4">
-      <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-        <Text className="text-blue-800 dark:text-blue-200 text-sm">
-          Professional credentials will be verified before your account is approved.
-        </Text>
-      </View>
-      
+      <H2 className="mb-2">Professional Credentials</H2>
+      <P className="mb-4">Please provide your professional license information.</P>
       <View className="space-y-2">
-        <Label>License Number</Label>
+        <Label className="font-semibold text-base">License Number</Label>
         <Input
           value={formData.licenseNumber}
           onChangeText={(text) => setFormData(prev => ({ ...prev, licenseNumber: text }))}
           placeholder="Enter your license number"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
       <View className="space-y-2">
-        <Label>License Type</Label>
+        <Label className="font-semibold text-base">License Type</Label>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="max-h-32">
           <View className="flex-row space-x-2">
             {LICENSE_TYPES.map((license) => (
@@ -255,12 +262,14 @@ export default function CounsellorSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>Years of Experience</Label>
+        <Label className="font-semibold text-base">Years of Experience</Label>
         <Input
           value={formData.yearsExperience}
           onChangeText={(text) => setFormData(prev => ({ ...prev, yearsExperience: text }))}
           placeholder="e.g., 5"
           keyboardType="numeric"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
     </CardContent>
@@ -268,8 +277,10 @@ export default function CounsellorSignUpScreen() {
 
   const renderStep3 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Expertise & Specializations</H2>
+      <P className="mb-4">Tell us about your areas of expertise.</P>
       <View className="space-y-2">
-        <Label>Specializations (Select all that apply)</Label>
+        <Label className="font-semibold text-base">Specializations (Select all that apply)</Label>
         <View className="flex-row flex-wrap gap-2">
           {MENTAL_HEALTH_CONCERNS.slice(0, 15).map((specialization) => (
             <Pressable
@@ -294,7 +305,7 @@ export default function CounsellorSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>Therapy Approaches</Label>
+        <Label className="font-semibold text-base">Therapy Approaches</Label>
         <View className="flex-row flex-wrap gap-2">
           {THERAPY_APPROACHES.slice(0, 10).map((approach) => (
             <Pressable
@@ -319,7 +330,7 @@ export default function CounsellorSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>Age Groups You Work With</Label>
+        <Label className="font-semibold text-base">Age Groups You Work With</Label>
         <View className="flex-row flex-wrap gap-2">
           {['Children (5-12)', 'Teens (13-17)', 'Young Adults (18-25)', 'Adults (26-64)', 'Seniors (65+)'].map((ageGroup) => (
             <Pressable
@@ -347,23 +358,29 @@ export default function CounsellorSignUpScreen() {
 
   const renderStep4 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Practice Details</H2>
+      <P className="mb-4">Final details about your practice.</P>
       <View className="space-y-2">
-        <Label>Hourly Rate (USD)</Label>
+        <Label className="font-semibold text-base">Hourly Rate (USD)</Label>
         <Input
           value={formData.hourlyRate}
           onChangeText={(text) => setFormData(prev => ({ ...prev, hourlyRate: text }))}
           placeholder="e.g., 120"
           keyboardType="numeric"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
       <View className="space-y-2">
-        <Label>Maximum Clients Per Week</Label>
+        <Label className="font-semibold text-base">Maximum Clients Per Week</Label>
         <Input
           value={formData.maxClientsPerWeek}
           onChangeText={(text) => setFormData(prev => ({ ...prev, maxClientsPerWeek: text }))}
           placeholder="e.g., 20"
           keyboardType="numeric"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       

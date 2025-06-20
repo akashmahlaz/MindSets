@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { H2, P } from '@/components/ui/typography';
 import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { MENTAL_HEALTH_CONCERNS, UserProfileData } from '@/types/user';
@@ -158,77 +159,80 @@ export default function UserSignUpScreen() {
   };
   const renderStep1 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Basic Information</H2>
+      <P className="mb-4">Let's start with some basic information about you.</P>
       <View className="space-y-2">
-        <Label>First Name</Label>
+        <Label className="font-semibold text-base">First Name</Label>
         <Input
           value={formData.firstName}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, firstName: text }));
-            setError(''); // Clear error when user types
+            setError('');
           }}
           placeholder="Enter your first name"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Last Name</Label>
+        <Label className="font-semibold text-base">Last Name</Label>
         <Input
           value={formData.lastName}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, lastName: text }));
-            setError(''); // Clear error when user types
+            setError('');
           }}
           placeholder="Enter your last name"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Email</Label>
+        <Label className="font-semibold text-base">Email</Label>
         <Input
           value={formData.email}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, email: text }));
-            setError(''); // Clear error when user types
+            setError('');
           }}
           placeholder="Enter your email"
+          editable={!loading}
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
           keyboardType="email-address"
           autoCapitalize="none"
-          editable={!loading}
-          className="h-12"
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Password</Label>
+        <Label className="font-semibold text-base">Password</Label>
         <Input
           value={formData.password}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, password: text }));
-            setError(''); // Clear error when user types
+            setError('');
           }}
-          placeholder="Create a password (min 6 characters)"
-          secureTextEntry
+          placeholder="Create a password"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
+          secureTextEntry
         />
       </View>
-      
       <View className="space-y-2">
-        <Label>Confirm Password</Label>
+        <Label className="font-semibold text-base">Confirm Password</Label>
         <Input
           value={formData.confirmPassword}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, confirmPassword: text }));
-            setError(''); // Clear error when user types
+            setError('');
           }}
-          placeholder="Confirm your password"
-          secureTextEntry
+          placeholder="Re-enter your password"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
+          secureTextEntry
         />
       </View>
       
@@ -253,8 +257,10 @@ export default function UserSignUpScreen() {
   );
   const renderStep2 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Mental Health Assessment</H2>
+      <P className="mb-4">Help us understand how we can best support you.</P>
       <View className="space-y-2">
-        <Label>What are your primary mental health concerns? (Select all that apply)</Label>
+        <Label className="font-semibold text-base">What are your primary mental health concerns? (Select all that apply)</Label>
         <View className="flex-row flex-wrap gap-2">
           {MENTAL_HEALTH_CONCERNS.slice(0, 12).map((concern) => (
             <Pressable
@@ -285,7 +291,7 @@ export default function UserSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>How would you rate the severity of your concerns?</Label>
+        <Label className="font-semibold text-base">How would you rate the severity of your concerns?</Label>
         <View className="space-y-2">
           {[
             { value: 'mild', label: 'Mild - Some difficulty but manageable' },
@@ -314,7 +320,7 @@ export default function UserSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>Have you had therapy or counseling before?</Label>
+        <Label className="font-semibold text-base">Have you had therapy or counseling before?</Label>
         <View className="flex-row space-x-4">
           {[
             { value: true, label: 'Yes' },
@@ -344,6 +350,8 @@ export default function UserSignUpScreen() {
   );
   const renderStep3 = () => (
     <CardContent className="space-y-4">
+      <H2 className="mb-2">Safety & Preferences</H2>
+      <P className="mb-4">Final details to ensure your safety and match you with the right counsellor.</P>
       <View className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
         <View className="flex-row items-start">
           <Ionicons name="information-circle" size={20} color="#f59e0b" style={{ marginRight: 8, marginTop: 2 }} />
@@ -354,7 +362,7 @@ export default function UserSignUpScreen() {
       </View>
       
       <View className="space-y-2">
-        <Label>Emergency Contact Name</Label>
+        <Label className="font-semibold text-base">Emergency Contact Name</Label>
         <Input
           value={formData.emergencyContactName}
           onChangeText={(text) => {
@@ -363,12 +371,13 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Full name"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
       <View className="space-y-2">
-        <Label>Emergency Contact Phone</Label>
+        <Label className="font-semibold text-base">Emergency Contact Phone</Label>
         <Input
           value={formData.emergencyContactPhone}
           onChangeText={(text) => {
@@ -378,12 +387,13 @@ export default function UserSignUpScreen() {
           placeholder="Phone number"
           keyboardType="phone-pad"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
       <View className="space-y-2">
-        <Label>Relationship</Label>
+        <Label className="font-semibold text-base">Relationship</Label>
         <Input
           value={formData.emergencyContactRelation}
           onChangeText={(text) => {
@@ -392,12 +402,13 @@ export default function UserSignUpScreen() {
           }}
           placeholder="e.g., Parent, Spouse, Friend"
           editable={!loading}
-          className="h-12"
+          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          placeholderTextColor="#9CA3AF"
         />
       </View>
       
       <View className="space-y-2">
-        <Label>Preferred Counsellor Gender</Label>
+        <Label className="font-semibold text-base">Preferred Counsellor Gender</Label>
         <View className="space-y-2">
           {[
             { value: 'no-preference', label: 'No preference' },
