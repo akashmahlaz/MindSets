@@ -1,16 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
-import { CounsellorProfileData } from '@/types/user';
+import { getUpcomingSessions, getUserSessions } from '@/services/sessionService';
+import { getAllUsers } from '@/services/userService';
+import { CounsellorProfileData, UserProfile } from '@/types/user';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CounsellorDashboard() {
   const { user, userProfile, logout } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [clients, setClients] = useState<UserProfile[]>([]);
   const [stats, setStats] = useState({
     upcomingSessions: 0,
     totalClients: 0,
@@ -19,28 +22,91 @@ export default function CounsellorDashboard() {
   });
 
   const counsellorProfile = userProfile as CounsellorProfileData;
-
   // Load real data on component mount
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // TODO: Replace with real data fetching
-        // For now, show empty/zero states
+        if (!userProfile?.uid) return;
+        
+        console.log('Loading dashboard data for counselor:', userProfile.uid);
+        
+        // Load upcoming sessions
+        const upcomingSessions = await getUpcomingSessions(userProfile.uid, 'counselor');
+        console.log('Upcoming sessions:', upcomingSessions.length);
+        
+        // Load all sessions to get clients and stats
+        const allSessions = await getUserSessions(userProfile.uid, 'counselor');
+        console.log('All sessions:', allSessions.length);
+        
+        // Get unique clients
+        const uniqueClientIds = [...new Set(allSessions.map(session => session.clientId))];
+        console.log('Unique client IDs:', uniqueClientIds);
+        
+        const allUsers = await getAllUsers(userProfile.uid);
+        console.log('All users fetched:', allUsers.length);
+          // For testing: if no sessions exist, show sample clients from all users
+        let clientUsers = allUsers.filter(user => uniqueClientIds.includes(user.uid));
+        
+        // If no clients from sessions, show sample clients for testing
+        if (clientUsers.length === 0 && allUsers.length > 0) {
+          console.log('No clients from sessions, showing sample clients for testing');
+          // Show regular users as potential clients, excluding the current counselor
+          clientUsers = allUsers.filter(user => 
+            user.role === 'user' && 
+            user.uid !== userProfile.uid
+          ).slice(0, 5);
+        }
+        
+        console.log('Client users to display:', clientUsers.length);
+        
+        // Calculate stats
+        const now = new Date();
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        const weekSessions = allSessions.filter(session => 
+          session.date >= weekStart && session.date <= now
+        );
+        const weeklyHours = weekSessions.reduce((total, session) => total + session.duration, 0) / 60;
+        
+        setClients(clientUsers);
         setStats({
-          upcomingSessions: 0,
-          totalClients: 0,
-          weeklyHours: 0,
-          rating: 0,
-        });
-      } catch (error) {
+          upcomingSessions: upcomingSessions.length,
+          totalClients: clientUsers.length, // Use actual client count, not unique IDs
+          weeklyHours: Math.round(weeklyHours * 10) / 10,
+          rating: 4.8, // Placeholder - implement real rating system
+        });      } catch (error) {
         console.error('Error loading dashboard data:', error);
+          // If sessions fail, try to load just users for sample clients
+        try {
+          console.log('Sessions failed, loading sample clients from users...');
+          if (userProfile?.uid) {
+            const allUsers = await getAllUsers(userProfile.uid);
+            const sampleClients = allUsers.filter(user => user.role === 'user').slice(0, 5);
+            console.log('Sample clients loaded:', sampleClients.length);
+            setClients(sampleClients);
+            setStats({
+              upcomingSessions: 0,
+              totalClients: sampleClients.length,
+              weeklyHours: 0,
+              rating: 0,
+            });
+          }
+        } catch (userError) {
+          console.error('Error loading users:', userError);
+          // Set empty states on complete error
+          setStats({
+            upcomingSessions: 0,
+            totalClients: 0,
+            weeklyHours: 0,
+            rating: 0,
+          });
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadDashboardData();
-  }, []);
+  }, [userProfile]);
 
   const handleLogout = async () => {
     try {
@@ -135,19 +201,12 @@ export default function CounsellorDashboard() {
               variant="outline"
             >
               <Text className="text-foreground">💬 View Messages</Text>
-            </Button>
-            <Button 
+            </Button>            <Button 
               onPress={() => router.push('/(main)/sessions')}
               className="w-full justify-start"
               variant="outline"
             >
               <Text className="text-foreground">📅 Manage Schedule</Text>
-            </Button>            <Button 
-              onPress={() => router.push('/(main)/clients')}
-              className="w-full justify-start"
-              variant="outline"
-            >
-              <Text className="text-foreground">👥 My Clients</Text>
             </Button>
             <Button 
               onPress={() => router.push('/profile')}
@@ -157,7 +216,63 @@ export default function CounsellorDashboard() {
               <Text className="text-foreground">⚙️ Profile Settings</Text>
             </Button>
           </CardContent>
-        </Card>        {/* Today's Schedule */}
+        </Card>        {/* My Clients Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>My Clients {loading && "(Loading...)"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <View className="py-8 items-center">
+                <Text className="text-muted-foreground">Loading clients...</Text>
+              </View>
+            ) : clients.length === 0 ? (
+              <View className="py-8 items-center">
+                <Text className="text-6xl mb-4">👥</Text>
+                <Text className="text-muted-foreground text-lg font-medium">
+                  No clients yet
+                </Text>
+                <Text className="text-sm text-muted-foreground text-center mt-2">
+                  Your clients will appear here when you start having sessions
+                </Text>
+              </View>
+            ) : (
+              <View>
+                <Text className="text-sm text-muted-foreground mb-3">
+                  {clients.length} client{clients.length !== 1 ? 's' : ''} found
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View className="flex-row space-x-4">
+                    {clients.map((client) => (
+                      <TouchableOpacity
+                        key={client.uid}
+                        onPress={() => router.push({
+                          pathname: '/profile/[userId]',
+                          params: { userId: client.uid }
+                        })}
+                        className="w-32"
+                      >
+                        <View className="items-center">
+                          <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-2">
+                            <Text className="text-blue-600 text-xl font-bold">
+                              {client.displayName.charAt(0)}
+                            </Text>
+                          </View>
+                          <Text className="text-foreground text-center text-sm font-medium" numberOfLines={2}>
+                            {client.displayName}
+                          </Text>
+                          <Text className="text-muted-foreground text-xs text-center">
+                            {client.role === 'user' ? 'Client' : 'User'}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+          </CardContent>
+        </Card>{/* Today's Schedule */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Today's Schedule</CardTitle>

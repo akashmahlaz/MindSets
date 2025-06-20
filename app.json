@@ -36,7 +36,9 @@
         "WRITE_EXTERNAL_STORAGE",
         "WAKE_LOCK",
         "FOREGROUND_SERVICE",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
       ]
     },
     "web": {
@@ -95,6 +97,13 @@
         "expo-av",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice and video calls."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "This app needs access to your calendar to sync therapy sessions and send reminders.",
+          "remindersPermission": "This app needs access to your reminders to help you stay on track with your mental health goals."
         }
       ],
       [

@@ -6,13 +6,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
+import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
+import { FontAwesome6 } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-import Fontisto from '@expo/vector-icons/Fontisto';
 
 export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
+  const { userProfile } = useAuth(); // Add this line to get user profile
   // Match colors with CSS design tokens
   const backgroundColor = isDarkColorScheme ? '#000000' : '#ffffff'; // Pure black/white for consistency
   const borderColor = isDarkColorScheme ? '#242424' : 'hsl(220, 13%, 91%)'; // --border
@@ -59,32 +60,29 @@ export default function TabLayout() {
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
-        />
+        />        {/* Only show Counselors tab for regular users, not counselors */}
+        {userProfile?.role !== 'counsellor' && (
+          <Tabs.Screen
+            name="Counselors"
+            options={{
+              title: 'Counselors',
+              tabBarIcon: ({ color }) => <FontAwesome6 size={28} name="user-doctor" color={color} />,
+            }}
+          />
+        )}
+        
         <Tabs.Screen
-          name="Counselors"
-          options={{
-            title: 'Counselors',
-            tabBarIcon: ({ color }) => <FontAwesome6 size={28} name="user-doctor" color={color} />,
-          }}
-        />        <Tabs.Screen
           name="sessions"
           options={{
             title: 'Sessions',
             tabBarIcon: ({ color }) => <AntDesign size={28} name="calendar" color={color} />,
           }}
         />
-        <Tabs.Screen
+          <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => <AntDesign size={28} name="user" color={color} />,
-          }}
-        />
-         <Tabs.Screen
-          name="clients"
-          options={{
-            title: 'Clients',
-            tabBarIcon: ({ color }) => <AntDesign name="addusergroup" size={24} color={color} />,
+            tabBarIcon: ({ color }: { color: string }) => <AntDesign size={28} name="user" color={color} />,
           }}
         />
       </Tabs>
