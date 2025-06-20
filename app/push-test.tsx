@@ -1,25 +1,26 @@
-import { usePushNotifications } from '@/hooks/usePushNotifications';
-import React, { useState } from 'react';
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import React, { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function PushNotificationTestScreen() {
-  const { fcmToken, isInitialized, sendTestNotification, sendNotification } = usePushNotifications();
-  
-  const [customTitle, setCustomTitle] = useState('Custom Test Notification');
-  const [customBody, setCustomBody] = useState('This is a custom test message');
-  const [targetToken, setTargetToken] = useState('');
+  const { fcmToken, isInitialized, sendTestNotification, sendNotification } =
+    usePushNotifications();
+
+  const [customTitle, setCustomTitle] = useState("Custom Test Notification");
+  const [customBody, setCustomBody] = useState("This is a custom test message");
+  const [targetToken, setTargetToken] = useState("");
 
   const handleSendCustomNotification = async () => {
     if (!targetToken.trim()) {
-      Alert.alert('Error', 'Please enter a target FCM token');
+      Alert.alert("Error", "Please enter a target FCM token");
       return;
     }
 
@@ -29,27 +30,25 @@ export default function PushNotificationTestScreen() {
         title: customTitle,
         body: customBody,
         data: {
-          type: 'custom_test',
+          type: "custom_test",
           timestamp: Date.now().toString(),
         },
       });
 
       if (result.success) {
-        Alert.alert('✅ Success', 'Custom notification sent successfully!');
+        Alert.alert("✅ Success", "Custom notification sent successfully!");
       } else {
-        Alert.alert('❌ Error', `Failed to send notification: ${result.error}`);
+        Alert.alert("❌ Error", `Failed to send notification: ${result.error}`);
       }
     } catch (error) {
-      Alert.alert('❌ Error', `Error: ${error}`);
+      Alert.alert("❌ Error", `Error: ${error}`);
     }
   };
 
   const copyTokenToClipboard = () => {
     if (fcmToken) {
       // Copy to clipboard functionality would need additional setup
-      Alert.alert('Token', fcmToken, [
-        { text: 'OK' }
-      ]);
+      Alert.alert("Token", fcmToken, [{ text: "OK" }]);
     }
   };
 
@@ -67,14 +66,24 @@ export default function PushNotificationTestScreen() {
         <Text style={styles.sectionTitle}>Status</Text>
         <View style={styles.statusItem}>
           <Text style={styles.statusLabel}>Initialized:</Text>
-          <Text style={[styles.statusValue, { color: isInitialized ? '#4CAF50' : '#F44336' }]}>
-            {isInitialized ? '✅ Yes' : '❌ No'}
+          <Text
+            style={[
+              styles.statusValue,
+              { color: isInitialized ? "#4CAF50" : "#F44336" },
+            ]}
+          >
+            {isInitialized ? "✅ Yes" : "❌ No"}
           </Text>
         </View>
         <View style={styles.statusItem}>
           <Text style={styles.statusLabel}>FCM Token:</Text>
-          <Text style={[styles.statusValue, { color: fcmToken ? '#4CAF50' : '#F44336' }]}>
-            {fcmToken ? '✅ Available' : '❌ Not Available'}
+          <Text
+            style={[
+              styles.statusValue,
+              { color: fcmToken ? "#4CAF50" : "#F44336" },
+            ]}
+          >
+            {fcmToken ? "✅ Available" : "❌ Not Available"}
           </Text>
         </View>
       </View>
@@ -83,7 +92,10 @@ export default function PushNotificationTestScreen() {
       {fcmToken && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your FCM Token</Text>
-          <TouchableOpacity style={styles.tokenContainer} onPress={copyTokenToClipboard}>
+          <TouchableOpacity
+            style={styles.tokenContainer}
+            onPress={copyTokenToClipboard}
+          >
             <Text style={styles.tokenText} numberOfLines={3}>
               {fcmToken}
             </Text>
@@ -95,8 +107,8 @@ export default function PushNotificationTestScreen() {
       {/* Quick Test Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Test</Text>
-        <TouchableOpacity 
-          style={[styles.button, styles.primaryButton]} 
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
           onPress={sendTestNotification}
           disabled={!isInitialized || !fcmToken}
         >
@@ -109,7 +121,7 @@ export default function PushNotificationTestScreen() {
       {/* Custom Notification Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Send Custom Notification</Text>
-        
+
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Title:</Text>
           <TextInput
@@ -147,14 +159,12 @@ export default function PushNotificationTestScreen() {
           />
         </View>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.secondaryButton]} 
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
           onPress={handleSendCustomNotification}
           disabled={!isInitialized}
         >
-          <Text style={styles.buttonText}>
-            Send Custom Notification
-          </Text>
+          <Text style={styles.buttonText}>Send Custom Notification</Text>
         </TouchableOpacity>
       </View>
 
@@ -162,10 +172,10 @@ export default function PushNotificationTestScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Instructions</Text>
         <Text style={styles.instructions}>
-          1. Make sure your Firebase project is properly configured{'\n'}
-          2. Set up environment variables for the API route{'\n'}
-          3. Use "Send Test Notification" to test your own device{'\n'}
-          4. Copy your FCM token and send it to another device for testing{'\n'}
+          1. Make sure your Firebase project is properly configured{"\n"}
+          2. Set up environment variables for the API route{"\n"}
+          3. Use "Send Test Notification" to test your own device{"\n"}
+          4. Copy your FCM token and send it to another device for testing{"\n"}
           5. Use custom notifications to test different scenarios
         </Text>
       </View>
@@ -176,31 +186,31 @@ export default function PushNotificationTestScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   header: {
-    backgroundColor: '#1976D2',
+    backgroundColor: "#1976D2",
     padding: 20,
     paddingTop: 60,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: '#E3F2FD',
-    textAlign: 'center',
+    color: "#E3F2FD",
+    textAlign: "center",
     marginTop: 8,
   },
   section: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     margin: 16,
     padding: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -208,83 +218,83 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 12,
   },
   statusItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 8,
   },
   statusLabel: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   statusValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tokenContainer: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     padding: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   tokenText: {
     fontSize: 12,
-    color: '#333',
-    fontFamily: 'monospace',
+    color: "#333",
+    fontFamily: "monospace",
   },
   tokenHint: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   button: {
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 8,
   },
   primaryButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   secondaryButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   inputGroup: {
     marginBottom: 16,
   },
   inputLabel: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 6,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   multilineInput: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   instructions: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     lineHeight: 20,
   },
 });

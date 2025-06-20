@@ -1,34 +1,34 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/context/AuthContext';
-import { useChat } from '@/context/ChatContext';
-import { useVideo } from '@/context/VideoContext';
-import { getAllUsers } from '@/services/userService';
-import { UserProfile } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useVideo } from "@/context/VideoContext";
+import { getAllUsers } from "@/services/userService";
+import { UserProfile } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    RefreshControl,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  Alert,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function ClientList() {
   const router = useRouter();
   const { user } = useAuth();
   const { chatClient, isChatConnected, connectToChat } = useChat();
   const { createCall, isVideoConnected } = useVideo();
-  
+
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [filteredClients, setFilteredClients] = useState<UserProfile[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -36,18 +36,17 @@ export default function ClientList() {
     try {
       setLoading(true);
       if (!user?.uid) return;
-      
+
       // Get all users and filter to show only regular users (clients)
       const allUsers = await getAllUsers(user.uid);
-      const clientUsers = allUsers.filter(u => 
-        u.uid !== user?.uid && 
-        u.role === 'user' // Only show regular users as potential clients
+      const clientUsers = allUsers.filter(
+        (u) => u.uid !== user?.uid && u.role === "user", // Only show regular users as potential clients
       );
-      
+
       setClients(clientUsers);
       setFilteredClients(clientUsers);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching clients:", error);
     } finally {
       setLoading(false);
     }
@@ -64,12 +63,15 @@ export default function ClientList() {
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
+    if (searchQuery.trim() === "") {
       setFilteredClients(clients);
     } else {
-      const filtered = clients.filter(client =>
-        client.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = clients.filter(
+        (client) =>
+          client.displayName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          client.email.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredClients(filtered);
     }
@@ -77,8 +79,8 @@ export default function ClientList() {
 
   const handleClientPress = (selectedClient: UserProfile) => {
     router.push({
-      pathname: '/profile/[userId]',
-      params: { userId: selectedClient.uid }
+      pathname: "/profile/[userId]",
+      params: { userId: selectedClient.uid },
     });
   };
 
@@ -87,72 +89,85 @@ export default function ClientList() {
     const user2Short = userId2.substring(0, 8);
     const timestamp = Date.now().toString(36);
     const callId = `${user1Short}-${user2Short}-${timestamp}`;
-    
+
     if (callId.length > 64) {
       const shortTimestamp = timestamp.substring(0, 6);
       return `${user1Short.substring(0, 6)}-${user2Short.substring(0, 6)}-${shortTimestamp}`;
     }
-    
+
     return callId;
   };
 
   const startCall = async (targetClient: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
-      Alert.alert('Error', 'Video service not available. Please try again.');
+      Alert.alert("Error", "Video service not available. Please try again.");
       return;
     }
-    
+
     try {
       const callId = generateCallId(user.uid, targetClient.uid);
       const call = await createCall(callId, [targetClient.uid], isVideo);
-      
+
       if (!call) {
-        throw new Error('Failed to create call');
+        throw new Error("Failed to create call");
       }
     } catch (error) {
-      console.error('Error starting call:', error);
-      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
+      console.error("Error starting call:", error);
+      Alert.alert(
+        "Error",
+        "Failed to start call. Please check your connection and try again.",
+      );
     }
   };
 
   const startChat = async (targetClient: UserProfile) => {
     if (!user || !chatClient) {
-      Alert.alert('Error', 'Chat not available');
+      Alert.alert("Error", "Chat not available");
       return;
     }
 
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
-        Alert.alert('Error', 'Failed to connect to chat');
+        Alert.alert("Error", "Failed to connect to chat");
         return;
       }
     }
-    
+
     try {
-      const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
+      const { createOrGetDirectChannel } = await import(
+        "@/services/chatHelpers"
+      );
       const channel = await createOrGetDirectChannel(user, targetClient.uid);
       router.push(`/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
-        'Chat Error', 
-        `Failed to start chat with ${targetClient.displayName}. Please try again.`
+        "Chat Error",
+        `Failed to start chat with ${targetClient.displayName}. Please try again.`,
       );
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case "online":
+        return "bg-green-500";
+      case "away":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-400";
     }
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const renderClientItem = ({ item }: { item: UserProfile }) => (
@@ -172,7 +187,9 @@ export default function ClientList() {
                   </Text>
                 </AvatarFallback>
               </Avatar>
-              <View className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${getStatusColor(item.status)}`} />
+              <View
+                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${getStatusColor(item.status)}`}
+              />
             </View>
             <View className="flex-1">
               <Text className="text-card-foreground font-semibold text-base">
@@ -242,9 +259,7 @@ export default function ClientList() {
         </View>
         <View className="flex-1">
           {[...Array(6)].map((_, index) => (
-            <View key={index}>
-              {renderClientSkeleton()}
-            </View>
+            <View key={index}>{renderClientSkeleton()}</View>
           ))}
         </View>
       </View>
@@ -270,8 +285,8 @@ export default function ClientList() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ 
-          flexGrow: 1
+        contentContainerStyle={{
+          flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -283,19 +298,15 @@ export default function ClientList() {
               style={{ marginBottom: 16 }}
             />
             <Text className="text-muted-foreground text-lg font-medium">
-              {searchQuery ? 'No clients found' : 'No clients available'}
+              {searchQuery ? "No clients found" : "No clients available"}
             </Text>
             <Text className="text-muted-foreground text-sm mt-2 text-center px-8">
               {searchQuery
-                ? 'Try searching with a different name or email'
-                : 'Clients will appear here when they connect with you'
-              }
+                ? "Try searching with a different name or email"
+                : "Clients will appear here when they connect with you"}
             </Text>
             {!searchQuery && (
-              <Button
-                onPress={onRefresh}
-                className="mt-4"
-                variant="outline">
+              <Button onPress={onRefresh} className="mt-4" variant="outline">
                 <Text>Refresh</Text>
               </Button>
             )}

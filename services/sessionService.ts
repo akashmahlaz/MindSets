@@ -1,5 +1,17 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  Timestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export interface SessionBooking {
   id: string;
@@ -9,8 +21,8 @@ export interface SessionBooking {
   clientName: string;
   date: Date;
   duration: number; // in minutes
-  type: 'therapy' | 'consultation' | 'follow-up' | 'crisis-support';
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  type: "therapy" | "consultation" | "follow-up" | "crisis-support";
+  status: "pending" | "confirmed" | "completed" | "cancelled";
   notes?: string;
   price: number;
   location: string;
@@ -25,16 +37,18 @@ export interface SessionData {
   clientName: string;
   date: Date;
   duration: number;
-  type: 'therapy' | 'consultation' | 'follow-up' | 'crisis-support';
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  type: "therapy" | "consultation" | "follow-up" | "crisis-support";
+  status: "pending" | "confirmed" | "completed" | "cancelled";
   notes?: string;
   price: number;
   location: string;
 }
 
-const SESSIONS_COLLECTION = 'sessions';
+const SESSIONS_COLLECTION = "sessions";
 
-export const createSessionBooking = async (sessionData: SessionData): Promise<string> => {
+export const createSessionBooking = async (
+  sessionData: SessionData,
+): Promise<string> => {
   try {
     const now = new Date();
     const docRef = await addDoc(collection(db, SESSIONS_COLLECTION), {
@@ -45,23 +59,26 @@ export const createSessionBooking = async (sessionData: SessionData): Promise<st
     });
     return docRef.id;
   } catch (error) {
-    console.error('Error creating session booking:', error);
-    throw new Error('Failed to create session booking');
+    console.error("Error creating session booking:", error);
+    throw new Error("Failed to create session booking");
   }
 };
 
-export const getUserSessions = async (userId: string, userRole: 'client' | 'counselor'): Promise<SessionBooking[]> => {
+export const getUserSessions = async (
+  userId: string,
+  userRole: "client" | "counselor",
+): Promise<SessionBooking[]> => {
   try {
-    const fieldName = userRole === 'client' ? 'clientId' : 'counselorId';
+    const fieldName = userRole === "client" ? "clientId" : "counselorId";
     const q = query(
       collection(db, SESSIONS_COLLECTION),
-      where(fieldName, '==', userId),
-      orderBy('date', 'desc')
+      where(fieldName, "==", userId),
+      orderBy("date", "desc"),
     );
-    
+
     const querySnapshot = await getDocs(q);
     const sessions: SessionBooking[] = [];
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       sessions.push({
@@ -81,19 +98,21 @@ export const getUserSessions = async (userId: string, userRole: 'client' | 'coun
         updatedAt: data.updatedAt.toDate(),
       });
     });
-    
+
     return sessions;
   } catch (error) {
-    console.error('Error getting user sessions:', error);
-    throw new Error('Failed to load sessions');
+    console.error("Error getting user sessions:", error);
+    throw new Error("Failed to load sessions");
   }
 };
 
-export const getSessionById = async (sessionId: string): Promise<SessionBooking | null> => {
+export const getSessionById = async (
+  sessionId: string,
+): Promise<SessionBooking | null> => {
   try {
     const docRef = doc(db, SESSIONS_COLLECTION, sessionId);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       const data = docSnap.data();
       return {
@@ -115,12 +134,15 @@ export const getSessionById = async (sessionId: string): Promise<SessionBooking 
     }
     return null;
   } catch (error) {
-    console.error('Error getting session by ID:', error);
-    throw new Error('Failed to load session');
+    console.error("Error getting session by ID:", error);
+    throw new Error("Failed to load session");
   }
 };
 
-export const updateSessionStatus = async (sessionId: string, status: SessionBooking['status']): Promise<void> => {
+export const updateSessionStatus = async (
+  sessionId: string,
+  status: SessionBooking["status"],
+): Promise<void> => {
   try {
     const docRef = doc(db, SESSIONS_COLLECTION, sessionId);
     await updateDoc(docRef, {
@@ -128,17 +150,17 @@ export const updateSessionStatus = async (sessionId: string, status: SessionBook
       updatedAt: Timestamp.fromDate(new Date()),
     });
   } catch (error) {
-    console.error('Error updating session status:', error);
-    throw new Error('Failed to update session status');
+    console.error("Error updating session status:", error);
+    throw new Error("Failed to update session status");
   }
 };
 
 export const cancelSession = async (sessionId: string): Promise<void> => {
   try {
-    await updateSessionStatus(sessionId, 'cancelled');
+    await updateSessionStatus(sessionId, "cancelled");
   } catch (error) {
-    console.error('Error cancelling session:', error);
-    throw new Error('Failed to cancel session');
+    console.error("Error cancelling session:", error);
+    throw new Error("Failed to cancel session");
   }
 };
 
@@ -147,12 +169,15 @@ export const deleteSession = async (sessionId: string): Promise<void> => {
     const docRef = doc(db, SESSIONS_COLLECTION, sessionId);
     await deleteDoc(docRef);
   } catch (error) {
-    console.error('Error deleting session:', error);
-    throw new Error('Failed to delete session');
+    console.error("Error deleting session:", error);
+    throw new Error("Failed to delete session");
   }
 };
 
-export const updateSessionNotes = async (sessionId: string, notes: string): Promise<void> => {
+export const updateSessionNotes = async (
+  sessionId: string,
+  notes: string,
+): Promise<void> => {
   try {
     const docRef = doc(db, SESSIONS_COLLECTION, sessionId);
     await updateDoc(docRef, {
@@ -160,8 +185,8 @@ export const updateSessionNotes = async (sessionId: string, notes: string): Prom
       updatedAt: Timestamp.fromDate(new Date()),
     });
   } catch (error) {
-    console.error('Error updating session notes:', error);
-    throw new Error('Failed to update session notes');
+    console.error("Error updating session notes:", error);
+    throw new Error("Failed to update session notes");
   }
 };
 
@@ -170,59 +195,59 @@ export const getMockSessions = (): SessionBooking[] => {
   const now = new Date();
   const tomorrow = new Date();
   tomorrow.setDate(now.getDate() + 1);
-  
+
   const nextWeek = new Date();
   nextWeek.setDate(now.getDate() + 7);
-  
+
   const lastWeek = new Date();
   lastWeek.setDate(now.getDate() - 7);
 
   return [
     {
-      id: '1',
-      counselorId: 'counselor1',
-      counselorName: 'Dr. Sarah Johnson',
-      clientId: 'client1',
-      clientName: 'John Doe',
+      id: "1",
+      counselorId: "counselor1",
+      counselorName: "Dr. Sarah Johnson",
+      clientId: "client1",
+      clientName: "John Doe",
       date: tomorrow,
       duration: 50,
-      type: 'therapy',
-      status: 'confirmed',
-      notes: 'Regular therapy session - focus on anxiety management',
+      type: "therapy",
+      status: "confirmed",
+      notes: "Regular therapy session - focus on anxiety management",
       price: 100,
-      location: 'Virtual Session',
+      location: "Virtual Session",
       createdAt: now,
       updatedAt: now,
     },
     {
-      id: '2',
-      counselorId: 'counselor2',
-      counselorName: 'Dr. Michael Brown',
-      clientId: 'client1',
-      clientName: 'John Doe',
+      id: "2",
+      counselorId: "counselor2",
+      counselorName: "Dr. Michael Brown",
+      clientId: "client1",
+      clientName: "John Doe",
       date: nextWeek,
       duration: 60,
-      type: 'consultation',
-      status: 'pending',
-      notes: 'Initial consultation for new client',
+      type: "consultation",
+      status: "pending",
+      notes: "Initial consultation for new client",
       price: 80,
-      location: 'Virtual Session',
+      location: "Virtual Session",
       createdAt: now,
       updatedAt: now,
     },
     {
-      id: '3',
-      counselorId: 'counselor1',
-      counselorName: 'Dr. Sarah Johnson',
-      clientId: 'client1',
-      clientName: 'John Doe',
+      id: "3",
+      counselorId: "counselor1",
+      counselorName: "Dr. Sarah Johnson",
+      clientId: "client1",
+      clientName: "John Doe",
       date: lastWeek,
       duration: 50,
-      type: 'therapy',
-      status: 'completed',
-      notes: 'Great progress on coping strategies',
+      type: "therapy",
+      status: "completed",
+      notes: "Great progress on coping strategies",
       price: 100,
-      location: 'Virtual Session',
+      location: "Virtual Session",
       createdAt: lastWeek,
       updatedAt: lastWeek,
     },

@@ -1,4 +1,4 @@
-import { Call, StreamVideoClient } from '@stream-io/video-react-native-sdk';
+import { Call, StreamVideoClient } from "@stream-io/video-react-native-sdk";
 
 export interface CallOptions {
   isVideo?: boolean;
@@ -28,15 +28,15 @@ export class VideoCallService {
     callId,
     members,
     currentUserId,
-    options = {}
+    options = {},
   }: CreateCallParams): Promise<Call | null> {
     try {
-      const call = this.client.call('default', callId);
-      
+      const call = this.client.call("default", callId);
+
       // Include current user in members
       const allMembers = [
         { user_id: currentUserId },
-        ...members.map(memberId => ({ user_id: memberId }))
+        ...members.map((memberId) => ({ user_id: memberId })),
       ];
 
       await call.getOrCreate({
@@ -55,7 +55,7 @@ export class VideoCallService {
 
       return call;
     } catch (error) {
-      console.error('Error creating call:', error);
+      console.error("Error creating call:", error);
       throw error;
     }
   }
@@ -69,7 +69,7 @@ export class VideoCallService {
       await call.join();
       return call;
     } catch (error) {
-      console.error('Error joining call:', error);
+      console.error("Error joining call:", error);
       throw error;
     }
   }
@@ -83,7 +83,7 @@ export class VideoCallService {
       await call.get();
       return call;
     } catch (error) {
-      console.error('Error getting call:', error);
+      console.error("Error getting call:", error);
       throw error;
     }
   }
@@ -91,7 +91,11 @@ export class VideoCallService {
   /**
    * Leave a call
    */
-  async leaveCall(call: Call, reject?: boolean, reason?: string): Promise<void> {
+  async leaveCall(
+    call: Call,
+    reject?: boolean,
+    reason?: string,
+  ): Promise<void> {
     try {
       if (reject) {
         await call.leave({ reject: true, reason });
@@ -99,7 +103,7 @@ export class VideoCallService {
         await call.leave();
       }
     } catch (error) {
-      console.error('Error leaving call:', error);
+      console.error("Error leaving call:", error);
       throw error;
     }
   }
@@ -111,14 +115,14 @@ export class VideoCallService {
     try {
       await call.endCall();
     } catch (error) {
-      console.error('Error ending call:', error);
+      console.error("Error ending call:", error);
       throw error;
     }
   }
   /**
    * Generate a unique call ID that fits within 64 character limit
    */
-  generateCallId(prefix: string = 'call'): string {
+  generateCallId(prefix: string = "call"): string {
     // Use base36 timestamp (shorter) and random string
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2, 8);
@@ -133,14 +137,14 @@ export class VideoCallService {
     const user2Short = userId2.substring(0, 8);
     const timestamp = Date.now().toString(36); // Base36 is shorter
     const callId = `${user1Short}-${user2Short}-${timestamp}`;
-    
+
     // Ensure it's under 64 characters
     if (callId.length > 64) {
       // Fallback to even shorter format
       const shortTimestamp = timestamp.substring(0, 6);
       return `${user1Short.substring(0, 6)}-${user2Short.substring(0, 6)}-${shortTimestamp}`;
     }
-    
+
     return callId;
   }
   /**
@@ -149,10 +153,10 @@ export class VideoCallService {
   async createDirectCall(
     currentUserId: string,
     targetUserId: string,
-    isVideo: boolean = true
+    isVideo: boolean = true,
   ): Promise<Call | null> {
     const callId = this.generateDirectCallId(currentUserId, targetUserId);
-    
+
     return this.createCall({
       callId,
       members: [targetUserId],
@@ -161,7 +165,7 @@ export class VideoCallService {
         isVideo,
         ring: true,
         custom: {
-          callType: 'direct',
+          callType: "direct",
           participants: [currentUserId, targetUserId],
         },
       },
@@ -175,10 +179,10 @@ export class VideoCallService {
     currentUserId: string,
     memberIds: string[],
     isVideo: boolean = true,
-    groupName?: string
+    groupName?: string,
   ): Promise<Call | null> {
-    const callId = this.generateCallId('group');
-    
+    const callId = this.generateCallId("group");
+
     return this.createCall({
       callId,
       members: memberIds,
@@ -187,7 +191,7 @@ export class VideoCallService {
         isVideo,
         ring: true,
         custom: {
-          callType: 'group',
+          callType: "group",
           groupName,
           participants: [currentUserId, ...memberIds],
         },
@@ -231,9 +235,9 @@ export const callUtils = {
     const hours = Math.floor(minutes / 60);
 
     if (hours > 0) {
-      return `${hours}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+      return `${hours}:${(minutes % 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
     }
-    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+    return `${minutes}:${(seconds % 60).toString().padStart(2, "0")}`;
   },
   /**
    * Check if call is audio only

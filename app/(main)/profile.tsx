@@ -1,11 +1,11 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { UserProfileData } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { UserProfileData } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -13,9 +13,9 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
   const { userProfile, logout } = useAuth();
@@ -25,24 +25,20 @@ export default function UserProfileScreen() {
   const userProfileData = userProfile as UserProfileData;
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to sign out');
-            }
-          },
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+          } catch (error) {
+            Alert.alert("Error", "Failed to sign out");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   if (!userProfile) {
@@ -57,32 +53,45 @@ export default function UserProfileScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <StatusBar 
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
       />
-        {/* Header */}
+      {/* Header */}
       <View className="flex-row justify-between items-center px-6 py-4 border-b border-border">
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={isDarkColorScheme ? '#fff' : '#000'} />
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={isDarkColorScheme ? "#fff" : "#000"}
+          />
         </TouchableOpacity>
-        <Text className="text-xl font-semibold text-foreground">Profile</Text>       
-         <TouchableOpacity onPress={() => router.push('/(setting)/settings')}>
-          <Ionicons name="settings-outline" size={24} color={isDarkColorScheme ? '#fff' : '#000'} />
+        <Text className="text-xl font-semibold text-foreground">Profile</Text>
+        <TouchableOpacity onPress={() => router.push("/(setting)/settings")}>
+          <Ionicons
+            name="settings-outline"
+            size={24}
+            color={isDarkColorScheme ? "#fff" : "#000"}
+          />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6 py-4">        {/* Profile Photo Section */}
+      <ScrollView className="flex-1 px-6 py-4">
+        {" "}
+        {/* Profile Photo Section */}
         <Card className="mb-6">
           <CardContent className="p-6 items-center">
-            <Avatar alt={userProfile.displayName || 'User'} className="w-24 h-24 mb-4">
+            <Avatar
+              alt={userProfile.displayName || "User"}
+              className="w-24 h-24 mb-4"
+            >
               {userProfile.photoURL ? (
                 <AvatarImage source={{ uri: userProfile.photoURL }} />
               ) : (
                 <AvatarFallback className="bg-primary/10">
                   <Text className="text-primary text-2xl font-bold">
-                    {userProfile.displayName?.charAt(0)?.toUpperCase() || 'U'}
+                    {userProfile.displayName?.charAt(0)?.toUpperCase() || "U"}
                   </Text>
                 </AvatarFallback>
               )}
@@ -91,9 +100,12 @@ export default function UserProfileScreen() {
             <Text className="text-xl font-semibold text-foreground mb-1">
               {userProfile.displayName}
             </Text>
-            <Text className="text-muted-foreground mb-4">{userProfile.email}</Text>
+            <Text className="text-muted-foreground mb-4">
+              {userProfile.email}
+            </Text>
           </CardContent>
-        </Card>        {/* Personal Information */}
+        </Card>{" "}
+        {/* Personal Information */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
@@ -107,47 +119,66 @@ export default function UserProfileScreen() {
             </View>
             <View className="flex-row justify-between">
               <Text className="text-muted-foreground">Email</Text>
-              <Text className="text-foreground font-medium">{userProfile.email}</Text>
+              <Text className="text-foreground font-medium">
+                {userProfile.email}
+              </Text>
             </View>
             <View className="flex-row justify-between">
               <Text className="text-muted-foreground">Member since</Text>
               <Text className="text-foreground font-medium">
-                {userProfile.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}
+                {userProfile.createdAt?.toDate?.()?.toLocaleDateString() ||
+                  "N/A"}
               </Text>
             </View>
           </CardContent>
-        </Card>        {/* Mental Health Preferences */}
+        </Card>{" "}
+        {/* Mental Health Preferences */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Mental Health Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <View>
-              <Text className="text-muted-foreground mb-2">Primary Concerns</Text>
+              <Text className="text-muted-foreground mb-2">
+                Primary Concerns
+              </Text>
               <View className="flex-row flex-wrap gap-2">
                 {userProfileData?.primaryConcerns?.map((concern) => (
-                  <View key={concern} className="px-3 py-1 bg-primary/10 rounded-full">
+                  <View
+                    key={concern}
+                    className="px-3 py-1 bg-primary/10 rounded-full"
+                  >
                     <Text className="text-primary text-sm">
-                      {concern.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {concern
+                        .replace("-", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
                     </Text>
                   </View>
-                )) || <Text className="text-muted-foreground">Not specified</Text>}
+                )) || (
+                  <Text className="text-muted-foreground">Not specified</Text>
+                )}
               </View>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">Preferred Counsellor</Text>
+              <Text className="text-muted-foreground">
+                Preferred Counsellor
+              </Text>
               <Text className="text-foreground font-medium capitalize">
-                {userProfileData?.preferredCounsellorGender?.replace('-', ' ') || 'Not specified'}
+                {userProfileData?.preferredCounsellorGender?.replace(
+                  "-",
+                  " ",
+                ) || "Not specified"}
               </Text>
             </View>
             <View className="flex-row justify-between">
               <Text className="text-muted-foreground">Session Type</Text>
               <Text className="text-foreground font-medium capitalize">
-                {userProfileData?.preferredSessionType || 'Any'}
+                {userProfileData?.preferredSessionType || "Any"}
               </Text>
             </View>
           </CardContent>
-        </Card>        {/* Emergency Contact */}
+        </Card>{" "}
+        {/* Emergency Contact */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Emergency Contact</CardTitle>
@@ -180,30 +211,40 @@ export default function UserProfileScreen() {
               </Text>
             )}
           </CardContent>
-        </Card>{/* Quick Actions */}
+        </Card>
+        {/* Quick Actions */}
         <View className="space-y-3 mb-6">
-          <Button 
-            variant="outline" 
-            onPress={() => router.push('/chat')} 
+          <Button
+            variant="outline"
+            onPress={() => router.push("/chat")}
             className="w-full flex-row items-center justify-center gap-2"
           >
-            <Ionicons name="chatbubbles-outline" size={20} color={isDarkColorScheme ? '#fff' : '#000'} />
+            <Ionicons
+              name="chatbubbles-outline"
+              size={20}
+              color={isDarkColorScheme ? "#fff" : "#000"}
+            />
             <Text className="text-foreground">See All Chats</Text>
           </Button>
-          
-          <Button 
-            variant="outline" 
-            onPress={() => router.push('/(main)/sessions')} 
+
+          <Button
+            variant="outline"
+            onPress={() => router.push("/(main)/sessions")}
             className="w-full flex-row items-center justify-center gap-2"
           >
-            <Ionicons name="calendar-outline" size={20} color={isDarkColorScheme ? '#fff' : '#000'} />
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={isDarkColorScheme ? "#fff" : "#000"}
+            />
             <Text className="text-foreground">My Sessions</Text>
           </Button>
-          
+
           <Button variant="outline" onPress={handleLogout} className="w-full">
             <Text className="text-destructive">Sign Out</Text>
           </Button>
-        </View>      </ScrollView>
+        </View>{" "}
+      </ScrollView>
     </SafeAreaView>
   );
 }

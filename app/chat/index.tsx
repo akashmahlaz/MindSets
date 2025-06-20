@@ -1,18 +1,13 @@
 import "@/app/global.css";
-import { useAuth } from '@/context/AuthContext';
-import { useChat } from '@/context/ChatContext';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React from 'react';
-import {
-    ActivityIndicator,
-    StatusBar,
-    Text,
-    View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChannelList } from 'stream-chat-expo';
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React from "react";
+import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ChannelList } from "stream-chat-expo";
 
 export default function ChannelListScreen() {
   const { chatClient, isChatConnected } = useChat();
@@ -21,10 +16,13 @@ export default function ChannelListScreen() {
 
   if (!chatClient || !isChatConnected || !user) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-background" edges={['top']}>
-        <StatusBar 
+      <SafeAreaView
+        className="flex-1 justify-center items-center bg-background"
+        edges={["top"]}
+      >
+        <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
+          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
         />
         <ActivityIndicator size="large" color="#6366F1" />
         <Text className="text-muted-foreground mt-4">Loading channels...</Text>
@@ -33,8 +31,8 @@ export default function ChannelListScreen() {
   }
 
   const filters = {
-    type: 'messaging',
-    members: { $in: [user.uid] }
+    type: "messaging",
+    members: { $in: [user.uid] },
   };
 
   const sort = {
@@ -45,11 +43,16 @@ export default function ChannelListScreen() {
     watch: true,
     presence: true,
     limit: 30,
-  };  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']} style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}>
-      <StatusBar 
+  };
+  return (
+    <SafeAreaView
+      className="flex-1 bg-background"
+      edges={["top"]}
+      style={{ backgroundColor: isDarkColorScheme ? "#000000" : "#ffffff" }}
+    >
+      <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
+        backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
       />
       {/* Header */}
       <View className="p-4 border-b border-border">
@@ -64,7 +67,7 @@ export default function ChannelListScreen() {
           router.push(`/chat/${channel.id}`);
         }}
         additionalFlatListProps={{
-          style: { backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }
+          style: { backgroundColor: isDarkColorScheme ? "#000000" : "#ffffff" },
         }}
         EmptyStateIndicator={() => (
           <View className="flex-1 justify-center items-center p-8">

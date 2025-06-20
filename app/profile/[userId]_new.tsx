@@ -1,21 +1,23 @@
 import "@/app/global.css";
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
-import { useVideo } from '@/context/VideoContext';
-import { getUserProfile } from '@/services/userService';
-import { CounsellorProfileData } from '@/types/user';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { useVideo } from "@/context/VideoContext";
+import { getUserProfile } from "@/services/userService";
+import { CounsellorProfileData } from "@/types/user";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CounsellorProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { user } = useAuth();
   const { createCall } = useVideo();
   const router = useRouter();
-  const [counsellor, setCounsellor] = useState<CounsellorProfileData | null>(null);
+  const [counsellor, setCounsellor] = useState<CounsellorProfileData | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,15 +26,15 @@ export default function CounsellorProfileScreen() {
 
   const loadCounsellorProfile = async () => {
     if (!userId) return;
-    
+
     try {
       const profile = await getUserProfile(userId);
-      if (profile && profile.role === 'counsellor') {
+      if (profile && profile.role === "counsellor") {
         setCounsellor(profile as CounsellorProfileData);
       }
     } catch (error) {
-      console.error('Error loading counsellor profile:', error);
-      Alert.alert('Error', 'Failed to load counsellor profile');
+      console.error("Error loading counsellor profile:", error);
+      Alert.alert("Error", "Failed to load counsellor profile");
     } finally {
       setLoading(false);
     }
@@ -41,30 +43,33 @@ export default function CounsellorProfileScreen() {
   const handleStartChat = () => {
     if (!counsellor) return;
     router.push({
-      pathname: '/users/chat',
-      params: { userId: counsellor.uid }
+      pathname: "/users/chat",
+      params: { userId: counsellor.uid },
     });
   };
 
   const handleVideoCall = async () => {
     if (!counsellor || !user) return;
-    
+
     try {
       const callId = await createCall(
         `call_${user.uid}_${counsellor.uid}_${Date.now()}`,
-        [user.uid, counsellor.uid]
+        [user.uid, counsellor.uid],
       );
       router.push({
-        pathname: '/call/[callId]',
-        params: { callId }
+        pathname: "/call/[callId]",
+        params: { callId },
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to start video call');
+      Alert.alert("Error", "Failed to start video call");
     }
   };
 
   const handleBookSession = () => {
-    Alert.alert('Coming Soon', 'Session booking feature will be available soon!');
+    Alert.alert(
+      "Coming Soon",
+      "Session booking feature will be available soon!",
+    );
   };
 
   if (loading) {
@@ -81,7 +86,9 @@ export default function CounsellorProfileScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-foreground text-center">Counsellor profile not found</Text>
+          <Text className="text-foreground text-center">
+            Counsellor profile not found
+          </Text>
           <Button onPress={() => router.back()} className="mt-4">
             <Text className="text-primary-foreground">Go Back</Text>
           </Button>
@@ -109,7 +116,8 @@ export default function CounsellorProfileScreen() {
             <View className="flex-row items-center mt-2">
               <Text className="text-yellow-500 text-lg">⭐</Text>
               <Text className="text-foreground ml-1">
-                {counsellor.averageRating.toFixed(1)} ({counsellor.totalReviews || 0} reviews)
+                {counsellor.averageRating.toFixed(1)} (
+                {counsellor.totalReviews || 0} reviews)
               </Text>
             </View>
           )}
@@ -120,10 +128,18 @@ export default function CounsellorProfileScreen() {
           <Button onPress={handleStartChat} className="flex-1">
             <Text className="text-primary-foreground">💬 Chat</Text>
           </Button>
-          <Button onPress={handleVideoCall} variant="outline" className="flex-1">
+          <Button
+            onPress={handleVideoCall}
+            variant="outline"
+            className="flex-1"
+          >
             <Text className="text-foreground">📹 Video Call</Text>
           </Button>
-          <Button onPress={handleBookSession} variant="outline" className="flex-1">
+          <Button
+            onPress={handleBookSession}
+            variant="outline"
+            className="flex-1"
+          >
             <Text className="text-foreground">📅 Book</Text>
           </Button>
         </View>
@@ -136,7 +152,9 @@ export default function CounsellorProfileScreen() {
           <CardContent className="space-y-3">
             <View>
               <Text className="font-medium text-foreground">Experience</Text>
-              <Text className="text-muted-foreground">{counsellor.yearsExperience} years</Text>
+              <Text className="text-muted-foreground">
+                {counsellor.yearsExperience} years
+              </Text>
             </View>
             <View>
               <Text className="font-medium text-foreground">License</Text>
@@ -146,34 +164,44 @@ export default function CounsellorProfileScreen() {
             </View>
             <View>
               <Text className="font-medium text-foreground">Rate</Text>
-              <Text className="text-muted-foreground">${counsellor.hourlyRate}/hour</Text>
+              <Text className="text-muted-foreground">
+                ${counsellor.hourlyRate}/hour
+              </Text>
             </View>
             <View>
               <Text className="font-medium text-foreground">Languages</Text>
-              <Text className="text-muted-foreground">{counsellor.languages?.join(', ') || 'English'}</Text>
+              <Text className="text-muted-foreground">
+                {counsellor.languages?.join(", ") || "English"}
+              </Text>
             </View>
           </CardContent>
         </Card>
 
         {/* Specializations */}
-        {counsellor.specializations && counsellor.specializations.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Specializations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <View className="flex-row flex-wrap gap-2">
-                {counsellor.specializations.map((spec, index) => (
-                  <View key={index} className="px-3 py-1 bg-primary/10 rounded-full">
-                    <Text className="text-primary text-sm">
-                      {spec.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </CardContent>
-          </Card>
-        )}
+        {counsellor.specializations &&
+          counsellor.specializations.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Specializations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <View className="flex-row flex-wrap gap-2">
+                  {counsellor.specializations.map((spec, index) => (
+                    <View
+                      key={index}
+                      className="px-3 py-1 bg-primary/10 rounded-full"
+                    >
+                      <Text className="text-primary text-sm">
+                        {spec
+                          .replace("-", " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </CardContent>
+            </Card>
+          )}
 
         {/* Therapy Approaches */}
         {counsellor.approaches && counsellor.approaches.length > 0 && (
@@ -184,8 +212,13 @@ export default function CounsellorProfileScreen() {
             <CardContent>
               <View className="flex-row flex-wrap gap-2">
                 {counsellor.approaches.map((approach, index) => (
-                  <View key={index} className="px-3 py-1 bg-secondary/10 rounded-full">
-                    <Text className="text-secondary-foreground text-sm">{approach}</Text>
+                  <View
+                    key={index}
+                    className="px-3 py-1 bg-secondary/10 rounded-full"
+                  >
+                    <Text className="text-secondary-foreground text-sm">
+                      {approach}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -201,7 +234,7 @@ export default function CounsellorProfileScreen() {
             </CardHeader>
             <CardContent>
               <Text className="text-muted-foreground">
-                Works with: {counsellor.ageGroups.join(', ')}
+                Works with: {counsellor.ageGroups.join(", ")}
               </Text>
             </CardContent>
           </Card>
@@ -214,8 +247,13 @@ export default function CounsellorProfileScreen() {
           </CardHeader>
           <CardContent>
             <Text className="text-muted-foreground">
-              {counsellor.displayName} is a licensed {counsellor.licenseType.toLowerCase()} with {counsellor.yearsExperience} years of experience. 
-              They specialize in helping clients with {counsellor.specializations?.slice(0, 3).join(', ') || 'various mental health concerns'}.
+              {counsellor.displayName} is a licensed{" "}
+              {counsellor.licenseType.toLowerCase()} with{" "}
+              {counsellor.yearsExperience} years of experience. They specialize
+              in helping clients with{" "}
+              {counsellor.specializations?.slice(0, 3).join(", ") ||
+                "various mental health concerns"}
+              .
             </Text>
           </CardContent>
         </Card>
@@ -224,11 +262,15 @@ export default function CounsellorProfileScreen() {
         <Card className="mb-6">
           <CardContent className="p-4">
             <View className="flex-row items-center">
-              <View className={`w-3 h-3 rounded-full mr-3 ${
-                counsellor.acceptsNewClients ? 'bg-green-500' : 'bg-red-500'
-              }`} />
+              <View
+                className={`w-3 h-3 rounded-full mr-3 ${
+                  counsellor.acceptsNewClients ? "bg-green-500" : "bg-red-500"
+                }`}
+              />
               <Text className="text-foreground">
-                {counsellor.acceptsNewClients ? 'Accepting new clients' : 'Not accepting new clients'}
+                {counsellor.acceptsNewClients
+                  ? "Accepting new clients"
+                  : "Not accepting new clients"}
               </Text>
             </View>
           </CardContent>

@@ -1,18 +1,21 @@
 import "@/app/global.css";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/context/AuthContext';
-import { useChat } from '@/context/ChatContext';
-import { useVideo } from '@/context/VideoContext';
-import { getUserProfile } from '@/services/userService';
-import { UserProfile } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useVideo } from "@/context/VideoContext";
+import { getUserProfile } from "@/services/userService";
+import { UserProfile } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -29,7 +32,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     const loadUserData = async () => {
       if (!userId) {
-        console.log('No userId provided');
+        console.log("No userId provided");
         setError(true);
         setLoading(false);
         return;
@@ -38,35 +41,37 @@ export default function ProfileScreen() {
       try {
         setLoading(true);
         setError(false);
-        console.log('Loading user data for:', userId);
-        
+        console.log("Loading user data for:", userId);
+
         // Load user profile data
         const profile = await getUserProfile(userId as string);
-        
+
         // Also fetch user from Stream Chat if chatClient is available
         let streamUser = null;
         if (chatClient) {
           try {
-            const response = await chatClient.queryUsers({ id: userId as string });
+            const response = await chatClient.queryUsers({
+              id: userId as string,
+            });
             if (response.users.length > 0) {
               streamUser = response.users[0];
               setProfileUser(streamUser);
             }
           } catch (streamError) {
-            console.error('Error fetching Stream user:', streamError);
+            console.error("Error fetching Stream user:", streamError);
             // Don't fail the whole operation if Stream fails
           }
         }
-        
+
         if (profile) {
           setUserData(profile);
-          console.log('User data loaded:', profile);
+          console.log("User data loaded:", profile);
         } else {
-          console.log('User not found:', userId);
+          console.log("User not found:", userId);
           setError(true);
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error("Error loading user data:", error);
         setError(true);
       } finally {
         setLoading(false);
@@ -74,89 +79,109 @@ export default function ProfileScreen() {
     };
 
     loadUserData();
-  }, [userId, chatClient]);  const startChat = async (targetUser: UserProfile) => {
+  }, [userId, chatClient]);
+  const startChat = async (targetUser: UserProfile) => {
     if (!user || !chatClient) {
-      Alert.alert('Error', 'Chat not available');
+      Alert.alert("Error", "Chat not available");
       return;
     }
 
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
-        Alert.alert('Error', 'Failed to connect to chat');
+        Alert.alert("Error", "Failed to connect to chat");
         return;
       }
     }
-    
+
     try {
-      const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
+      const { createOrGetDirectChannel } = await import(
+        "@/services/chatHelpers"
+      );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
       router.push(`/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
-        'Chat Error', 
-        `Failed to start chat with ${targetUser.displayName}. Please try again.`
+        "Chat Error",
+        `Failed to start chat with ${targetUser.displayName}. Please try again.`,
       );
     }
   };
   const generateCallId = (user1: string, user2: string) => {
-    return [user1, user2].sort().join('-');
+    return [user1, user2].sort().join("-");
   };
 
   const handleStartCall = async () => {
     if (!user?.uid || !userData) {
-      Alert.alert('Error', 'Unable to start call. Please try again.');
+      Alert.alert("Error", "Unable to start call. Please try again.");
       return;
     }
-    
+
     try {
       const callId = generateCallId(user.uid, userData.uid);
       const call = await createCall(callId, [userData.uid], false); // Voice call
-      
+
       if (!call) {
-        throw new Error('Failed to create call');
+        throw new Error("Failed to create call");
       }
     } catch (error) {
-      console.error('Error starting voice call:', error);
-      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
+      console.error("Error starting voice call:", error);
+      Alert.alert(
+        "Error",
+        "Failed to start call. Please check your connection and try again.",
+      );
     }
   };
 
   const handleStartVideoCall = async () => {
     if (!user?.uid || !userData) {
-      Alert.alert('Error', 'Unable to start video call. Please try again.');
+      Alert.alert("Error", "Unable to start video call. Please try again.");
       return;
     }
-    
+
     try {
       const callId = generateCallId(user.uid, userData.uid);
       const call = await createCall(callId, [userData.uid], true); // Video call
-      
+
       if (!call) {
-        throw new Error('Failed to create call');
+        throw new Error("Failed to create call");
       }
     } catch (error) {
-      console.error('Error starting video call:', error);
-      Alert.alert('Error', 'Failed to start video call. Please check your connection and try again.');
+      console.error("Error starting video call:", error);
+      Alert.alert(
+        "Error",
+        "Failed to start video call. Please check your connection and try again.",
+      );
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case "online":
+        return "bg-green-500";
+      case "away":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-400";
     }
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+      <SafeAreaView
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top }}
+      >
         <View className="flex-1">
           {/* Header Skeleton */}
           <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
@@ -174,11 +199,11 @@ export default function ProfileScreen() {
                   <Skeleton className="w-24 h-24 rounded-full" />
                   <Skeleton className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full" />
                 </View>
-                
+
                 {/* Name and Email Skeleton */}
                 <Skeleton className="w-32 h-7 rounded mb-2" />
                 <Skeleton className="w-40 h-5 rounded mb-2" />
-                
+
                 {/* Status Skeleton */}
                 <View className="flex-row items-center">
                   <Skeleton className="w-2 h-2 rounded-full mr-2" />
@@ -228,17 +253,19 @@ export default function ProfileScreen() {
         </View>
       </SafeAreaView>
     );
-  }  // Only show error state if loading is complete AND there's an error AND no userData
+  } // Only show error state if loading is complete AND there's an error AND no userData
   if (!loading && (!userData || error)) {
     return (
       <SafeAreaView className="flex-1 bg-background justify-center items-center px-6">
         <Ionicons name="person-circle-outline" size={80} color="#9CA3AF" />
-        <Text className="text-foreground text-xl font-semibold mt-4">User not found</Text>
+        <Text className="text-foreground text-xl font-semibold mt-4">
+          User not found
+        </Text>
         <Text className="text-muted-foreground text-center mt-2">
           This user may not exist or has been removed.
         </Text>
-        <Button 
-          onPress={() => router.back()} 
+        <Button
+          onPress={() => router.back()}
           className="mt-6"
           variant="outline"
         >
@@ -254,7 +281,10 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+    <SafeAreaView
+      className="flex-1 bg-background"
+      style={{ paddingTop: insets.top }}
+    >
       <View className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
@@ -273,17 +303,24 @@ export default function ProfileScreen() {
           <Card className="mb-6">
             <CardContent className="items-center py-8">
               <View className="relative mb-4">
-                <Avatar className="w-24 h-24" alt={userData.displayName || 'User Avatar'}>
-                  <AvatarImage source={{ uri: userData.photoURL || undefined }} />
+                <Avatar
+                  className="w-24 h-24"
+                  alt={userData.displayName || "User Avatar"}
+                >
+                  <AvatarImage
+                    source={{ uri: userData.photoURL || undefined }}
+                  />
                   <AvatarFallback className="bg-primary">
                     <Text className="text-primary-foreground text-2xl font-bold">
                       {getInitials(userData.displayName)}
                     </Text>
                   </AvatarFallback>
                 </Avatar>
-                <View className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-4 border-card ${getStatusColor(userData.status)}`} />
+                <View
+                  className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-4 border-card ${getStatusColor(userData.status)}`}
+                />
               </View>
-              
+
               <Text className="text-2xl font-bold text-foreground mb-1">
                 {userData.displayName}
               </Text>
@@ -291,7 +328,9 @@ export default function ProfileScreen() {
                 {userData.email}
               </Text>
               <View className="flex-row items-center">
-                <View className={`w-2 h-2 rounded-full mr-2 ${getStatusColor(userData.status)}`} />
+                <View
+                  className={`w-2 h-2 rounded-full mr-2 ${getStatusColor(userData.status)}`}
+                />
                 <Text className="text-sm text-muted-foreground capitalize">
                   {userData.status}
                 </Text>
@@ -302,7 +341,9 @@ export default function ProfileScreen() {
           {/* Action Buttons */}
           <Card>
             <CardHeader>
-              <Text className="text-lg font-semibold text-foreground">Connect</Text>
+              <Text className="text-lg font-semibold text-foreground">
+                Connect
+              </Text>
             </CardHeader>
             <CardContent className="space-y-3">
               <TouchableOpacity
@@ -314,7 +355,9 @@ export default function ProfileScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-foreground font-semibold">Message</Text>
-                  <Text className="text-muted-foreground text-sm">Send a message</Text>
+                  <Text className="text-muted-foreground text-sm">
+                    Send a message
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>
@@ -327,8 +370,12 @@ export default function ProfileScreen() {
                   <Ionicons name="call" size={24} color="white" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-foreground font-semibold">Voice Call</Text>
-                  <Text className="text-muted-foreground text-sm">Start a voice call</Text>
+                  <Text className="text-foreground font-semibold">
+                    Voice Call
+                  </Text>
+                  <Text className="text-muted-foreground text-sm">
+                    Start a voice call
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>
@@ -341,8 +388,12 @@ export default function ProfileScreen() {
                   <Ionicons name="videocam" size={24} color="white" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-foreground font-semibold">Video Call</Text>
-                  <Text className="text-muted-foreground text-sm">Start a video call</Text>
+                  <Text className="text-foreground font-semibold">
+                    Video Call
+                  </Text>
+                  <Text className="text-muted-foreground text-sm">
+                    Start a video call
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </TouchableOpacity>
@@ -353,4 +404,3 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
-

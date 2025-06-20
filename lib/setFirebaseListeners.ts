@@ -1,10 +1,10 @@
 import notifee from "@notifee/react-native";
 import messaging from "@react-native-firebase/messaging";
 import {
-    firebaseDataHandler,
-    isFirebaseStreamVideoMessage,
-    isNotifeeStreamVideoEvent,
-    onAndroidNotifeeEvent,
+  firebaseDataHandler,
+  isFirebaseStreamVideoMessage,
+  isNotifeeStreamVideoEvent,
+  onAndroidNotifeeEvent,
 } from "@stream-io/video-react-native-sdk";
 
 export const setFirebaseListeners = () => {
@@ -14,7 +14,7 @@ export const setFirebaseListeners = () => {
       await firebaseDataHandler(msg.data);
     } else {
       // your other background notifications (if any)
-      console.log('Background message received:', msg);
+      console.log("Background message received:", msg);
     }
   });
 
@@ -24,7 +24,7 @@ export const setFirebaseListeners = () => {
       await onAndroidNotifeeEvent({ event, isBackground: true });
     } else {
       // your other background notifications (if any)
-      console.log('Background notifee event:', event);
+      console.log("Background notifee event:", event);
     }
   });
 
@@ -34,7 +34,7 @@ export const setFirebaseListeners = () => {
       firebaseDataHandler(msg.data);
     } else {
       // your other foreground notifications (if any)
-      console.log('Foreground message received:', msg);
+      console.log("Foreground message received:", msg);
     }
   });
 
@@ -44,7 +44,7 @@ export const setFirebaseListeners = () => {
       onAndroidNotifeeEvent({ event, isBackground: false });
     } else {
       // your other foreground notifications (if any)
-      console.log('Foreground notifee event:', event);
+      console.log("Foreground notifee event:", event);
     }
   });
 };

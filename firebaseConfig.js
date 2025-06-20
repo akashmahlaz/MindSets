@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
-import { getReactNativePersistence, initializeAuth } from 'firebase/auth'; // Import isSupported for auth
+import { getReactNativePersistence, initializeAuth } from "firebase/auth"; // Import isSupported for auth
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -16,7 +16,7 @@ const firebaseConfig = {
   storageBucket: "mental-health-f7b7f.firebasestorage.app",
   messagingSenderId: "952214463855",
   appId: "1:952214463855:web:631b1cdb75bb1e3961349a",
-  measurementId: "G-H3QQ176Z7G"
+  measurementId: "G-H3QQ176Z7G",
 };
 
 // Initialize Firebase
@@ -42,11 +42,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-
 // Initialize Auth with persistence
 const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
 export { app, auth, db, storage };
-

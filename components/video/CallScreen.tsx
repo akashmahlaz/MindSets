@@ -1,15 +1,15 @@
 import {
-    CallContent,
-    CallingState,
-    StreamCall,
-    useCall,
-    useCallStateHooks,
-} from '@stream-io/video-react-native-sdk';
-import { router } from 'expo-router';
-import React, { useEffect } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
-import { ThemedText } from '../ThemedText';
-import { ThemedView } from '../ThemedView';
+  CallContent,
+  CallingState,
+  StreamCall,
+  useCall,
+  useCallStateHooks,
+} from "@stream-io/video-react-native-sdk";
+import { router } from "expo-router";
+import React, { useEffect } from "react";
+import { Alert, StyleSheet, View } from "react-native";
+import { ThemedText } from "../ThemedText";
+import { ThemedView } from "../ThemedView";
 
 interface CallScreenProps {
   call: any;
@@ -37,13 +37,16 @@ const CallScreenContent: React.FC = () => {
         router.back();
       }
     } catch (error) {
-      console.error('Error hanging up call:', error);
-      Alert.alert('Error', 'Failed to end call');
+      console.error("Error hanging up call:", error);
+      Alert.alert("Error", "Failed to end call");
     }
   };
 
   // Show loading state while connecting
-  if (callingState === CallingState.JOINING || callingState === CallingState.UNKNOWN) {
+  if (
+    callingState === CallingState.JOINING ||
+    callingState === CallingState.UNKNOWN
+  ) {
     return (
       <ThemedView style={styles.loadingContainer}>
         <ThemedText style={styles.loadingText}>Connecting...</ThemedText>
@@ -65,13 +68,14 @@ const CallScreenContent: React.FC = () => {
     <View style={styles.container}>
       <CallContent
         onHangupCallHandler={handleHangup}
-        landscape={false}        supportedReactions={[
-          { type: 'like', icon: '👍' },
-          { type: 'love', icon: '❤️' },
-          { type: 'haha', icon: '😂' },
-          { type: 'wow', icon: '😮' },
-          { type: 'sad', icon: '😢' },
-          { type: 'angry', icon: '😠' },
+        landscape={false}
+        supportedReactions={[
+          { type: "like", icon: "👍" },
+          { type: "love", icon: "❤️" },
+          { type: "haha", icon: "😂" },
+          { type: "wow", icon: "😮" },
+          { type: "sad", icon: "😢" },
+          { type: "angry", icon: "😠" },
         ]}
       />
     </View>
@@ -97,25 +101,25 @@ export const CallScreen: React.FC<CallScreenProps> = ({ call, onEndCall }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
   },
   loadingText: {
     fontSize: 18,
-    color: '#fff',
+    color: "#fff",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

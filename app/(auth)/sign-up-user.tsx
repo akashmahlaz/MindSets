@@ -1,16 +1,34 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { H2, P } from '@/components/ui/typography';
-import { useAuth } from '@/context/AuthContext';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { MENTAL_HEALTH_CONCERNS, UserProfileData } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text, TouchableWithoutFeedback, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { H2, P } from "@/components/ui/typography";
+import { useAuth } from "@/context/AuthContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { MENTAL_HEALTH_CONCERNS, UserProfileData } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface UserSignUpData {
   // Basic info
@@ -28,13 +46,13 @@ interface UserSignUpData {
 
   // Mental health info
   primaryConcerns: string[];
-  severityLevel: 'mild' | 'moderate' | 'severe' | '';
+  severityLevel: "mild" | "moderate" | "severe" | "";
   previousTherapy: boolean | null;
-  
+
   // Preferences
-  preferredCounsellorGender: 'male' | 'female' | 'no-preference';
-  preferredSessionType: 'video' | 'audio' | 'chat' | 'any';
-  
+  preferredCounsellorGender: "male" | "female" | "no-preference";
+  preferredSessionType: "video" | "audio" | "chat" | "any";
+
   // Emergency contact
   emergencyContactName: string;
   emergencyContactPhone: string;
@@ -46,64 +64,72 @@ export default function UserSignUpScreen() {
   const { signUpEnhanced } = useAuth();
   const params = useLocalSearchParams();
   const { isDarkColorScheme } = useColorScheme();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState<UserSignUpData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
     age: 0,
     primaryConcerns: [],
-    severityLevel: '',
+    severityLevel: "",
     previousTherapy: null,
-    preferredCounsellorGender: 'no-preference',
-    preferredSessionType: 'any',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
-    emergencyContactRelation: '',
+    preferredCounsellorGender: "no-preference",
+    preferredSessionType: "any",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    emergencyContactRelation: "",
   });
 
-  const isStep1Valid = formData.email && formData.password && formData.confirmPassword && 
-                     formData.firstName && formData.lastName && 
-                     formData.password === formData.confirmPassword &&
-                     formData.email.includes('@') &&
-                     formData.password.length >= 6;
-  
-  const isStep2Valid = formData.primaryConcerns.length > 0 && formData.severityLevel;
-  
-  const isStep3Valid = formData.emergencyContactName && formData.emergencyContactPhone && 
-                      formData.emergencyContactRelation;
+  const isStep1Valid =
+    formData.email &&
+    formData.password &&
+    formData.confirmPassword &&
+    formData.firstName &&
+    formData.lastName &&
+    formData.password === formData.confirmPassword &&
+    formData.email.includes("@") &&
+    formData.password.length >= 6;
+
+  const isStep2Valid =
+    formData.primaryConcerns.length > 0 && formData.severityLevel;
+
+  const isStep3Valid =
+    formData.emergencyContactName &&
+    formData.emergencyContactPhone &&
+    formData.emergencyContactRelation;
 
   const handleConcernToggle = (concern: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       primaryConcerns: prev.primaryConcerns.includes(concern)
-        ? prev.primaryConcerns.filter(c => c !== concern)
-        : [...prev.primaryConcerns, concern]
+        ? prev.primaryConcerns.filter((c) => c !== concern)
+        : [...prev.primaryConcerns, concern],
     }));
   };
   const handleNext = () => {
-    setError(''); // Clear any errors when moving to next step
+    setError(""); // Clear any errors when moving to next step
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    setError(''); // Clear any errors when going back
+    setError(""); // Clear any errors when going back
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
       router.back();
     }
-  };  const handleSubmit = async () => {
+  };
+  const handleSubmit = async () => {
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       // Create the enhanced profile data
       const profileData: Partial<UserProfileData> = {
@@ -122,36 +148,43 @@ export default function UserSignUpScreen() {
         },
       };
 
-      await signUpEnhanced(formData.email, formData.password, profileData, 'user');
-      
+      await signUpEnhanced(
+        formData.email,
+        formData.password,
+        profileData,
+        "user",
+      );
+
       Alert.alert(
-        'Registration Successful',
-        'Welcome to MindConnect! Your account has been created.',
-        [{ text: 'OK', onPress: () => router.replace('/(main)') }]
+        "Registration Successful",
+        "Welcome to MindConnect! Your account has been created.",
+        [{ text: "OK", onPress: () => router.replace("/(main)") }],
       );
     } catch (error: any) {
-      console.error('Sign-up error:', error);
-      
+      console.error("Sign-up error:", error);
+
       // Provide user-friendly error messages
-      let errorMessage = 'Failed to create account. Please try again.';
-      
+      let errorMessage = "Failed to create account. Please try again.";
+
       switch (error.code) {
-        case 'auth/email-already-in-use':
-          errorMessage = 'An account with this email already exists';
+        case "auth/email-already-in-use":
+          errorMessage = "An account with this email already exists";
           break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address';
+        case "auth/invalid-email":
+          errorMessage = "Invalid email address";
           break;
-        case 'auth/weak-password':
-          errorMessage = 'Password is too weak. Please use at least 6 characters';
+        case "auth/weak-password":
+          errorMessage =
+            "Password is too weak. Please use at least 6 characters";
           break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Network error. Please check your connection';
+        case "auth/network-request-failed":
+          errorMessage = "Network error. Please check your connection";
           break;
         default:
-          errorMessage = error.message || 'Failed to create account. Please try again.';
+          errorMessage =
+            error.message || "Failed to create account. Please try again.";
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -166,8 +199,8 @@ export default function UserSignUpScreen() {
         <Input
           value={formData.firstName}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, firstName: text }));
-            setError('');
+            setFormData((prev) => ({ ...prev, firstName: text }));
+            setError("");
           }}
           placeholder="Enter your first name"
           editable={!loading}
@@ -180,8 +213,8 @@ export default function UserSignUpScreen() {
         <Input
           value={formData.lastName}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, lastName: text }));
-            setError('');
+            setFormData((prev) => ({ ...prev, lastName: text }));
+            setError("");
           }}
           placeholder="Enter your last name"
           editable={!loading}
@@ -194,8 +227,8 @@ export default function UserSignUpScreen() {
         <Input
           value={formData.email}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, email: text }));
-            setError('');
+            setFormData((prev) => ({ ...prev, email: text }));
+            setError("");
           }}
           placeholder="Enter your email"
           editable={!loading}
@@ -210,8 +243,8 @@ export default function UserSignUpScreen() {
         <Input
           value={formData.password}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, password: text }));
-            setError('');
+            setFormData((prev) => ({ ...prev, password: text }));
+            setError("");
           }}
           placeholder="Create a password"
           editable={!loading}
@@ -225,8 +258,8 @@ export default function UserSignUpScreen() {
         <Input
           value={formData.confirmPassword}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, confirmPassword: text }));
-            setError('');
+            setFormData((prev) => ({ ...prev, confirmPassword: text }));
+            setError("");
           }}
           placeholder="Re-enter your password"
           editable={!loading}
@@ -235,21 +268,36 @@ export default function UserSignUpScreen() {
           secureTextEntry
         />
       </View>
-      
-      {formData.password !== formData.confirmPassword && formData.confirmPassword && (
-        <View className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-          <View className="flex-row items-center">
-            <Ionicons name="alert-circle" size={16} color="#ef4444" style={{ marginRight: 6 }} />
-            <Text className="text-destructive text-sm">Passwords do not match</Text>
+
+      {formData.password !== formData.confirmPassword &&
+        formData.confirmPassword && (
+          <View className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <View className="flex-row items-center">
+              <Ionicons
+                name="alert-circle"
+                size={16}
+                color="#ef4444"
+                style={{ marginRight: 6 }}
+              />
+              <Text className="text-destructive text-sm">
+                Passwords do not match
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
-      
+        )}
+
       {formData.password && formData.password.length < 6 && (
         <View className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
           <View className="flex-row items-center">
-            <Ionicons name="alert-circle" size={16} color="#ef4444" style={{ marginRight: 6 }} />
-            <Text className="text-destructive text-sm">Password must be at least 6 characters</Text>
+            <Ionicons
+              name="alert-circle"
+              size={16}
+              color="#ef4444"
+              style={{ marginRight: 6 }}
+            />
+            <Text className="text-destructive text-sm">
+              Password must be at least 6 characters
+            </Text>
           </View>
         </View>
       )}
@@ -260,7 +308,9 @@ export default function UserSignUpScreen() {
       <H2 className="mb-2">Mental Health Assessment</H2>
       <P className="mb-4">Help us understand how we can best support you.</P>
       <View className="space-y-2">
-        <Label className="font-semibold text-base">What are your primary mental health concerns? (Select all that apply)</Label>
+        <Label className="font-semibold text-base">
+          What are your primary mental health concerns? (Select all that apply)
+        </Label>
         <View className="flex-row flex-wrap gap-2">
           {MENTAL_HEALTH_CONCERNS.slice(0, 12).map((concern) => (
             <Pressable
@@ -268,80 +318,102 @@ export default function UserSignUpScreen() {
               onPress={() => {
                 if (!loading) {
                   handleConcernToggle(concern);
-                  setError(''); // Clear error when user makes a selection
+                  setError(""); // Clear error when user makes a selection
                 }
               }}
               disabled={loading}
               className={`px-3 py-2 rounded-full border ${
                 formData.primaryConcerns.includes(concern)
-                  ? 'bg-primary border-primary'
-                  : 'bg-background border-border'
-              } ${loading ? 'opacity-50' : ''}`}
+                  ? "bg-primary border-primary"
+                  : "bg-background border-border"
+              } ${loading ? "opacity-50" : ""}`}
             >
-              <Text className={`text-sm ${
-                formData.primaryConcerns.includes(concern)
-                  ? 'text-primary-foreground'
-                  : 'text-foreground'
-              }`}>
-                {concern.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              <Text
+                className={`text-sm ${
+                  formData.primaryConcerns.includes(concern)
+                    ? "text-primary-foreground"
+                    : "text-foreground"
+                }`}
+              >
+                {concern
+                  .replace("-", " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
               </Text>
             </Pressable>
           ))}
         </View>
       </View>
-      
+
       <View className="space-y-2">
-        <Label className="font-semibold text-base">How would you rate the severity of your concerns?</Label>
+        <Label className="font-semibold text-base">
+          How would you rate the severity of your concerns?
+        </Label>
         <View className="space-y-2">
           {[
-            { value: 'mild', label: 'Mild - Some difficulty but manageable' },
-            { value: 'moderate', label: 'Moderate - Noticeable impact on daily life' },
-            { value: 'severe', label: 'Severe - Significant impact on daily functioning' }
+            { value: "mild", label: "Mild - Some difficulty but manageable" },
+            {
+              value: "moderate",
+              label: "Moderate - Noticeable impact on daily life",
+            },
+            {
+              value: "severe",
+              label: "Severe - Significant impact on daily functioning",
+            },
           ].map((option) => (
             <Pressable
               key={option.value}
               onPress={() => {
                 if (!loading) {
-                  setFormData(prev => ({ ...prev, severityLevel: option.value as any }));
-                  setError(''); // Clear error when user makes a selection
+                  setFormData((prev) => ({
+                    ...prev,
+                    severityLevel: option.value as any,
+                  }));
+                  setError(""); // Clear error when user makes a selection
                 }
               }}
               disabled={loading}
               className={`p-3 rounded-lg border ${
                 formData.severityLevel === option.value
-                  ? 'bg-primary/10 border-primary'
-                  : 'bg-background border-border'
-              } ${loading ? 'opacity-50' : ''}`}
+                  ? "bg-primary/10 border-primary"
+                  : "bg-background border-border"
+              } ${loading ? "opacity-50" : ""}`}
             >
               <Text className="text-foreground">{option.label}</Text>
             </Pressable>
           ))}
         </View>
       </View>
-      
+
       <View className="space-y-2">
-        <Label className="font-semibold text-base">Have you had therapy or counseling before?</Label>
+        <Label className="font-semibold text-base">
+          Have you had therapy or counseling before?
+        </Label>
         <View className="flex-row space-x-4">
           {[
-            { value: true, label: 'Yes' },
-            { value: false, label: 'No' }
+            { value: true, label: "Yes" },
+            { value: false, label: "No" },
           ].map((option) => (
             <Pressable
               key={option.label}
               onPress={() => {
                 if (!loading) {
-                  setFormData(prev => ({ ...prev, previousTherapy: option.value }));
-                  setError(''); // Clear error when user makes a selection
+                  setFormData((prev) => ({
+                    ...prev,
+                    previousTherapy: option.value,
+                  }));
+                  setError(""); // Clear error when user makes a selection
                 }
               }}
               disabled={loading}
               className={`flex-1 p-3 rounded-lg border ${
                 formData.previousTherapy === option.value
-                  ? 'bg-primary/10 border-primary'
-                  : 'bg-background border-border'
-              } ${loading ? 'opacity-50' : ''}`}
+                  ? "bg-primary/10 border-primary"
+                  : "bg-background border-border"
+              } ${loading ? "opacity-50" : ""}`}
             >
-              <Text className="text-foreground text-center">{option.label}</Text>
+              <Text className="text-foreground text-center">
+                {option.label}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -351,23 +423,34 @@ export default function UserSignUpScreen() {
   const renderStep3 = () => (
     <CardContent className="space-y-4">
       <H2 className="mb-2">Safety & Preferences</H2>
-      <P className="mb-4">Final details to ensure your safety and match you with the right counsellor.</P>
+      <P className="mb-4">
+        Final details to ensure your safety and match you with the right
+        counsellor.
+      </P>
       <View className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
         <View className="flex-row items-start">
-          <Ionicons name="information-circle" size={20} color="#f59e0b" style={{ marginRight: 8, marginTop: 2 }} />
+          <Ionicons
+            name="information-circle"
+            size={20}
+            color="#f59e0b"
+            style={{ marginRight: 8, marginTop: 2 }}
+          />
           <Text className="text-yellow-800 dark:text-yellow-200 text-sm flex-1">
-            Emergency contact information helps us reach someone if you're in crisis and need immediate support.
+            Emergency contact information helps us reach someone if you're in
+            crisis and need immediate support.
           </Text>
         </View>
       </View>
-      
+
       <View className="space-y-2">
-        <Label className="font-semibold text-base">Emergency Contact Name</Label>
+        <Label className="font-semibold text-base">
+          Emergency Contact Name
+        </Label>
         <Input
           value={formData.emergencyContactName}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, emergencyContactName: text }));
-            setError(''); // Clear error when user types
+            setFormData((prev) => ({ ...prev, emergencyContactName: text }));
+            setError(""); // Clear error when user types
           }}
           placeholder="Full name"
           editable={!loading}
@@ -375,14 +458,16 @@ export default function UserSignUpScreen() {
           placeholderTextColor="#9CA3AF"
         />
       </View>
-      
+
       <View className="space-y-2">
-        <Label className="font-semibold text-base">Emergency Contact Phone</Label>
+        <Label className="font-semibold text-base">
+          Emergency Contact Phone
+        </Label>
         <Input
           value={formData.emergencyContactPhone}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, emergencyContactPhone: text }));
-            setError(''); // Clear error when user types
+            setFormData((prev) => ({ ...prev, emergencyContactPhone: text }));
+            setError(""); // Clear error when user types
           }}
           placeholder="Phone number"
           keyboardType="phone-pad"
@@ -391,14 +476,17 @@ export default function UserSignUpScreen() {
           placeholderTextColor="#9CA3AF"
         />
       </View>
-      
+
       <View className="space-y-2">
         <Label className="font-semibold text-base">Relationship</Label>
         <Input
           value={formData.emergencyContactRelation}
           onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, emergencyContactRelation: text }));
-            setError(''); // Clear error when user types
+            setFormData((prev) => ({
+              ...prev,
+              emergencyContactRelation: text,
+            }));
+            setError(""); // Clear error when user types
           }}
           placeholder="e.g., Parent, Spouse, Friend"
           editable={!loading}
@@ -406,29 +494,34 @@ export default function UserSignUpScreen() {
           placeholderTextColor="#9CA3AF"
         />
       </View>
-      
+
       <View className="space-y-2">
-        <Label className="font-semibold text-base">Preferred Counsellor Gender</Label>
+        <Label className="font-semibold text-base">
+          Preferred Counsellor Gender
+        </Label>
         <View className="space-y-2">
           {[
-            { value: 'no-preference', label: 'No preference' },
-            { value: 'male', label: 'Male' },
-            { value: 'female', label: 'Female' }
+            { value: "no-preference", label: "No preference" },
+            { value: "male", label: "Male" },
+            { value: "female", label: "Female" },
           ].map((option) => (
             <Pressable
               key={option.value}
               onPress={() => {
                 if (!loading) {
-                  setFormData(prev => ({ ...prev, preferredCounsellorGender: option.value as any }));
-                  setError(''); // Clear error when user makes a selection
+                  setFormData((prev) => ({
+                    ...prev,
+                    preferredCounsellorGender: option.value as any,
+                  }));
+                  setError(""); // Clear error when user makes a selection
                 }
               }}
               disabled={loading}
               className={`p-3 rounded-lg border ${
                 formData.preferredCounsellorGender === option.value
-                  ? 'bg-primary/10 border-primary'
-                  : 'bg-background border-border'
-              } ${loading ? 'opacity-50' : ''}`}
+                  ? "bg-primary/10 border-primary"
+                  : "bg-background border-border"
+              } ${loading ? "opacity-50" : ""}`}
             >
               <Text className="text-foreground">{option.label}</Text>
             </Pressable>
@@ -439,34 +532,57 @@ export default function UserSignUpScreen() {
   );
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <StatusBar barStyle={isDarkColorScheme ? 'light-content' : 'dark-content'} />
+      <StatusBar
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+      />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <ScrollView
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              padding: 24,
+            }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={{ maxWidth: 480, width: '100%', alignSelf: 'center' }}>
-              <Card style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, borderRadius: 16 }}>
+            <View style={{ maxWidth: 480, width: "100%", alignSelf: "center" }}>
+              <Card
+                style={{
+                  elevation: 4,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.08,
+                  shadowRadius: 12,
+                  borderRadius: 16,
+                }}
+              >
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-center mb-2">Sign Up as User</CardTitle>
-                  <CardDescription className="text-center mb-2">Create your MindConnect account</CardDescription>
+                  <CardTitle className="text-2xl font-bold text-center mb-2">
+                    Sign Up as User
+                  </CardTitle>
+                  <CardDescription className="text-center mb-2">
+                    Create your MindConnect account
+                  </CardDescription>
                   {/* Step Indicator */}
                   <View className="flex-row justify-center items-center mb-2">
                     {[1, 2, 3].map((step) => (
-                      <View key={step} className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                      <View
+                        key={step}
+                        className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-blue-500" : "bg-gray-300"}`}
+                      />
                     ))}
                   </View>
                 </CardHeader>
                 {/* Error Message */}
                 {error ? (
                   <View className="bg-red-100 rounded-lg p-2 mb-2">
-                    <Text className="text-red-700 text-center text-sm">{error}</Text>
+                    <Text className="text-red-700 text-center text-sm">
+                      {error}
+                    </Text>
                   </View>
                 ) : null}
                 {/* Loading Indicator */}
@@ -482,15 +598,32 @@ export default function UserSignUpScreen() {
                 {/* Navigation Buttons */}
                 <CardContent>
                   <View className="flex-row justify-between mt-4">
-                    <Button variant="outline" onPress={handleBack} disabled={loading} style={{ flex: 1, marginRight: 8 }}>
+                    <Button
+                      variant="outline"
+                      onPress={handleBack}
+                      disabled={loading}
+                      style={{ flex: 1, marginRight: 8 }}
+                    >
                       <Text className="text-foreground">Back</Text>
                     </Button>
                     {currentStep < 3 ? (
-                      <Button onPress={handleNext} disabled={loading || (currentStep === 1 && !isStep1Valid) || (currentStep === 2 && !isStep2Valid)} style={{ flex: 1, marginLeft: 8 }}>
+                      <Button
+                        onPress={handleNext}
+                        disabled={
+                          loading ||
+                          (currentStep === 1 && !isStep1Valid) ||
+                          (currentStep === 2 && !isStep2Valid)
+                        }
+                        style={{ flex: 1, marginLeft: 8 }}
+                      >
                         <Text className="text-primary-foreground">Next</Text>
                       </Button>
                     ) : (
-                      <Button onPress={handleSubmit} disabled={loading || !isStep3Valid} style={{ flex: 1, marginLeft: 8 }}>
+                      <Button
+                        onPress={handleSubmit}
+                        disabled={loading || !isStep3Valid}
+                        style={{ flex: 1, marginLeft: 8 }}
+                      >
                         <Text className="text-primary-foreground">Sign Up</Text>
                       </Button>
                     )}

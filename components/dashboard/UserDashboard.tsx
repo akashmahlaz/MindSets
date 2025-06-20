@@ -1,10 +1,14 @@
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/context/AuthContext';
-import { getCounsellors } from '@/services/userService';
-import { CounsellorProfileData, UserProfile, UserProfileData } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
+import { getCounsellors } from "@/services/userService";
+import {
+  CounsellorProfileData,
+  UserProfile,
+  UserProfileData,
+} from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -12,9 +16,9 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserDashboard() {
   const { userProfile } = useAuth();
@@ -22,21 +26,22 @@ export default function UserDashboard() {
   const [counsellors, setCounsellors] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
+  const [searchQuery, setSearchQuery] = useState("");
 
   const userProfileData = userProfile as UserProfileData;
 
   const loadCounsellors = async () => {
     try {
-      const filters = userProfileData?.primaryConcerns ? {
-        specializations: userProfileData.primaryConcerns,
-      } : undefined;
+      const filters = userProfileData?.primaryConcerns
+        ? {
+            specializations: userProfileData.primaryConcerns,
+          }
+        : undefined;
 
       const data = await getCounsellors(filters);
       setCounsellors(data);
     } catch (error) {
-      console.error('Error loading counsellors:', error);
+      console.error("Error loading counsellors:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -54,17 +59,20 @@ export default function UserDashboard() {
 
   const handleCounsellorPress = (counsellor: CounsellorProfileData) => {
     router.push({
-      pathname: '/profile/[userId]',
-      params: { userId: counsellor.uid }
+      pathname: "/profile/[userId]",
+      params: { userId: counsellor.uid },
     });
   };
 
-  const filteredCounsellors = counsellors.filter(counsellor =>
-    counsellor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ('specializations' in counsellor &&
-      counsellor.specializations?.some(spec =>
-        spec.toLowerCase().includes(searchQuery.toLowerCase())
-      ))
+  const filteredCounsellors = counsellors.filter(
+    (counsellor) =>
+      counsellor.displayName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      ("specializations" in counsellor &&
+        counsellor.specializations?.some((spec) =>
+          spec.toLowerCase().includes(searchQuery.toLowerCase()),
+        )),
   );
 
   const renderCounsellorCard = (counsellor: CounsellorProfileData) => {
@@ -90,28 +98,39 @@ export default function UserDashboard() {
               </View>
             )}
           </View>
-          
+
           {/* Info Section */}
           <View>
-            <Text 
-              className="text-lg font-bold text-gray-900 dark:text-white mb-1" 
+            <Text
+              className="text-lg font-bold text-gray-900 dark:text-white mb-1"
               numberOfLines={1}
             >
               Dr. {counsellor.displayName}
             </Text>
-            <Text 
-              className="text-sm text-gray-600 dark:text-gray-400" 
+            <Text
+              className="text-sm text-gray-600 dark:text-gray-400"
               numberOfLines={2}
             >
-              {counsellor.specializations?.[0] === 'anxiety' && 'Specializes in anxiety'}
-              {counsellor.specializations?.[0] === 'depression' && 'Focuses on depression'}
-              {counsellor.specializations?.[0] === 'relationship' && 'Relationship counseling'}
-              {counsellor.specializations?.[0] === 'trauma' && 'Trauma specialist'}
-              {counsellor.specializations?.[0] === 'stress-management' && 'Stress management expert'}
-              {!counsellor.specializations?.[0] && 'General counseling'}
-              {counsellor.specializations?.[0] && 
-               !['anxiety', 'depression', 'relationship', 'trauma', 'stress-management'].includes(counsellor.specializations[0]) && 
-               `Specializes in ${counsellor.specializations[0].replace('-', ' ')}`}
+              {counsellor.specializations?.[0] === "anxiety" &&
+                "Specializes in anxiety"}
+              {counsellor.specializations?.[0] === "depression" &&
+                "Focuses on depression"}
+              {counsellor.specializations?.[0] === "relationship" &&
+                "Relationship counseling"}
+              {counsellor.specializations?.[0] === "trauma" &&
+                "Trauma specialist"}
+              {counsellor.specializations?.[0] === "stress-management" &&
+                "Stress management expert"}
+              {!counsellor.specializations?.[0] && "General counseling"}
+              {counsellor.specializations?.[0] &&
+                ![
+                  "anxiety",
+                  "depression",
+                  "relationship",
+                  "trauma",
+                  "stress-management",
+                ].includes(counsellor.specializations[0]) &&
+                `Specializes in ${counsellor.specializations[0].replace("-", " ")}`}
             </Text>
           </View>
         </View>
@@ -119,7 +138,7 @@ export default function UserDashboard() {
     );
   };
 
-  if (!userProfileData || userProfileData.role !== 'user') {
+  if (!userProfileData || userProfileData.role !== "user") {
     return (
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 justify-center items-center px-6">
@@ -143,8 +162,12 @@ export default function UserDashboard() {
         <View className="px-6">
           {/* Header */}
           <View className="py-4 border-b border-border">
-            <Text className="text-2xl font-bold text-foreground">Find Your Counselor</Text>
-            <Text className="text-muted-foreground">Connect with the right mental health professional</Text>
+            <Text className="text-2xl font-bold text-foreground">
+              Find Your Counselor
+            </Text>
+            <Text className="text-muted-foreground">
+              Connect with the right mental health professional
+            </Text>
           </View>
 
           {/* Search */}
@@ -165,9 +188,14 @@ export default function UserDashboard() {
               </Text>
               <View className="flex-row flex-wrap gap-2">
                 {userProfileData.primaryConcerns.slice(0, 3).map((concern) => (
-                  <View key={concern} className="px-2 py-1 bg-primary/10 rounded-full">
+                  <View
+                    key={concern}
+                    className="px-2 py-1 bg-primary/10 rounded-full"
+                  >
                     <Text className="text-primary text-xs">
-                      {concern.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {concern
+                        .replace("-", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
                     </Text>
                   </View>
                 ))}
@@ -178,7 +206,9 @@ export default function UserDashboard() {
           {/* Counsellors Section */}
           <View className="mb-4">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-foreground">Available Counselors</Text>
+              <Text className="text-xl font-bold text-foreground">
+                Available Counselors
+              </Text>
               {filteredCounsellors.length > 0 && (
                 <Pressable>
                   <Text className="text-primary text-sm font-medium">
@@ -197,11 +227,7 @@ export default function UserDashboard() {
               >
                 <View className="flex-row">
                   {[...Array(3)].map((_, index) => (
-                    <View
-                      key={index}
-                      className="mr-4"
-                      style={{ width: 180 }}
-                    >
+                    <View key={index} className="mr-4" style={{ width: 180 }}>
                       {/* Skeleton Image */}
                       <View className="w-full h-48 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse mb-3" />
 
@@ -232,7 +258,7 @@ export default function UserDashboard() {
               >
                 <View className="flex-row">
                   {filteredCounsellors.map((counsellor) =>
-                    renderCounsellorCard(counsellor as CounsellorProfileData)
+                    renderCounsellorCard(counsellor as CounsellorProfileData),
                   )}
                 </View>
               </ScrollView>

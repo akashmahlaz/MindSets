@@ -1,13 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useVideo } from '../../context/VideoContext';
-import { ThemedText } from '../ThemedText';
-import { ThemedView } from '../ThemedView';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useVideo } from "../../context/VideoContext";
+import { ThemedText } from "../ThemedText";
+import { ThemedView } from "../ThemedView";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 interface CallSetupProps {
   targetUser: {
@@ -29,25 +35,25 @@ export const CallSetup: React.FC<CallSetupProps> = ({
 
   const handleStartCall = async (isVideo: boolean) => {
     if (!isVideoConnected) {
-      Alert.alert('Error', 'Video service is not connected. Please try again.');
+      Alert.alert("Error", "Video service is not connected. Please try again.");
       return;
     }
 
     try {
       setIsCreatingCall(true);
-      
+
       // Generate unique call ID
       const callId = `call-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-      
+
       // Create the call
       const call = await createCall(callId, [targetUser.id], isVideo);
-      
+
       if (call) {
-        console.log('Call created successfully:', call.cid);
-        
+        console.log("Call created successfully:", call.cid);
+
         // Navigate to call screen
         router.push({
-          pathname: '/call/[callId]',
+          pathname: "/call/[callId]",
           params: {
             callId: call.id,
             callType: call.type,
@@ -57,11 +63,14 @@ export const CallSetup: React.FC<CallSetupProps> = ({
 
         onCallCreated?.(call);
       } else {
-        Alert.alert('Error', 'Failed to create call. Please try again.');
+        Alert.alert("Error", "Failed to create call. Please try again.");
       }
     } catch (error) {
-      console.error('Error starting call:', error);
-      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
+      console.error("Error starting call:", error);
+      Alert.alert(
+        "Error",
+        "Failed to start call. Please check your connection and try again.",
+      );
     } finally {
       setIsCreatingCall(false);
     }
@@ -69,9 +78,9 @@ export const CallSetup: React.FC<CallSetupProps> = ({
 
   const getUserInitials = (name: string): string => {
     return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
       .toUpperCase()
       .substring(0, 2);
   };
@@ -108,7 +117,9 @@ export const CallSetup: React.FC<CallSetupProps> = ({
             >
               <View style={[styles.callButtonContent, styles.audioCall]}>
                 <Ionicons name="call" size={32} color="#fff" />
-                <ThemedText style={styles.callButtonText}>Audio Call</ThemedText>
+                <ThemedText style={styles.callButtonText}>
+                  Audio Call
+                </ThemedText>
               </View>
             </TouchableOpacity>
 
@@ -119,14 +130,18 @@ export const CallSetup: React.FC<CallSetupProps> = ({
             >
               <View style={[styles.callButtonContent, styles.videoCall]}>
                 <Ionicons name="videocam" size={32} color="#fff" />
-                <ThemedText style={styles.callButtonText}>Video Call</ThemedText>
+                <ThemedText style={styles.callButtonText}>
+                  Video Call
+                </ThemedText>
               </View>
             </TouchableOpacity>
           </View>
 
           {isCreatingCall && (
             <View style={styles.loadingContainer}>
-              <ThemedText style={styles.loadingText}>Starting call...</ThemedText>
+              <ThemedText style={styles.loadingText}>
+                Starting call...
+              </ThemedText>
             </View>
           )}
 
@@ -149,21 +164,21 @@ export const CallSetup: React.FC<CallSetupProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   card: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
   },
   cardHeader: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
   },
   avatar: {
     width: 64,
@@ -172,22 +187,22 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   userDetails: {
     flex: 1,
   },
   userName: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   cardContent: {
     paddingTop: 20,
   },
   callOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 20,
   },
   callButton: {
@@ -197,24 +212,24 @@ const styles = StyleSheet.create({
   callButtonContent: {
     padding: 20,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 100,
   },
   audioCall: {
-    backgroundColor: '#10B981',
+    backgroundColor: "#10B981",
   },
   videoCall: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
   },
   callButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 8,
   },
   loadingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   loadingText: {
@@ -222,8 +237,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   actions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   cancelButton: {
     minWidth: 120,

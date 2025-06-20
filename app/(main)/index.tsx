@@ -1,20 +1,20 @@
 import "@/app/global.css";
-import CounsellorDashboard from '@/components/dashboard/CounsellorDashboard';
-import UserDashboard from '@/components/dashboard/UserDashboard';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/context/AuthContext';
-import { useChat } from '@/context/ChatContext';
-import { useVideo } from '@/context/VideoContext';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { getAllUsers } from '@/services/userService';
-import { UserProfile } from '@/types/user';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import CounsellorDashboard from "@/components/dashboard/CounsellorDashboard";
+import UserDashboard from "@/components/dashboard/UserDashboard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useVideo } from "@/context/VideoContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { getAllUsers } from "@/services/userService";
+import { UserProfile } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -22,29 +22,29 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OverviewScreen() {
   const router = useRouter();
   const { user, userProfile, refreshUserProfile } = useAuth();
   const { chatClient, isChatConnected, connectToChat } = useChat();
   const { createCall, isVideoConnected } = useVideo();
-  
+
   // Show role-based dashboard if user profile is complete
   if (userProfile?.isProfileComplete) {
-    if (userProfile.role === 'counsellor') {
+    if (userProfile.role === "counsellor") {
       return <CounsellorDashboard />;
-    } else if (userProfile.role === 'user') {
+    } else if (userProfile.role === "user") {
       return <UserDashboard />;
     }
   }
-  
+
   // Fallback to contact list for incomplete profiles
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { isDarkColorScheme } = useColorScheme();
@@ -55,11 +55,11 @@ export default function OverviewScreen() {
       if (!user?.uid) return;
       const allUsers = await getAllUsers(user.uid);
       // Filter out current user
-      const otherUsers = allUsers.filter(u => u.uid !== user?.uid);
+      const otherUsers = allUsers.filter((u) => u.uid !== user?.uid);
       setUsers(otherUsers);
       setFilteredUsers(otherUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
@@ -76,12 +76,13 @@ export default function OverviewScreen() {
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
+    if (searchQuery.trim() === "") {
       setFilteredUsers(users);
     } else {
-      const filtered = users.filter(user =>
-        user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = users.filter(
+        (user) =>
+          user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredUsers(filtered);
     }
@@ -89,83 +90,96 @@ export default function OverviewScreen() {
 
   const handleUserPress = (selectedUser: UserProfile) => {
     router.push({
-      pathname: '/profile/[userId]',
-      params: { userId: selectedUser.uid }
+      pathname: "/profile/[userId]",
+      params: { userId: selectedUser.uid },
     });
-  };  // Generate a short call ID that fits within 64 character limit
+  }; // Generate a short call ID that fits within 64 character limit
   const generateCallId = (userId1: string, userId2: string) => {
     // Take first 8 characters of each user ID and add timestamp
     const user1Short = userId1.substring(0, 8);
     const user2Short = userId2.substring(0, 8);
     const timestamp = Date.now().toString(36); // Base36 is shorter
     const callId = `${user1Short}-${user2Short}-${timestamp}`;
-    
+
     // Ensure it's under 64 characters
     if (callId.length > 64) {
       // Fallback to even shorter format
       const shortTimestamp = timestamp.substring(0, 6);
       return `${user1Short.substring(0, 6)}-${user2Short.substring(0, 6)}-${shortTimestamp}`;
     }
-    
+
     return callId;
-  };  // Start video call function
+  }; // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
-      Alert.alert('Error', 'Video service not available. Please try again.');
+      Alert.alert("Error", "Video service not available. Please try again.");
       return;
     }
-    
+
     try {
       const callId = generateCallId(user.uid, targetUser.uid);
       const call = await createCall(callId, [targetUser.uid], isVideo);
-      
+
       if (!call) {
-        throw new Error('Failed to create call');
+        throw new Error("Failed to create call");
       }
     } catch (error) {
-      console.error('Error starting call:', error);
-      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
+      console.error("Error starting call:", error);
+      Alert.alert(
+        "Error",
+        "Failed to start call. Please check your connection and try again.",
+      );
     }
   };
   // Start chat function
   const startChat = async (targetUser: UserProfile) => {
     if (!user || !chatClient) {
-      Alert.alert('Error', 'Chat not available');
+      Alert.alert("Error", "Chat not available");
       return;
     }
 
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
-        Alert.alert('Error', 'Failed to connect to chat');
+        Alert.alert("Error", "Failed to connect to chat");
         return;
       }
     }
-    
+
     try {
-      const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
+      const { createOrGetDirectChannel } = await import(
+        "@/services/chatHelpers"
+      );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
       router.push(`/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
-        'Chat Error', 
-        `Failed to start chat with ${targetUser.displayName}. Please try again.`
+        "Chat Error",
+        `Failed to start chat with ${targetUser.displayName}. Please try again.`,
       );
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case "online":
+        return "bg-green-500";
+      case "away":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-400";
     }
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
   const renderUserItem = ({ item }: { item: UserProfile }) => (
     <TouchableOpacity
@@ -184,7 +198,9 @@ export default function OverviewScreen() {
                   </Text>
                 </AvatarFallback>
               </Avatar>
-              <View className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${getStatusColor(item.status)}`} />
+              <View
+                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${getStatusColor(item.status)}`}
+              />
             </View>
             <View className="flex-1">
               <Text className="text-card-foreground font-semibold text-base">
@@ -197,7 +213,9 @@ export default function OverviewScreen() {
                 {item.status}
               </Text>
             </View>
-            <View className="flex-row space-x-2">              <TouchableOpacity
+            <View className="flex-row space-x-2">
+              {" "}
+              <TouchableOpacity
                 onPress={() => startChat(item)}
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
@@ -247,12 +265,12 @@ export default function OverviewScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView 
-        className="flex-1 bg-background" 
-        edges={['top']} 
-        style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}
+      <SafeAreaView
+        className="flex-1 bg-background"
+        edges={["top"]}
+        style={{ backgroundColor: isDarkColorScheme ? "#000000" : "#ffffff" }}
       >
-        <StatusBar 
+        <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
           backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
           translucent={false}
@@ -276,21 +294,20 @@ export default function OverviewScreen() {
           {/* Users List Skeleton */}
           <View className="flex-1">
             {[...Array(6)].map((_, index) => (
-              <View key={index}>
-                {renderUserSkeleton()}
-              </View>
+              <View key={index}>{renderUserSkeleton()}</View>
             ))}
           </View>
         </View>
       </SafeAreaView>
     );
-  }return (
-    <SafeAreaView 
-      className="flex-1 bg-background" 
-      edges={['top']} 
-      style={{ backgroundColor: isDarkColorScheme ? '#000000' : '#ffffff' }}
+  }
+  return (
+    <SafeAreaView
+      className="flex-1 bg-background"
+      edges={["top"]}
+      style={{ backgroundColor: isDarkColorScheme ? "#000000" : "#ffffff" }}
     >
-      <StatusBar 
+      <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
         translucent={false}
@@ -298,35 +315,42 @@ export default function OverviewScreen() {
       <View className="flex-1 bg-background">
         {/* Header */}
         <View className="px-4 pt-2 pb-2">
-          <View className="flex-row items-center justify-between mb-4">            <View>
+          <View className="flex-row items-center justify-between mb-4">
+            {" "}
+            <View>
               <Text className="text-2xl font-bold text-foreground">
                 Welcome back!
-              </Text>              <Text className="text-muted-foreground">
+              </Text>{" "}
+              <Text className="text-muted-foreground">
                 Connect with your contacts
               </Text>
             </View>
             <View className="flex-row items-center space-x-2">
               <TouchableOpacity
-                onPress={() => router.push('/chat')}
+                onPress={() => router.push("/chat")}
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
                 <Ionicons name="chatbubbles" size={20} color="#3B82F6" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => router.push('/profile')}
+                onPress={() => router.push("/profile")}
                 className="p-2"
               >
-                <Avatar className="w-10 h-10" alt={`${user?.displayName || 'User'} avatar`}>
+                <Avatar
+                  className="w-10 h-10"
+                  alt={`${user?.displayName || "User"} avatar`}
+                >
                   <AvatarImage source={{ uri: user?.photoURL || undefined }} />
                   <AvatarFallback className="bg-primary">
                     <Text className="text-primary-foreground font-medium">
-                      {user?.displayName ? getInitials(user.displayName) : 'U'}
+                      {user?.displayName ? getInitials(user.displayName) : "U"}
                     </Text>
                   </AvatarFallback>
                 </Avatar>
               </TouchableOpacity>
             </View>
-          </View>          <Input
+          </View>{" "}
+          <Input
             placeholder="Search users..."
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -340,8 +364,9 @@ export default function OverviewScreen() {
           keyExtractor={(item) => item.uid}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }          contentContainerStyle={{ 
-            flexGrow: 1
+          }
+          contentContainerStyle={{
+            flexGrow: 1,
           }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -353,19 +378,15 @@ export default function OverviewScreen() {
                 style={{ marginBottom: 16 }}
               />
               <Text className="text-muted-foreground text-lg font-medium">
-                {searchQuery ? 'No users found' : 'No contacts available'}
+                {searchQuery ? "No users found" : "No contacts available"}
               </Text>
               <Text className="text-muted-foreground text-sm mt-2 text-center px-8">
                 {searchQuery
-                  ? 'Try searching with a different name or email'
-                  : 'Invite friends to start connecting'
-                }
+                  ? "Try searching with a different name or email"
+                  : "Invite friends to start connecting"}
               </Text>
               {!searchQuery && (
-                <Button
-                  onPress={onRefresh}
-                  className="mt-4"
-                  variant="outline">
+                <Button onPress={onRefresh} className="mt-4" variant="outline">
                   <Text>Refresh</Text>
                 </Button>
               )}

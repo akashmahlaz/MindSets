@@ -1,32 +1,32 @@
-import { Button } from '@/components/ui/button';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from "@/components/ui/button";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
-  const { role } = useLocalSearchParams<{ role: 'user' | 'counsellor' }>();
-  
+  const { role } = useLocalSearchParams<{ role: "user" | "counsellor" }>();
+
   useEffect(() => {
     // If role is provided, redirect to the appropriate sign-up form
     if (role) {
-      if (role === 'user') {
-        router.replace('/(auth)/sign-up-user');
-      } else if (role === 'counsellor') {
-        router.replace('/(auth)/sign-up-counsellor');
+      if (role === "user") {
+        router.replace("/(auth)/sign-up-user");
+      } else if (role === "counsellor") {
+        router.replace("/(auth)/sign-up-counsellor");
       }
     }
   }, [role, router]);
 
-  const handleRoleSelection = (selectedRole: 'user' | 'counsellor') => {
-    if (selectedRole === 'user') {
-      router.push('/(auth)/sign-up-user');
+  const handleRoleSelection = (selectedRole: "user" | "counsellor") => {
+    if (selectedRole === "user") {
+      router.push("/(auth)/sign-up-user");
     } else {
-      router.push('/(auth)/sign-up-counsellor');
+      router.push("/(auth)/sign-up-counsellor");
     }
   };
 
@@ -34,9 +34,9 @@ export default function SignUpScreen() {
   if (role) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center">
-        <StatusBar 
+        <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+          backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
         />
         <View className="items-center">
           <View className="w-16 h-16 bg-blue-500 rounded-full items-center justify-center mb-4">
@@ -52,12 +52,12 @@ export default function SignUpScreen() {
   // Fallback: Show role selection if no role is provided
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <StatusBar 
+      <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
+        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
       />
-      
-      <ScrollView 
+
+      <ScrollView
         className="flex-1 px-6"
         contentContainerStyle={{ flexGrow: 1, paddingVertical: 20 }}
         showsVerticalScrollIndicator={false}
@@ -79,10 +79,10 @@ export default function SignUpScreen() {
         <View className="space-y-6 mb-10">
           {/* User Role Card */}
           <Pressable
-            onPress={() => handleRoleSelection('user')}
+            onPress={() => handleRoleSelection("user")}
             className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm active:opacity-95"
             style={{
-              shadowColor: '#000',
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8,
@@ -104,16 +104,18 @@ export default function SignUpScreen() {
             </View>
 
             <Button className="w-full h-12 bg-blue-500 rounded-xl">
-              <Text className="text-white font-semibold text-base">Get Started</Text>
+              <Text className="text-white font-semibold text-base">
+                Get Started
+              </Text>
             </Button>
           </Pressable>
 
           {/* Professional Role Card */}
           <Pressable
-            onPress={() => handleRoleSelection('counsellor')}
+            onPress={() => handleRoleSelection("counsellor")}
             className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm active:opacity-95"
             style={{
-              shadowColor: '#000',
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8,
@@ -134,8 +136,13 @@ export default function SignUpScreen() {
               </View>
             </View>
 
-            <Button variant="outline" className="w-full h-12 border-green-500 rounded-xl">
-              <Text className="text-green-500 font-semibold text-base">Join as Professional</Text>
+            <Button
+              variant="outline"
+              className="w-full h-12 border-green-500 rounded-xl"
+            >
+              <Text className="text-green-500 font-semibold text-base">
+                Join as Professional
+              </Text>
             </Button>
           </Pressable>
         </View>
@@ -145,8 +152,10 @@ export default function SignUpScreen() {
           <Text className="text-muted-foreground text-base mb-3">
             Already have an account?
           </Text>
-          <Pressable onPress={() => router.push('/(auth)/sign-in')}>
-            <Text className="text-blue-500 font-semibold text-base">Sign In</Text>
+          <Pressable onPress={() => router.push("/(auth)/sign-in")}>
+            <Text className="text-blue-500 font-semibold text-base">
+              Sign In
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

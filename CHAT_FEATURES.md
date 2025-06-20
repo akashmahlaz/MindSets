@@ -5,6 +5,7 @@ This document provides a comprehensive overview of the chat messaging features i
 ## 🚀 Features Implemented
 
 ### Core Channel Management
+
 - ✅ **Channel Creation** - Create channels with unique IDs or distinct member-based channels
 - ✅ **Channel Watching** - Watch channels to receive real-time updates
 - ✅ **Channel Querying** - Query and filter channels with advanced options
@@ -13,6 +14,7 @@ This document provides a comprehensive overview of the chat messaging features i
 - ✅ **Channel Pinning/Unpinning** - Pin important channels for easy access
 
 ### Member Management
+
 - ✅ **Add/Remove Members** - Manage channel membership with proper permissions
 - ✅ **Member Roles** - Add/remove moderators and manage permissions
 - ✅ **Member Querying** - Search and filter channel members
@@ -20,6 +22,7 @@ This document provides a comprehensive overview of the chat messaging features i
 - ✅ **Leave Channel** - Allow users to leave channels
 
 ### Messaging Features
+
 - ✅ **Send Messages** - Send text messages with rich formatting
 - ✅ **Message Attachments** - Support for file and image uploads
 - ✅ **Message Mentions** - @mention other users in messages
@@ -28,6 +31,7 @@ This document provides a comprehensive overview of the chat messaging features i
 - ✅ **Message Search** - Search through message history
 
 ### Real-time Features
+
 - ✅ **Typing Indicators** - Show when users are typing
 - ✅ **Read Receipts** - Track message read status
 - ✅ **Online Presence** - Show user online/offline status
@@ -35,6 +39,7 @@ This document provides a comprehensive overview of the chat messaging features i
 - ✅ **Live Updates** - Real-time message and channel updates
 
 ### Advanced Features
+
 - ✅ **Channel Muting** - Mute/unmute channels to control notifications
 - ✅ **Unread Counts** - Track unread message counts per channel
 - ✅ **Channel Search** - Search channels by name and content
@@ -45,13 +50,15 @@ This document provides a comprehensive overview of the chat messaging features i
 ## 🖥️ Platform Compatibility
 
 This implementation is fully compatible with:
+
 - ✅ **Windows** - Using PowerShell with semicolon (`;`) command chaining
-- ✅ **macOS** - Using Terminal with `&&` command chaining  
+- ✅ **macOS** - Using Terminal with `&&` command chaining
 - ✅ **Linux** - Using Bash with `&&` command chaining
 - ✅ **React Native** - iOS and Android mobile apps
 - ✅ **Web** - Browser-based testing and development
 
 ### Windows-Specific Scripts
+
 - `npm test` - Run comprehensive test suite
 - `scripts/test-windows.bat` - Windows batch script for easy testing
 
@@ -85,38 +92,49 @@ tests/
 ## 🛠 Key Services
 
 ### ChannelService
+
 Main service for channel operations following Stream Chat best practices:
 
 ```typescript
-import { channelService } from '@/services/channelService';
+import { channelService } from "@/services/channelService";
 
 // Create a channel
-const channel = await channelService.createChannelWithId('messaging', 'channel-id', {
-  name: 'My Channel',
-  members: ['user1', 'user2'],
-  data: { description: 'Channel description' }
-});
+const channel = await channelService.createChannelWithId(
+  "messaging",
+  "channel-id",
+  {
+    name: "My Channel",
+    members: ["user1", "user2"],
+    data: { description: "Channel description" },
+  },
+);
 
 // Watch a channel
-const watchedChannel = await channelService.watchChannel('messaging', 'channel-id');
+const watchedChannel = await channelService.watchChannel(
+  "messaging",
+  "channel-id",
+);
 
 // Add members
-await channelService.addMembers(channel, ['user3'], message, { hide_history: true });
+await channelService.addMembers(channel, ["user3"], message, {
+  hide_history: true,
+});
 
 // Archive channel
 await channelService.archiveChannel(channel);
 ```
 
 ### Chat Helpers
+
 Utility functions for common chat operations:
 
 ```typescript
-import { 
-  createOrGetDirectChannel, 
-  markChannelAsRead, 
+import {
+  createOrGetDirectChannel,
+  markChannelAsRead,
   getUnreadCount,
-  searchChannels 
-} from '@/services/chatHelpers';
+  searchChannels,
+} from "@/services/chatHelpers";
 
 // Create direct message
 const dmChannel = await createOrGetDirectChannel(currentUser, targetUserId);
@@ -128,7 +146,7 @@ await markChannelAsRead(channel);
 const unreadCount = getUnreadCount(channel);
 
 // Search channels
-const results = await searchChannels(userId, 'search term');
+const results = await searchChannels(userId, "search term");
 ```
 
 ## 🔧 Implementation Details
@@ -136,25 +154,28 @@ const results = await searchChannels(userId, 'search term');
 ### Channel Creation Methods
 
 #### 1. Channel with ID
+
 ```typescript
 // Best for channels tied to existing entities (like a game room)
 const channel = await channelService.createChannelWithId(
-  'messaging', 
-  'game-room-123', 
-  { name: 'Game Room 123' }
+  "messaging",
+  "game-room-123",
+  { name: "Game Room 123" },
 );
 ```
 
 #### 2. Distinct Channels
+
 ```typescript
 // Best for direct messages - ensures unique channel per member set
-const channel = await channelService.createDistinctChannel(
-  'messaging',
-  ['user1', 'user2']
-);
+const channel = await channelService.createDistinctChannel("messaging", [
+  "user1",
+  "user2",
+]);
 ```
 
 #### 3. Direct Message Helper
+
 ```typescript
 // Simplified DM creation with deterministic channel IDs
 const dmChannel = await createOrGetDirectChannel(currentUser, targetUserId);
@@ -163,41 +184,45 @@ const dmChannel = await createOrGetDirectChannel(currentUser, targetUserId);
 ### Member Management
 
 #### Adding Members
+
 ```typescript
 await channelService.addMembers(
   channel,
-  [{ user_id: 'newuser', channel_role: 'channel_moderator' }],
-  { text: 'User joined the channel', user_id: 'admin' },
-  { hide_history: true }
+  [{ user_id: "newuser", channel_role: "channel_moderator" }],
+  { text: "User joined the channel", user_id: "admin" },
+  { hide_history: true },
 );
 ```
 
 #### Querying Members
+
 ```typescript
 const members = await channelService.queryMembers(
   channel,
-  { name: { $autocomplete: 'john' } }, // Filter by name
+  { name: { $autocomplete: "john" } }, // Filter by name
   { created_at: -1 }, // Sort by join date
-  { limit: 50 } // Pagination
+  { limit: 50 }, // Pagination
 );
 ```
 
 ### Channel Updates
 
 #### Full Update
+
 ```typescript
 await channelService.updateChannel(channel, {
-  name: 'New Name',
-  image: 'https://example.com/image.jpg'
+  name: "New Name",
+  image: "https://example.com/image.jpg",
 });
 ```
 
 #### Partial Update
+
 ```typescript
 await channelService.updateChannelPartial(
   channel,
-  { custom_field: 'new value' }, // Set fields
-  ['old_field'] // Unset fields
+  { custom_field: "new value" }, // Set fields
+  ["old_field"], // Unset fields
 );
 ```
 
@@ -214,14 +239,14 @@ useEffect(() => {
   const handleTypingStart = () => setIsTyping(true);
   const handleTypingStop = () => setIsTyping(false);
 
-  channel.on('message.new', handleNewMessage);
-  channel.on('typing.start', handleTypingStart);
-  channel.on('typing.stop', handleTypingStop);
+  channel.on("message.new", handleNewMessage);
+  channel.on("typing.start", handleTypingStart);
+  channel.on("typing.stop", handleTypingStop);
 
   return () => {
-    channel.off('message.new', handleNewMessage);
-    channel.off('typing.start', handleTypingStart);
-    channel.off('typing.stop', handleTypingStop);
+    channel.off("message.new", handleNewMessage);
+    channel.off("typing.start", handleTypingStart);
+    channel.off("typing.stop", handleTypingStop);
   };
 }, [channel]);
 ```
@@ -229,6 +254,7 @@ useEffect(() => {
 ## 🎨 UI Features
 
 ### Enhanced Channel List
+
 - Search functionality with real-time filtering
 - Filter tabs (All, Unread, Pinned, Archived)
 - Visual indicators for pinned/archived channels
@@ -237,6 +263,7 @@ useEffect(() => {
 - Long-press context menus
 
 ### Enhanced Chat Screen
+
 - Custom header with channel info
 - Typing indicators
 - Unread count display
@@ -245,6 +272,7 @@ useEffect(() => {
 - File upload support
 
 ### Channel Info Screen
+
 - Member management (add/remove)
 - Channel name and description editing
 - Moderator assignment
@@ -255,16 +283,17 @@ useEffect(() => {
 Run the comprehensive test suite:
 
 ```typescript
-import ChatFeatureTest from '@/tests/chatFeatureTest';
+import ChatFeatureTest from "@/tests/chatFeatureTest";
 
 const test = new ChatFeatureTest();
 const success = await test.runAllTests();
 if (success) {
-  console.log('All chat features working correctly!');
+  console.log("All chat features working correctly!");
 }
 ```
 
 The test suite covers:
+
 - Channel creation and management
 - Member operations
 - Message sending and receiving
@@ -313,6 +342,7 @@ useEffect(() => {
 ## 🧪 Testing
 
 ### Comprehensive Test Suite
+
 A complete test suite has been implemented to verify all chat functionality:
 
 ```bash
@@ -324,6 +354,7 @@ scripts/test-windows.bat
 ```
 
 The test suite covers:
+
 - ✅ Channel Creation & Management (13 tests)
 - ✅ Member Operations (add/remove/roles)
 - ✅ Message Operations (send/search/reactions)
@@ -333,12 +364,14 @@ The test suite covers:
 ### Test Commands by Platform
 
 **Windows (PowerShell):**
+
 ```powershell
 cd C:\path\to\streams ; npm test
 npm start ; npm run android
 ```
 
 **macOS/Linux (Terminal):**
+
 ```bash
 cd /path/to/streams && npm test
 npm start && npm run android
@@ -347,19 +380,25 @@ npm start && npm run android
 ## 🚀 Getting Started
 
 1. **Initialize Stream Chat**:
+
    ```typescript
-   import { chatClient } from '@/services/stream';
-   import { useChat } from '@/context/ChatContext';
+   import { chatClient } from "@/services/stream";
+   import { useChat } from "@/context/ChatContext";
    ```
 
 2. **Create a channel**:
+
    ```typescript
-   const channel = await channelService.createChannelWithId('messaging', 'my-channel');
+   const channel = await channelService.createChannelWithId(
+     "messaging",
+     "my-channel",
+   );
    ```
 
 3. **Start messaging**:
+
    ```typescript
-   await channel.sendMessage({ text: 'Hello World!' });
+   await channel.sendMessage({ text: "Hello World!" });
    ```
 
 4. **Navigate to chat**:

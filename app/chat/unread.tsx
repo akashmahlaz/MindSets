@@ -1,25 +1,25 @@
 import "@/app/global.css";
-import { useAuth } from '@/context/AuthContext';
-import { useChat } from '@/context/ChatContext';
-import { useColorScheme } from '@/lib/useColorScheme';
-import { getUnreadCount, markChannelAsRead } from '@/services/chatHelpers';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { getUnreadCount, markChannelAsRead } from "@/services/chatHelpers";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    RefreshControl,
-   StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Channel } from 'stream-chat';
-import { ChannelPreviewMessenger } from 'stream-chat-expo';
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Channel } from "stream-chat";
+import { ChannelPreviewMessenger } from "stream-chat-expo";
 
 export default function UnreadChannelsScreen() {
   const { chatClient, isChatConnected } = useChat();
@@ -29,7 +29,7 @@ export default function UnreadChannelsScreen() {
   const [filteredChannels, setFilteredChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Load channels
   const loadChannels = async () => {
@@ -37,17 +37,21 @@ export default function UnreadChannelsScreen() {
     try {
       setLoading(true);
       const filters = {
-        type: { $in: ['messaging'] },
-        members: { $in: [user.uid] }
+        type: { $in: ["messaging"] },
+        members: { $in: [user.uid] },
       };
-      const channels = await chatClient.queryChannels(filters, { last_message_at: -1 }, {
-        watch: true,
-        presence: true,
-        limit: 30,
-      });
+      const channels = await chatClient.queryChannels(
+        filters,
+        { last_message_at: -1 },
+        {
+          watch: true,
+          presence: true,
+          limit: 30,
+        },
+      );
       setChannels(channels as Channel[]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load channels.');
+      Alert.alert("Error", "Failed to load channels.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -58,16 +62,19 @@ export default function UnreadChannelsScreen() {
   const filterChannels = (allChannels: Channel[], query: string) => {
     let filtered = [...allChannels];
     if (query.trim()) {
-      filtered = filtered.filter(channel => {
-        const channelName = ((channel.data as any)?.name || '').toLowerCase();
+      filtered = filtered.filter((channel) => {
+        const channelName = ((channel.data as any)?.name || "").toLowerCase();
         const nameMatch = channelName.includes(query.toLowerCase());
-        const memberMatch = Object.values(channel.state?.members || {}).some((member: any) =>
-          ((member.user?.name || member.user?.display_name || '')?.toLowerCase().includes(query.toLowerCase()))
+        const memberMatch = Object.values(channel.state?.members || {}).some(
+          (member: any) =>
+            (member.user?.name || member.user?.display_name || "")
+              ?.toLowerCase()
+              .includes(query.toLowerCase()),
         );
         return nameMatch || memberMatch;
       });
     }
-    filtered = filtered.filter(channel => getUnreadCount(channel) > 0);
+    filtered = filtered.filter((channel) => getUnreadCount(channel) > 0);
     setFilteredChannels(filtered);
   };
 
@@ -102,13 +109,15 @@ export default function UnreadChannelsScreen() {
         onPress={() => navigateToChannel(channel)}
       >
         <View className="relative">
-          <ChannelPreviewMessenger 
+          <ChannelPreviewMessenger
             channel={channel}
             onSelect={() => navigateToChannel(channel)}
             latestMessagePreview={{
-              messageObject: channel.state.messages[channel.state.messages.length - 1] || null,
+              messageObject:
+                channel.state.messages[channel.state.messages.length - 1] ||
+                null,
               previews: [],
-              status: 1
+              status: 1,
             }}
           />
           <View className="absolute top-2 right-2 flex-row">
@@ -116,12 +125,17 @@ export default function UnreadChannelsScreen() {
               <Ionicons name="pin" size={16} color="#6366F1" className="mr-1" />
             )}
             {isArchived && (
-              <Ionicons name="archive" size={16} color="#F59E0B" className="mr-1" />
+              <Ionicons
+                name="archive"
+                size={16}
+                color="#F59E0B"
+                className="mr-1"
+              />
             )}
             {unreadCount > 0 && (
               <View className="bg-destructive rounded-full px-2 py-1 min-w-6 items-center">
                 <Text className="text-destructive-foreground text-xs font-semibold">
-                  {unreadCount > 99 ? '99+' : unreadCount}
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </Text>
               </View>
             )}
@@ -132,10 +146,13 @@ export default function UnreadChannelsScreen() {
   };
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-background" edges={['top']}>
-        <StatusBar 
+      <SafeAreaView
+        className="flex-1 justify-center items-center bg-background"
+        edges={["top"]}
+      >
+        <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
+          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
         />
         <ActivityIndicator size="large" color="#6366F1" />
         <Text className="text-muted-foreground mt-4">Loading channels...</Text>
@@ -144,14 +161,16 @@ export default function UnreadChannelsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <StatusBar 
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+      <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#000000' : '#ffffff'}
+        backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
       />
       {/* Header */}
       <View className="p-4 border-b border-border">
-        <Text className="text-2xl font-bold text-foreground">Unread Messages</Text>
+        <Text className="text-2xl font-bold text-foreground">
+          Unread Messages
+        </Text>
       </View>
       {/* Search Bar */}
       <View className="p-4 border-b border-border">
@@ -167,7 +186,7 @@ export default function UnreadChannelsScreen() {
       <FlatList
         data={filteredChannels}
         renderItem={renderChannelItem}
-        keyExtractor={(item) => item.id || ''}
+        keyExtractor={(item) => item.id || ""}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -191,11 +210,13 @@ export default function UnreadChannelsScreen() {
             <Text className="text-muted-foreground text-sm mt-2 text-center">
               You have no unread messages
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               className="mt-6 px-6 py-3 bg-primary rounded-lg"
-              onPress={() => router.push('/chat')}
+              onPress={() => router.push("/chat")}
             >
-              <Text className="text-primary-foreground font-medium">View All Chats</Text>
+              <Text className="text-primary-foreground font-medium">
+                View All Chats
+              </Text>
             </TouchableOpacity>
           </View>
         )}

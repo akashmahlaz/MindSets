@@ -1,10 +1,10 @@
 // Test script to verify chat functionality (JavaScript version for Node.js)
-const { StreamChat } = require('stream-chat');
+const { StreamChat } = require("stream-chat");
 
 // Mock implementations for testing (since we can't import the actual React Native modules in Node.js)
 class MockChannelService {
   constructor() {
-    console.log('📱 Initializing mock channel service for testing...');
+    console.log("📱 Initializing mock channel service for testing...");
   }
 
   async createChannelWithId(type, id, data) {
@@ -14,24 +14,24 @@ class MockChannelService {
 
   async watchChannel(type, id) {
     console.log(`👀 Mock: Watching channel ${type}:${id}`);
-    return { id, type, status: 'watching' };
+    return { id, type, status: "watching" };
   }
 
   async queryChannels(filters, options) {
     console.log(`🔍 Mock: Querying channels with filters:`, filters);
     return [
-      { id: 'channel-1', type: 'messaging', memberCount: 2 },
-      { id: 'channel-2', type: 'messaging', memberCount: 3 }
+      { id: "channel-1", type: "messaging", memberCount: 2 },
+      { id: "channel-2", type: "messaging", memberCount: 3 },
     ];
   }
 
   async addMembers(channel, userIds) {
-    console.log(`👥 Mock: Adding members ${userIds.join(', ')} to channel`);
+    console.log(`👥 Mock: Adding members ${userIds.join(", ")} to channel`);
     return { success: true, addedMembers: userIds };
   }
 
   async removeMembers(channel, userIds) {
-    console.log(`🚫 Mock: Removing members ${userIds.join(', ')} from channel`);
+    console.log(`🚫 Mock: Removing members ${userIds.join(", ")} from channel`);
     return { success: true, removedMembers: userIds };
   }
 
@@ -63,29 +63,32 @@ class MockChannelService {
 
 class MockChatHelpers {
   static async createOrGetDirectChannel(userId1, userId2) {
-    console.log(`💬 Mock: Creating/getting DM channel between ${userId1} and ${userId2}`);
-    return { 
-      id: `dm-${userId1}-${userId2}`, 
-      type: 'messaging',
-      memberCount: 2 
+    console.log(
+      `💬 Mock: Creating/getting DM channel between ${userId1} and ${userId2}`,
+    );
+    return {
+      id: `dm-${userId1}-${userId2}`,
+      type: "messaging",
+      memberCount: 2,
     };
   }
 
   static async createGroupChannel(name, memberIds) {
-    console.log(`👥 Mock: Creating group channel "${name}" with members:`, memberIds);
-    return { 
-      id: `group-${Date.now()}`, 
-      type: 'messaging',
+    console.log(
+      `👥 Mock: Creating group channel "${name}" with members:`,
+      memberIds,
+    );
+    return {
+      id: `group-${Date.now()}`,
+      type: "messaging",
       name,
-      memberCount: memberIds.length 
+      memberCount: memberIds.length,
     };
   }
 
   static async searchChannels(query) {
     console.log(`🔍 Mock: Searching channels for "${query}"`);
-    return [
-      { id: 'search-result-1', name: `Channel matching ${query}` }
-    ];
+    return [{ id: "search-result-1", name: `Channel matching ${query}` }];
   }
 
   static async sendMessage(channel, text) {
@@ -94,7 +97,9 @@ class MockChatHelpers {
   }
 
   static async getUnreadCount(channels) {
-    console.log(`📊 Mock: Getting unread count for ${channels.length} channels`);
+    console.log(
+      `📊 Mock: Getting unread count for ${channels.length} channels`,
+    );
     return Math.floor(Math.random() * 10);
   }
 
@@ -106,16 +111,16 @@ class MockChatHelpers {
 
 class ChatFeatureTest {
   constructor() {
-    this.testUserId = 'test-user-1';
-    this.testUserId2 = 'test-user-2';
-    this.testChannelId = 'test-channel-' + Date.now();
+    this.testUserId = "test-user-1";
+    this.testUserId2 = "test-user-2";
+    this.testChannelId = "test-channel-" + Date.now();
     this.channelService = new MockChannelService();
     this.chatHelpers = MockChatHelpers;
   }
 
   async runAllTests() {
-    console.log('🚀 Starting comprehensive chat feature tests...\n');
-    
+    console.log("🚀 Starting comprehensive chat feature tests...\n");
+
     try {
       await this.testChannelCreation();
       await this.testChannelWatch();
@@ -130,234 +135,242 @@ class ChatFeatureTest {
       await this.testChannelMuting();
       await this.testMessageOperations();
       await this.testUnreadCounts();
-      
-      console.log('\n✅ All chat feature tests completed successfully!');
-      console.log('\n📋 Test Summary:');
-      console.log('   ✓ Channel Creation');
-      console.log('   ✓ Channel Watching');
-      console.log('   ✓ Channel Querying');
-      console.log('   ✓ Member Management');
-      console.log('   ✓ Channel Updates');
-      console.log('   ✓ Direct Messaging');
-      console.log('   ✓ Group Channels');
-      console.log('   ✓ Channel Search');
-      console.log('   ✓ Channel Archiving');
-      console.log('   ✓ Channel Pinning');
-      console.log('   ✓ Channel Muting');
-      console.log('   ✓ Message Operations');
-      console.log('   ✓ Unread Counts');
-      
+
+      console.log("\n✅ All chat feature tests completed successfully!");
+      console.log("\n📋 Test Summary:");
+      console.log("   ✓ Channel Creation");
+      console.log("   ✓ Channel Watching");
+      console.log("   ✓ Channel Querying");
+      console.log("   ✓ Member Management");
+      console.log("   ✓ Channel Updates");
+      console.log("   ✓ Direct Messaging");
+      console.log("   ✓ Group Channels");
+      console.log("   ✓ Channel Search");
+      console.log("   ✓ Channel Archiving");
+      console.log("   ✓ Channel Pinning");
+      console.log("   ✓ Channel Muting");
+      console.log("   ✓ Message Operations");
+      console.log("   ✓ Unread Counts");
+
       return true;
     } catch (error) {
-      console.error('❌ Chat feature tests failed:', error);
+      console.error("❌ Chat feature tests failed:", error);
       return false;
     }
   }
 
   // Test 1: Channel Creation
   async testChannelCreation() {
-    console.log('📝 Testing channel creation...');
-    
+    console.log("📝 Testing channel creation...");
+
     const channel = await this.channelService.createChannelWithId(
-      'messaging',
+      "messaging",
       this.testChannelId,
       {
-        name: 'Test Channel',
-        members: [this.testUserId, this.testUserId2]
-      }
+        name: "Test Channel",
+        members: [this.testUserId, this.testUserId2],
+      },
     );
-    
-    console.log('   ✅ Channel created successfully\n');
+
+    console.log("   ✅ Channel created successfully\n");
     return channel;
   }
 
   // Test 2: Channel Watching
   async testChannelWatch() {
-    console.log('👀 Testing channel watching...');
-    
+    console.log("👀 Testing channel watching...");
+
     const watchedChannel = await this.channelService.watchChannel(
-      'messaging',
-      this.testChannelId
+      "messaging",
+      this.testChannelId,
     );
-    
-    console.log('   ✅ Channel watching successful\n');
+
+    console.log("   ✅ Channel watching successful\n");
     return watchedChannel;
   }
 
   // Test 3: Channel Query
   async testChannelQuery() {
-    console.log('🔍 Testing channel query...');
-    
+    console.log("🔍 Testing channel query...");
+
     const channels = await this.channelService.queryChannels(
       { members: { $in: [this.testUserId] } },
-      { limit: 10 }
+      { limit: 10 },
     );
-    
-    console.log('   ✅ Channel query successful\n');
+
+    console.log("   ✅ Channel query successful\n");
     return channels;
   }
 
   // Test 4: Member Management
   async testMemberManagement() {
-    console.log('👥 Testing member management...');
-    
+    console.log("👥 Testing member management...");
+
     const mockChannel = { id: this.testChannelId };
-    
+
     // Test adding members
-    await this.channelService.addMembers(mockChannel, ['new-user-1', 'new-user-2']);
-    
+    await this.channelService.addMembers(mockChannel, [
+      "new-user-1",
+      "new-user-2",
+    ]);
+
     // Test removing members
-    await this.channelService.removeMembers(mockChannel, ['new-user-1']);
-    
-    console.log('   ✅ Member management successful\n');
+    await this.channelService.removeMembers(mockChannel, ["new-user-1"]);
+
+    console.log("   ✅ Member management successful\n");
   }
 
   // Test 5: Channel Update
   async testChannelUpdate() {
-    console.log('📝 Testing channel update...');
-    
+    console.log("📝 Testing channel update...");
+
     const mockChannel = { id: this.testChannelId };
-    
-    const updatedChannel = await this.channelService.updateChannel(mockChannel, {
-      name: 'Updated Test Channel',
-      description: 'This is an updated test channel'
-    });
-    
-    console.log('   ✅ Channel update successful\n');
+
+    const updatedChannel = await this.channelService.updateChannel(
+      mockChannel,
+      {
+        name: "Updated Test Channel",
+        description: "This is an updated test channel",
+      },
+    );
+
+    console.log("   ✅ Channel update successful\n");
     return updatedChannel;
   }
 
   // Test 6: Direct Messaging
   async testDirectMessaging() {
-    console.log('💬 Testing direct messaging...');
-    
+    console.log("💬 Testing direct messaging...");
+
     const dmChannel = await this.chatHelpers.createOrGetDirectChannel(
       this.testUserId,
-      this.testUserId2
+      this.testUserId2,
     );
-    
-    console.log('   ✅ Direct messaging channel created\n');
+
+    console.log("   ✅ Direct messaging channel created\n");
     return dmChannel;
   }
 
   // Test 7: Group Channel
   async testGroupChannel() {
-    console.log('👥 Testing group channel creation...');
-    
+    console.log("👥 Testing group channel creation...");
+
     const groupChannel = await this.chatHelpers.createGroupChannel(
-      'Test Group',
-      [this.testUserId, this.testUserId2, 'user-3']
+      "Test Group",
+      [this.testUserId, this.testUserId2, "user-3"],
     );
-    
-    console.log('   ✅ Group channel created successfully\n');
+
+    console.log("   ✅ Group channel created successfully\n");
     return groupChannel;
   }
 
   // Test 8: Channel Search
   async testChannelSearch() {
-    console.log('🔍 Testing channel search...');
-    
-    const searchResults = await this.chatHelpers.searchChannels('test');
-    
-    console.log('   ✅ Channel search successful\n');
+    console.log("🔍 Testing channel search...");
+
+    const searchResults = await this.chatHelpers.searchChannels("test");
+
+    console.log("   ✅ Channel search successful\n");
     return searchResults;
   }
 
   // Test 9: Channel Archiving
   async testChannelArchiving() {
-    console.log('📦 Testing channel archiving...');
-    
+    console.log("📦 Testing channel archiving...");
+
     const mockChannel = { id: this.testChannelId };
-    
-    const archivedChannel = await this.channelService.archiveChannel(mockChannel);
-    
-    console.log('   ✅ Channel archiving successful\n');
+
+    const archivedChannel =
+      await this.channelService.archiveChannel(mockChannel);
+
+    console.log("   ✅ Channel archiving successful\n");
     return archivedChannel;
   }
 
   // Test 10: Channel Pinning
   async testChannelPinning() {
-    console.log('📌 Testing channel pinning...');
-    
+    console.log("📌 Testing channel pinning...");
+
     const mockChannel = { id: this.testChannelId };
-    
+
     const pinnedChannel = await this.channelService.pinChannel(mockChannel);
-    
-    console.log('   ✅ Channel pinning successful\n');
+
+    console.log("   ✅ Channel pinning successful\n");
     return pinnedChannel;
   }
 
   // Test 11: Channel Muting
   async testChannelMuting() {
-    console.log('🔇 Testing channel muting...');
-    
+    console.log("🔇 Testing channel muting...");
+
     const mockChannel = { id: this.testChannelId };
-    
+
     // Test muting
     const mutedChannel = await this.channelService.muteChannel(mockChannel);
-    
+
     // Test unmuting
     const unmutedChannel = await this.channelService.unmuteChannel(mockChannel);
-    
-    console.log('   ✅ Channel muting/unmuting successful\n');
+
+    console.log("   ✅ Channel muting/unmuting successful\n");
     return unmutedChannel;
   }
 
   // Test 12: Message Operations
   async testMessageOperations() {
-    console.log('📤 Testing message operations...');
-    
+    console.log("📤 Testing message operations...");
+
     const mockChannel = { id: this.testChannelId };
-    
+
     const message = await this.chatHelpers.sendMessage(
       mockChannel,
-      'This is a test message'
+      "This is a test message",
     );
-    
-    console.log('   ✅ Message operations successful\n');
+
+    console.log("   ✅ Message operations successful\n");
     return message;
   }
 
   // Test 13: Unread Counts
   async testUnreadCounts() {
-    console.log('📊 Testing unread counts...');
-    
-    const mockChannels = [
-      { id: 'channel-1' },
-      { id: 'channel-2' }
-    ];
-    
+    console.log("📊 Testing unread counts...");
+
+    const mockChannels = [{ id: "channel-1" }, { id: "channel-2" }];
+
     const unreadCount = await this.chatHelpers.getUnreadCount(mockChannels);
-    
+
     // Test marking as read
     await this.chatHelpers.markChannelAsRead(mockChannels[0]);
-    
-    console.log('   ✅ Unread count operations successful\n');
+
+    console.log("   ✅ Unread count operations successful\n");
     return unreadCount;
   }
 }
 
 // Run the tests
 async function main() {
-  console.log('🎯 Stream Chat Feature Test Suite');
-  console.log('===================================\n');
-  console.log('ℹ️  Note: This is a mock test suite that simulates chat functionality');
-  console.log('   for Windows compatibility. In a real environment, these would');
-  console.log('   connect to actual Stream Chat services.\n');
-  
+  console.log("🎯 Stream Chat Feature Test Suite");
+  console.log("===================================\n");
+  console.log(
+    "ℹ️  Note: This is a mock test suite that simulates chat functionality",
+  );
+  console.log(
+    "   for Windows compatibility. In a real environment, these would",
+  );
+  console.log("   connect to actual Stream Chat services.\n");
+
   const tester = new ChatFeatureTest();
   const success = await tester.runAllTests();
-  
+
   if (success) {
-    console.log('\n🎉 All chat features are ready for production!');
-    console.log('\n📚 Next Steps:');
-    console.log('   1. Test the app with: npm run start');
-    console.log('   2. Test on Android: npm run android');
-    console.log('   3. Test on iOS: npm run ios');
-    console.log('   4. Check documentation: CHAT_FEATURES.md');
+    console.log("\n🎉 All chat features are ready for production!");
+    console.log("\n📚 Next Steps:");
+    console.log("   1. Test the app with: npm run start");
+    console.log("   2. Test on Android: npm run android");
+    console.log("   3. Test on iOS: npm run ios");
+    console.log("   4. Check documentation: CHAT_FEATURES.md");
     process.exit(0);
   } else {
-    console.log('\n💥 Some tests failed. Please check the implementation.');
+    console.log("\n💥 Some tests failed. Please check the implementation.");
     process.exit(1);
   }
 }
