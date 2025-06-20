@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { MENTAL_HEALTH_CONCERNS, UserProfileData } from '@/types/user';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StatusBar, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface UserSignUpData {
@@ -18,14 +19,11 @@ interface UserSignUpData {
   firstName: string;
   lastName: string;
   age: number;
-profession?: string;
+  profession?: string;
   location?: string;
-    occupation?: string;
-    childhoodExperience?: string;
-    problemsYouFacing?: string;
-
-
-
+  occupation?: string;
+  childhoodExperience?: string;
+  problemsYouFacing?: string;
 
   // Mental health info
   primaryConcerns: string[];
@@ -50,6 +48,7 @@ export default function UserSignUpScreen() {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState<UserSignUpData>({
     email: '',
     password: '',
@@ -69,7 +68,9 @@ export default function UserSignUpScreen() {
 
   const isStep1Valid = formData.email && formData.password && formData.confirmPassword && 
                      formData.firstName && formData.lastName && 
-                     formData.password === formData.confirmPassword;
+                     formData.password === formData.confirmPassword &&
+                     formData.email.includes('@') &&
+                     formData.password.length >= 6;
   
   const isStep2Valid = formData.primaryConcerns.length > 0 && formData.severityLevel;
   
@@ -84,22 +85,24 @@ export default function UserSignUpScreen() {
         : [...prev.primaryConcerns, concern]
     }));
   };
-
   const handleNext = () => {
+    setError(''); // Clear any errors when moving to next step
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
+    setError(''); // Clear any errors when going back
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
       router.back();
     }
-  };
-  const handleSubmit = async () => {
+  };  const handleSubmit = async () => {
     setLoading(true);
+    setError('');
+    
     try {
       // Create the enhanced profile data
       const profileData: Partial<UserProfileData> = {
@@ -126,20 +129,46 @@ export default function UserSignUpScreen() {
         [{ text: 'OK', onPress: () => router.replace('/(main)') }]
       );
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create account. Please try again.');
+      console.error('Sign-up error:', error);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to create account. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'An account with this email already exists';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password is too weak. Please use at least 6 characters';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection';
+          break;
+        default:
+          errorMessage = error.message || 'Failed to create account. Please try again.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
   const renderStep1 = () => (
     <CardContent className="space-y-4">
       <View className="space-y-2">
         <Label>First Name</Label>
         <Input
           value={formData.firstName}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, firstName: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, firstName: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Enter your first name"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -147,8 +176,13 @@ export default function UserSignUpScreen() {
         <Label>Last Name</Label>
         <Input
           value={formData.lastName}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, lastName: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, lastName: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Enter your last name"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -156,10 +190,15 @@ export default function UserSignUpScreen() {
         <Label>Email</Label>
         <Input
           value={formData.email}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, email: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Enter your email"
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -167,9 +206,14 @@ export default function UserSignUpScreen() {
         <Label>Password</Label>
         <Input
           value={formData.password}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
-          placeholder="Create a password"
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, password: text }));
+            setError(''); // Clear error when user types
+          }}
+          placeholder="Create a password (min 6 characters)"
           secureTextEntry
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -177,18 +221,36 @@ export default function UserSignUpScreen() {
         <Label>Confirm Password</Label>
         <Input
           value={formData.confirmPassword}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, confirmPassword: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Confirm your password"
           secureTextEntry
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
       {formData.password !== formData.confirmPassword && formData.confirmPassword && (
-        <Text className="text-destructive text-sm">Passwords do not match</Text>
+        <View className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+          <View className="flex-row items-center">
+            <Ionicons name="alert-circle" size={16} color="#ef4444" style={{ marginRight: 6 }} />
+            <Text className="text-destructive text-sm">Passwords do not match</Text>
+          </View>
+        </View>
+      )}
+      
+      {formData.password && formData.password.length < 6 && (
+        <View className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+          <View className="flex-row items-center">
+            <Ionicons name="alert-circle" size={16} color="#ef4444" style={{ marginRight: 6 }} />
+            <Text className="text-destructive text-sm">Password must be at least 6 characters</Text>
+          </View>
+        </View>
       )}
     </CardContent>
   );
-
   const renderStep2 = () => (
     <CardContent className="space-y-4">
       <View className="space-y-2">
@@ -197,12 +259,18 @@ export default function UserSignUpScreen() {
           {MENTAL_HEALTH_CONCERNS.slice(0, 12).map((concern) => (
             <Pressable
               key={concern}
-              onPress={() => handleConcernToggle(concern)}
+              onPress={() => {
+                if (!loading) {
+                  handleConcernToggle(concern);
+                  setError(''); // Clear error when user makes a selection
+                }
+              }}
+              disabled={loading}
               className={`px-3 py-2 rounded-full border ${
                 formData.primaryConcerns.includes(concern)
                   ? 'bg-primary border-primary'
                   : 'bg-background border-border'
-              }`}
+              } ${loading ? 'opacity-50' : ''}`}
             >
               <Text className={`text-sm ${
                 formData.primaryConcerns.includes(concern)
@@ -226,12 +294,18 @@ export default function UserSignUpScreen() {
           ].map((option) => (
             <Pressable
               key={option.value}
-              onPress={() => setFormData(prev => ({ ...prev, severityLevel: option.value as any }))}
+              onPress={() => {
+                if (!loading) {
+                  setFormData(prev => ({ ...prev, severityLevel: option.value as any }));
+                  setError(''); // Clear error when user makes a selection
+                }
+              }}
+              disabled={loading}
               className={`p-3 rounded-lg border ${
                 formData.severityLevel === option.value
                   ? 'bg-primary/10 border-primary'
                   : 'bg-background border-border'
-              }`}
+              } ${loading ? 'opacity-50' : ''}`}
             >
               <Text className="text-foreground">{option.label}</Text>
             </Pressable>
@@ -248,12 +322,18 @@ export default function UserSignUpScreen() {
           ].map((option) => (
             <Pressable
               key={option.label}
-              onPress={() => setFormData(prev => ({ ...prev, previousTherapy: option.value }))}
+              onPress={() => {
+                if (!loading) {
+                  setFormData(prev => ({ ...prev, previousTherapy: option.value }));
+                  setError(''); // Clear error when user makes a selection
+                }
+              }}
+              disabled={loading}
               className={`flex-1 p-3 rounded-lg border ${
                 formData.previousTherapy === option.value
                   ? 'bg-primary/10 border-primary'
                   : 'bg-background border-border'
-              }`}
+              } ${loading ? 'opacity-50' : ''}`}
             >
               <Text className="text-foreground text-center">{option.label}</Text>
             </Pressable>
@@ -262,21 +342,28 @@ export default function UserSignUpScreen() {
       </View>
     </CardContent>
   );
-
   const renderStep3 = () => (
     <CardContent className="space-y-4">
       <View className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-        <Text className="text-yellow-800 dark:text-yellow-200 text-sm">
-          Emergency contact information helps us reach someone if you're in crisis and need immediate support.
-        </Text>
+        <View className="flex-row items-start">
+          <Ionicons name="information-circle" size={20} color="#f59e0b" style={{ marginRight: 8, marginTop: 2 }} />
+          <Text className="text-yellow-800 dark:text-yellow-200 text-sm flex-1">
+            Emergency contact information helps us reach someone if you're in crisis and need immediate support.
+          </Text>
+        </View>
       </View>
       
       <View className="space-y-2">
         <Label>Emergency Contact Name</Label>
         <Input
           value={formData.emergencyContactName}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, emergencyContactName: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, emergencyContactName: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Full name"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -284,9 +371,14 @@ export default function UserSignUpScreen() {
         <Label>Emergency Contact Phone</Label>
         <Input
           value={formData.emergencyContactPhone}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, emergencyContactPhone: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, emergencyContactPhone: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="Phone number"
           keyboardType="phone-pad"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -294,8 +386,13 @@ export default function UserSignUpScreen() {
         <Label>Relationship</Label>
         <Input
           value={formData.emergencyContactRelation}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, emergencyContactRelation: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, emergencyContactRelation: text }));
+            setError(''); // Clear error when user types
+          }}
           placeholder="e.g., Parent, Spouse, Friend"
+          editable={!loading}
+          className="h-12"
         />
       </View>
       
@@ -309,12 +406,18 @@ export default function UserSignUpScreen() {
           ].map((option) => (
             <Pressable
               key={option.value}
-              onPress={() => setFormData(prev => ({ ...prev, preferredCounsellorGender: option.value as any }))}
+              onPress={() => {
+                if (!loading) {
+                  setFormData(prev => ({ ...prev, preferredCounsellorGender: option.value as any }));
+                  setError(''); // Clear error when user makes a selection
+                }
+              }}
+              disabled={loading}
               className={`p-3 rounded-lg border ${
                 formData.preferredCounsellorGender === option.value
                   ? 'bg-primary/10 border-primary'
                   : 'bg-background border-border'
-              }`}
+              } ${loading ? 'opacity-50' : ''}`}
             >
               <Text className="text-foreground">{option.label}</Text>
             </Pressable>
@@ -323,93 +426,70 @@ export default function UserSignUpScreen() {
       </View>
     </CardContent>
   );
-
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <StatusBar 
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
-      />
-      
-      <ScrollView className="flex-1 px-6">
-        <View className="py-6">
-          {/* Progress indicator */}
-          <View className="flex-row justify-center mb-6">
-            {[1, 2, 3].map((step) => (
-              <View key={step} className="flex-row items-center">
-                <View
-                  className={`w-8 h-8 rounded-full items-center justify-center ${
-                    step <= currentStep ? 'bg-primary' : 'bg-muted'
-                  }`}
-                >
-                  <Text className={`text-sm font-medium ${
-                    step <= currentStep ? 'text-primary-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {step}
-                  </Text>
-                </View>
-                {step < 3 && (
-                  <View className={`w-12 h-0.5 ${
-                    step < currentStep ? 'bg-primary' : 'bg-muted'
-                  }`} />
+    <SafeAreaView className="flex-1 bg-background">
+      <StatusBar barStyle={isDarkColorScheme ? 'light-content' : 'dark-content'} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={{ maxWidth: 480, width: '100%', alignSelf: 'center' }}>
+              <Card style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, borderRadius: 16 }}>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center mb-2">Sign Up as User</CardTitle>
+                  <CardDescription className="text-center mb-2">Create your MindConnect account</CardDescription>
+                  {/* Step Indicator */}
+                  <View className="flex-row justify-center items-center mb-2">
+                    {[1, 2, 3].map((step) => (
+                      <View key={step} className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                    ))}
+                  </View>
+                </CardHeader>
+                {/* Error Message */}
+                {error ? (
+                  <View className="bg-red-100 rounded-lg p-2 mb-2">
+                    <Text className="text-red-700 text-center text-sm">{error}</Text>
+                  </View>
+                ) : null}
+                {/* Loading Indicator */}
+                {loading && (
+                  <View className="mb-2">
+                    <ActivityIndicator size="small" color="#3B82F6" />
+                  </View>
                 )}
-              </View>
-            ))}
-          </View>
-          
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-xl text-center">
-                {currentStep === 1 && 'Basic Information'}
-                {currentStep === 2 && 'Mental Health Assessment'}
-                {currentStep === 3 && 'Safety & Preferences'}
-              </CardTitle>
-              <CardDescription className="text-center">
-                {currentStep === 1 && 'Let\'s start with some basic information about you'}
-                {currentStep === 2 && 'Help us understand how we can best support you'}
-                {currentStep === 3 && 'Final details to ensure your safety and match you with the right counsellor'}
-              </CardDescription>
-            </CardHeader>
-            
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            
-            <CardContent className="pt-0">
-              <View className="flex-row space-x-4">
-                <Button variant="outline" onPress={handleBack} className="flex-1">
-                  <Text className="text-foreground">
-                    {currentStep === 1 ? 'Back' : 'Previous'}
-                  </Text>
-                </Button>
-                
-                {currentStep < 3 ? (
-                  <Button 
-                    onPress={handleNext} 
-                    disabled={
-                      (currentStep === 1 && !isStep1Valid) ||
-                      (currentStep === 2 && !isStep2Valid)
-                    }
-                    className="flex-1"
-                  >
-                    <Text className="text-primary-foreground">Next</Text>
-                  </Button>
-                ) : (
-                  <Button 
-                    onPress={handleSubmit} 
-                    disabled={!isStep3Valid || loading}
-                    className="flex-1"
-                  >
-                    <Text className="text-primary-foreground">
-                      {loading ? 'Creating Account...' : 'Create Account'}
-                    </Text>
-                  </Button>
-                )}
-              </View>
-            </CardContent>
-          </Card>
-        </View>
-      </ScrollView>
+                {/* Step Content */}
+                {currentStep === 1 && renderStep1()}
+                {currentStep === 2 && renderStep2()}
+                {currentStep === 3 && renderStep3()}
+                {/* Navigation Buttons */}
+                <CardContent>
+                  <View className="flex-row justify-between mt-4">
+                    <Button variant="outline" onPress={handleBack} disabled={loading} style={{ flex: 1, marginRight: 8 }}>
+                      <Text className="text-foreground">Back</Text>
+                    </Button>
+                    {currentStep < 3 ? (
+                      <Button onPress={handleNext} disabled={loading || (currentStep === 1 && !isStep1Valid) || (currentStep === 2 && !isStep2Valid)} style={{ flex: 1, marginLeft: 8 }}>
+                        <Text className="text-primary-foreground">Next</Text>
+                      </Button>
+                    ) : (
+                      <Button onPress={handleSubmit} disabled={loading || !isStep3Valid} style={{ flex: 1, marginLeft: 8 }}>
+                        <Text className="text-primary-foreground">Sign Up</Text>
+                      </Button>
+                    )}
+                  </View>
+                </CardContent>
+              </Card>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

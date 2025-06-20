@@ -4,10 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { useColorScheme } from '@/lib/useColorScheme';
-import { LICENSE_TYPES, MENTAL_HEALTH_CONCERNS, THERAPY_APPROACHES, CounsellorProfileData } from '@/types/user';
+import { CounsellorProfileData, LICENSE_TYPES, MENTAL_HEALTH_CONCERNS, THERAPY_APPROACHES } from '@/types/user';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StatusBar, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface CounsellorSignUpData {
@@ -41,6 +41,7 @@ export default function CounsellorSignUpScreen() {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState<CounsellorSignUpData>({
     email: '',
     password: '',
@@ -381,95 +382,70 @@ export default function CounsellorSignUpScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <StatusBar 
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? '#0f172a' : '#ffffff'}
-      />
-      
-      <ScrollView className="flex-1 px-6">
-        <View className="py-6">
-          {/* Progress indicator */}
-          <View className="flex-row justify-center mb-6">
-            {[1, 2, 3, 4].map((step) => (
-              <View key={step} className="flex-row items-center">
-                <View
-                  className={`w-8 h-8 rounded-full items-center justify-center ${
-                    step <= currentStep ? 'bg-primary' : 'bg-muted'
-                  }`}
-                >
-                  <Text className={`text-sm font-medium ${
-                    step <= currentStep ? 'text-primary-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {step}
-                  </Text>
-                </View>
-                {step < 4 && (
-                  <View className={`w-12 h-0.5 ${
-                    step < currentStep ? 'bg-primary' : 'bg-muted'
-                  }`} />
+    <SafeAreaView className="flex-1 bg-background">
+      <StatusBar barStyle={isDarkColorScheme ? 'light-content' : 'dark-content'} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={{ maxWidth: 480, width: '100%', alignSelf: 'center' }}>
+              <Card style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, borderRadius: 16 }}>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center mb-2">Sign Up as Counsellor</CardTitle>
+                  <CardDescription className="text-center mb-2">Apply to join MindConnect as a professional</CardDescription>
+                  {/* Step Indicator */}
+                  <View className="flex-row justify-center items-center mb-2">
+                    {[1, 2, 3, 4].map((step) => (
+                      <View key={step} className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                    ))}
+                  </View>
+                </CardHeader>
+                {/* Error Message */}
+                {error ? (
+                  <View className="bg-red-100 rounded-lg p-2 mb-2">
+                    <Text className="text-red-700 text-center text-sm">{error}</Text>
+                  </View>
+                ) : null}
+                {/* Loading Indicator */}
+                {loading && (
+                  <View className="mb-2">
+                    <ActivityIndicator size="small" color="#3B82F6" />
+                  </View>
                 )}
-              </View>
-            ))}
-          </View>
-          
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-xl text-center">
-                {currentStep === 1 && 'Personal Information'}
-                {currentStep === 2 && 'Professional Credentials'}
-                {currentStep === 3 && 'Expertise & Specializations'}
-                {currentStep === 4 && 'Practice Details'}
-              </CardTitle>
-              <CardDescription className="text-center">
-                {currentStep === 1 && 'Let\'s start with your basic information'}
-                {currentStep === 2 && 'Please provide your professional license information'}
-                {currentStep === 3 && 'Tell us about your areas of expertise'}
-                {currentStep === 4 && 'Final details about your practice'}
-              </CardDescription>
-            </CardHeader>
-            
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            {currentStep === 4 && renderStep4()}
-            
-            <CardContent className="pt-0">
-              <View className="flex-row space-x-4">
-                <Button variant="outline" onPress={handleBack} className="flex-1">
-                  <Text className="text-foreground">
-                    {currentStep === 1 ? 'Back' : 'Previous'}
-                  </Text>
-                </Button>
-                
-                {currentStep < 4 ? (
-                  <Button 
-                    onPress={handleNext} 
-                    disabled={
-                      (currentStep === 1 && !isStep1Valid) ||
-                      (currentStep === 2 && !isStep2Valid) ||
-                      (currentStep === 3 && !isStep3Valid)
-                    }
-                    className="flex-1"
-                  >
-                    <Text className="text-primary-foreground">Next</Text>
-                  </Button>
-                ) : (
-                  <Button 
-                    onPress={handleSubmit} 
-                    disabled={loading}
-                    className="flex-1"
-                  >
-                    <Text className="text-primary-foreground">
-                      {loading ? 'Submitting...' : 'Submit Application'}
-                    </Text>
-                  </Button>
-                )}
-              </View>
-            </CardContent>
-          </Card>
-        </View>
-      </ScrollView>
+                {/* Step Content */}
+                {currentStep === 1 && renderStep1()}
+                {currentStep === 2 && renderStep2()}
+                {currentStep === 3 && renderStep3()}
+                {currentStep === 4 && renderStep4()}
+                {/* Navigation Buttons */}
+                <CardContent>
+                  <View className="flex-row justify-between mt-4">
+                    <Button variant="outline" onPress={handleBack} disabled={loading} style={{ flex: 1, marginRight: 8 }}>
+                      <Text className="text-foreground">Back</Text>
+                    </Button>
+                    {currentStep < 4 ? (
+                      <Button onPress={handleNext} disabled={loading || (currentStep === 1 && !isStep1Valid) || (currentStep === 2 && !isStep2Valid) || (currentStep === 3 && !isStep3Valid)} style={{ flex: 1, marginLeft: 8 }}>
+                        <Text className="text-primary-foreground">Next</Text>
+                      </Button>
+                    ) : (
+                      <Button onPress={handleSubmit} disabled={loading} style={{ flex: 1, marginLeft: 8 }}>
+                        <Text className="text-primary-foreground">Submit</Text>
+                      </Button>
+                    )}
+                  </View>
+                </CardContent>
+              </Card>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
