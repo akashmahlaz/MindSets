@@ -64,6 +64,51 @@ export const createSessionBooking = async (
   }
 };
 
+export const getUpcomingSessions = async (
+  userId: string,
+  userRole: "client" | "counselor",
+): Promise<SessionBooking[]> => {
+  try {
+    const fieldName = userRole === "client" ? "clientId" : "counselorId";
+    const now = Timestamp.fromDate(new Date());
+
+    const q = query(
+      collection(db, SESSIONS_COLLECTION),
+      where(fieldName, "==", userId),
+      where("date", ">=", now),
+      orderBy("date", "asc"),
+    );
+
+    const querySnapshot = await getDocs(q);
+    const sessions: SessionBooking[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      sessions.push({
+        id: doc.id,
+        counselorId: data.counselorId,
+        counselorName: data.counselorName,
+        clientId: data.clientId,
+        clientName: data.clientName,
+        date: data.date.toDate(),
+        duration: data.duration,
+        type: data.type,
+        status: data.status,
+        notes: data.notes,
+        price: data.price,
+        location: data.location,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      });
+    });
+
+    return sessions;
+  } catch (error) {
+    console.error("Error getting upcoming sessions:", error);
+    throw new Error("Failed to load upcoming sessions");
+  }
+};
+
 export const getUserSessions = async (
   userId: string,
   userRole: "client" | "counselor",
