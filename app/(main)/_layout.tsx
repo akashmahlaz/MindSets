@@ -16,7 +16,7 @@ export default function TabLayout() {
   const { userProfile } = useAuth(); // Add this line to get user profile
   // Match colors with CSS design tokens
   const backgroundColor = isDarkColorScheme ? '#000000' : '#ffffff'; // Pure black/white for consistency
-  const borderColor = isDarkColorScheme ? '#242424' : 'hsl(220, 13%, 91%)'; // --border
+  const borderColor = backgroundColor;
   const statusBarBg = isDarkColorScheme ? '#000000' : '#ffffff'; // Matching the background
 
   return (
@@ -36,7 +36,7 @@ export default function TabLayout() {
           tabBarStyle: {
             backgroundColor: backgroundColor,
             borderTopColor: borderColor,
-            borderTopWidth: 1,
+            borderTopWidth: 0,
             // Let Expo Router handle positioning and safe areas automatically
             ...Platform.select({
               ios: {
