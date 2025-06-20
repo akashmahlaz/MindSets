@@ -7,6 +7,9 @@ import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/lib/useColorScheme';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
@@ -61,20 +64,27 @@ export default function TabLayout() {
           name="Counselors"
           options={{
             title: 'Counselors',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
+            tabBarIcon: ({ color }) => <FontAwesome6 size={28} name="user-doctor" color={color} />,
           }}
         />        <Tabs.Screen
           name="sessions"
           options={{
             title: 'Sessions',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />,
+            tabBarIcon: ({ color }) => <AntDesign size={28} name="calendar" color={color} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+            tabBarIcon: ({ color }) => <AntDesign size={28} name="user" color={color} />,
+          }}
+        />
+         <Tabs.Screen
+          name="clients"
+          options={{
+            title: 'Clients',
+            tabBarIcon: ({ color }) => <AntDesign name="addusergroup" size={24} color={color} />,
           }}
         />
       </Tabs>

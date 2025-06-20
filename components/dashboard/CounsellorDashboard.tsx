@@ -3,21 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { CounsellorProfileData } from '@/types/user';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CounsellorDashboard() {
   const { user, userProfile, logout } = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    upcomingSessions: 3,
-    totalClients: 12,
-    weeklyHours: 25,
-    rating: 4.8,
+    upcomingSessions: 0,
+    totalClients: 0,
+    weeklyHours: 0,
+    rating: 0,
   });
 
   const counsellorProfile = userProfile as CounsellorProfileData;
+
+  // Load real data on component mount
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        // TODO: Replace with real data fetching
+        // For now, show empty/zero states
+        setStats({
+          upcomingSessions: 0,
+          totalClients: 0,
+          weeklyHours: 0,
+          rating: 0,
+        });
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -70,9 +93,7 @@ export default function CounsellorDashboard() {
               </View>
             </CardContent>
           </Card>
-        )}
-
-        {/* Quick Stats */}
+        )}        {/* Quick Stats */}
         <View className="grid grid-cols-2 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 items-center">
@@ -94,7 +115,9 @@ export default function CounsellorDashboard() {
           </Card>
           <Card>
             <CardContent className="p-4 items-center">
-              <Text className="text-2xl font-bold text-primary">⭐ {stats.rating}</Text>
+              <Text className="text-2xl font-bold text-primary">
+                {stats.rating > 0 ? `⭐ ${stats.rating}` : '⭐ --'}
+              </Text>
               <Text className="text-sm text-muted-foreground">Average Rating</Text>
             </CardContent>
           </Card>
@@ -119,13 +142,12 @@ export default function CounsellorDashboard() {
               variant="outline"
             >
               <Text className="text-foreground">📅 Manage Schedule</Text>
-            </Button>
-            <Button 
-              onPress={() => router.push('/(main)/chat')}
+            </Button>            <Button 
+              onPress={() => router.push('/(main)/clients')}
               className="w-full justify-start"
               variant="outline"
             >
-              <Text className="text-foreground">👥 Client List</Text>
+              <Text className="text-foreground">👥 My Clients</Text>
             </Button>
             <Button 
               onPress={() => router.push('/profile')}
@@ -135,36 +157,20 @@ export default function CounsellorDashboard() {
               <Text className="text-foreground">⚙️ Profile Settings</Text>
             </Button>
           </CardContent>
-        </Card>
-
-        {/* Today's Schedule */}
+        </Card>        {/* Today's Schedule */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Today's Schedule</CardTitle>
           </CardHeader>
           <CardContent>
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <View>
-                  <Text className="font-medium text-foreground">Session with Alex M.</Text>
-                  <Text className="text-sm text-muted-foreground">Anxiety & Stress Management</Text>
-                </View>
-                <Text className="text-sm text-blue-600 dark:text-blue-400">2:00 PM</Text>
-              </View>
-              <View className="flex-row justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <View>
-                  <Text className="font-medium text-foreground">Session with Sarah K.</Text>
-                  <Text className="text-sm text-muted-foreground">Depression Support</Text>
-                </View>
-                <Text className="text-sm text-green-600 dark:text-green-400">4:00 PM</Text>
-              </View>
-              <View className="flex-row justify-between items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <View>
-                  <Text className="font-medium text-foreground">Session with John D.</Text>
-                  <Text className="text-sm text-muted-foreground">Relationship Issues</Text>
-                </View>
-                <Text className="text-sm text-purple-600 dark:text-purple-400">6:00 PM</Text>
-              </View>
+            <View className="py-8 items-center">
+              <Text className="text-6xl mb-4">📅</Text>
+              <Text className="text-muted-foreground text-lg font-medium">
+                No sessions scheduled today
+              </Text>
+              <Text className="text-sm text-muted-foreground text-center mt-2">
+                Your schedule will appear here when you have appointments
+              </Text>
             </View>
           </CardContent>
         </Card>

@@ -74,69 +74,73 @@ export default function ProfileScreen() {
     };
 
     loadUserData();
-  }, [userId, chatClient]);
-
-   const startChat = async (targetUser: UserProfile) => {
-      if (!user || !chatClient) {
-        Alert.alert('Error', 'Chat not available');
-        return;
-      }
-  
-      if (!isChatConnected) {
-        try {
-          await connectToChat();
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-          Alert.alert('Error', 'Failed to connect to chat');
-          return;
-        }
-      }
-      
-      try {
-        // Create a deterministic channel ID for direct messages
-        const sortedMembers = [user.uid, targetUser.uid].sort();
-        const channelId = `dm-${sortedMembers.join('-')}`;
-        
-        const channel = chatClient.channel('messaging', channelId, {
-          members: [user.uid, targetUser.uid],
-        });
-        
-        await channel.watch();
-        router.push(`/chat/${channelId}` as any);
-      } catch (error) {
-        console.error('Error starting chat:', error);
-        Alert.alert('Error', 'Failed to start chat');
-      }
-    };
-  const handleStartChat = async () => {
-    if (!user || !chatClient || !isChatConnected) {
-      Alert.alert('Error', 'Please try again later');
+  }, [userId, chatClient]);  const startChat = async (targetUser: UserProfile) => {
+    if (!user || !chatClient) {
+      Alert.alert('Error', 'Chat not available');
       return;
     }
 
+    if (!isChatConnected) {
+      try {
+        await connectToChat();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (error) {
+        Alert.alert('Error', 'Failed to connect to chat');
+        return;
+      }
+    }
+    
     try {
-      setLoading(true);
-      // Navigate to chat for now - we'll implement direct message creation later
-      router.push({
-        pathname: '/users/chat',
-        params: { userId: userId }
-      } as any);
+      const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
+      const channel = await createOrGetDirectChannel(user, targetUser.uid);
+      router.push(`/chat/${channel.id}` as any);
     } catch (error) {
-      console.error('Error starting chat:', error);
-      Alert.alert('Error', 'Failed to start chat. Please try again.');
-    } finally {
-      setLoading(false);
+      Alert.alert(
+        'Chat Error', 
+        `Failed to start chat with ${targetUser.displayName}. Please try again.`
+      );
+    }
+  };
+  const generateCallId = (user1: string, user2: string) => {
+    return [user1, user2].sort().join('-');
+  };
+
+  const handleStartCall = async () => {
+    if (!user?.uid || !userData) {
+      Alert.alert('Error', 'Unable to start call. Please try again.');
+      return;
+    }
+    
+    try {
+      const callId = generateCallId(user.uid, userData.uid);
+      const call = await createCall(callId, [userData.uid], false); // Voice call
+      
+      if (!call) {
+        throw new Error('Failed to create call');
+      }
+    } catch (error) {
+      console.error('Error starting voice call:', error);
+      Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
     }
   };
 
-  const handleStartCall = () => {
-    // Implement video call functionality
-    Alert.alert('Coming Soon', 'Video calls will be available soon!');
-  };
-
-  const handleStartVideoCall = () => {
-    // Implement video call functionality
-    Alert.alert('Coming Soon', 'Video calls will be available soon!');
+  const handleStartVideoCall = async () => {
+    if (!user?.uid || !userData) {
+      Alert.alert('Error', 'Unable to start video call. Please try again.');
+      return;
+    }
+    
+    try {
+      const callId = generateCallId(user.uid, userData.uid);
+      const call = await createCall(callId, [userData.uid], true); // Video call
+      
+      if (!call) {
+        throw new Error('Failed to create call');
+      }
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      Alert.alert('Error', 'Failed to start video call. Please check your connection and try again.');
+    }
   };
 
   const getStatusColor = (status: string) => {

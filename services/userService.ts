@@ -1,14 +1,14 @@
 import { User } from 'firebase/auth';
 import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    where
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { BaseUserProfile, UserProfile, UserRole } from '../types/user';
@@ -31,8 +31,7 @@ export const createUserProfile = async (user: User): Promise<void> => {
   try {
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
-      if (!userDoc.exists()) {
-      // Create new user profile
+      if (!userDoc.exists()) {      // Create new user profile
       const userProfile = {
         uid: user.uid,
         displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
@@ -41,6 +40,8 @@ export const createUserProfile = async (user: User): Promise<void> => {
         status: 'online',
         lastSeen: serverTimestamp(),
         createdAt: serverTimestamp(),
+        role: 'user', // Default role for basic sign-ups
+        isProfileComplete: true, // Auto-complete profile for new users
       };
       
       await setDoc(userRef, userProfile);

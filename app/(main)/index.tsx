@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { VideoCallTester } from '@/components/video/VideoCallTester';
 import { useAuth } from '@/context/AuthContext';
 import { useChat } from '@/context/ChatContext';
 import { useVideo } from '@/context/VideoContext';
@@ -14,7 +13,6 @@ import { useColorScheme } from '@/lib/useColorScheme';
 import { getAllUsers } from '@/services/userService';
 import { UserProfile } from '@/types/user';
 import { Ionicons } from '@expo/vector-icons';
-import { useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -30,18 +28,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OverviewScreen() {
   const router = useRouter();
-  const { user, userProfile } = useAuth();
-  const { chatClient, isChatConnected, connectToChat } = useChat();  const { createCall, isVideoConnected } = useVideo();
-  const videoClient = useStreamVideoClient();
-  
-  // Debug: Log user profile info
-  console.log('OverviewScreen - userProfile:', userProfile);
-  console.log('OverviewScreen - isProfileComplete:', userProfile?.isProfileComplete);
-  console.log('OverviewScreen - role:', userProfile?.role);
+  const { user, userProfile, refreshUserProfile } = useAuth();
+  const { chatClient, isChatConnected, connectToChat } = useChat();
+  const { createCall, isVideoConnected } = useVideo();
   
   // Show role-based dashboard if user profile is complete
   if (userProfile?.isProfileComplete) {
-    console.log('OverviewScreen - Showing role-based dashboard for role:', userProfile.role);
     if (userProfile.role === 'counsellor') {
       return <CounsellorDashboard />;
     } else if (userProfile.role === 'user') {
@@ -49,8 +41,7 @@ export default function OverviewScreen() {
     }
   }
   
-  console.log('OverviewScreen - Showing fallback interface');
-  // Fallback to existing interface for incomplete profiles or legacy users
+  // Fallback to contact list for incomplete profiles
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,8 +108,7 @@ export default function OverviewScreen() {
     }
     
     return callId;
-  };
-  // Start video call function
+  };  // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
       Alert.alert('Error', 'Video service not available. Please try again.');
@@ -126,24 +116,10 @@ export default function OverviewScreen() {
     }
     
     try {
-      console.log('Starting call with:', targetUser.displayName, 'isVideo:', isVideo);
-      
-      // Generate unique call ID that's under 64 characters
       const callId = generateCallId(user.uid, targetUser.uid);
-      console.log('Generated call ID:', callId, 'Length:', callId.length);
-      
-      // Create the ringing call using our enhanced video context
       const call = await createCall(callId, [targetUser.uid], isVideo);
       
-      if (call) {
-        console.log('Call created successfully:', call.cid);
-        console.log('Ringing notifications sent to:', targetUser.displayName);
-        
-        // DO NOT navigate immediately - let the RingingCalls component handle the UI
-        // The Stream Video SDK will automatically show the outgoing call UI
-        // and navigate to call screen only after the call is accepted
-        
-      } else {
+      if (!call) {
         throw new Error('Failed to create call');
       }
     } catch (error) {
@@ -151,48 +127,28 @@ export default function OverviewScreen() {
       Alert.alert('Error', 'Failed to start call. Please check your connection and try again.');
     }
   };
-
-  // Start chat function with better debugging
+  // Start chat function
   const startChat = async (targetUser: UserProfile) => {
-    console.log('🚀 Starting chat with user:', targetUser.displayName, targetUser.uid);
-    
     if (!user || !chatClient) {
-      console.error('❌ Chat not available - missing user or chatClient');
       Alert.alert('Error', 'Chat not available');
       return;
     }
 
-    console.log('✅ User and chatClient available');
-    console.log('Chat connected:', isChatConnected);
-
     if (!isChatConnected) {
-      console.log('🔄 Not connected to chat, attempting to connect...');
       try {
         await connectToChat();
-        // Wait a bit for connection to establish
         await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('✅ Connected to chat successfully');
       } catch (error) {
-        console.error('❌ Failed to connect to chat:', error);
         Alert.alert('Error', 'Failed to connect to chat');
         return;
       }
     }
     
     try {
-      console.log('🔄 Creating/getting channel...');
-      
-      // Use the improved createOrGetDirectChannel function
       const { createOrGetDirectChannel } = await import('@/services/chatHelpers');
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
-      
-      console.log('✅ Channel created/retrieved:', channel.id);
-        // Navigate to the chat screen
       router.push(`/chat/${channel.id}` as any);
-      console.log('✅ Navigated to chat screen');
-      
     } catch (error) {
-      console.error('❌ Error starting chat:', error);
       Alert.alert(
         'Chat Error', 
         `Failed to start chat with ${targetUser.displayName}. Please try again.`
@@ -342,20 +298,12 @@ export default function OverviewScreen() {
       <View className="flex-1 bg-background">
         {/* Header */}
         <View className="px-4 pt-2 pb-2">
-          <View className="flex-row items-center justify-between mb-4">
-            <View>
+          <View className="flex-row items-center justify-between mb-4">            <View>
               <Text className="text-2xl font-bold text-foreground">
                 Welcome back!
-              </Text>
-              <Text className="text-muted-foreground">
+              </Text>              <Text className="text-muted-foreground">
                 Connect with your contacts
               </Text>
-              <View >
-                <Text>Last seen: 2 hours ago</Text>
-                <TouchableOpacity onPress={() => router.push('/push-test')}>
-                  <Text className="text-blue-500">Change settings</Text>
-                </TouchableOpacity> 
-              </View>
             </View>
             <View className="flex-row items-center space-x-2">
               <TouchableOpacity
@@ -379,14 +327,11 @@ export default function OverviewScreen() {
               </TouchableOpacity>
             </View>
           </View>          <Input
-            placeholder  ="Search users..."
+            placeholder="Search users..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             className="mb-4 dark:bg-slate-800 dark:text-slate-400"
           />
-
-          {/* Video Call Testing Component - Remove in production */}
-          {__DEV__ && <VideoCallTester />}
         </View>
 
         <FlatList
