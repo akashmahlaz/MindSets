@@ -185,7 +185,7 @@ export default function SignInScreen() {
                 </View>
                 <H1 className="mb-2 text-center">Welcome Back</H1>
                 <P className="mb-2 text-center">
-                  Sign in to continue your mental health journey with{" "}
+                  Sign in to continue your mental health journey with
                   <Text className="text-primary font-semibold">
                     MindConnect
                   </Text>

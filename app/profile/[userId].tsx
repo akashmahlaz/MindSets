@@ -80,6 +80,37 @@ export default function ProfileScreen() {
 
     loadUserData();
   }, [userId, chatClient]);
+
+   const startChat2 = async (targetUser: UserProfile) => {
+      if (!user || !chatClient) {
+        Alert.alert("Error", "Chat not available");
+        return;
+      }
+  
+      if (!isChatConnected) {
+        try {
+          await connectToChat();
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } catch (error) {
+          Alert.alert("Error", "Failed to connect to chat");
+          return;
+        }
+      }
+  
+      try {
+        const { createOrGetDirectChannel } = await import(
+          "@/services/chatHelpers"
+        );
+        const channel = await createOrGetDirectChannel(user, targetUser.uid);
+        router.push(`/chat/${channel.id}` as any);
+      } catch (error) {
+        Alert.alert(
+          "Chat Error",
+          `Failed to start chat with ${targetUser.displayName}. Please try again.`,
+        );
+      }
+    };
+
   const startChat = async (targetUser: UserProfile) => {
     if (!user || !chatClient) {
       Alert.alert("Error", "Chat not available");
@@ -347,7 +378,7 @@ export default function ProfileScreen() {
             </CardHeader>
             <CardContent className="space-y-3">
               <TouchableOpacity
-                onPress={() => startChat(userData)}
+                onPress={() => startChat2(userData)}
                 className="flex-row items-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
               >
                 <View className="w-12 h-12 bg-blue-500 rounded-full items-center justify-center mr-4">

@@ -127,7 +127,7 @@ export default function ChatScreen() {
         <TouchableOpacity className="w-10 h-10 rounded-full bg-secondary justify-center items-center">
           <Ionicons name="call" size={18} color="#3b82f6" />
         </TouchableOpacity>
-      </View>{" "}
+      </View>
       {/* Chat Area with proper theming and keyboard handling */}
       <KeyboardAvoidingView
         style={{

@@ -228,7 +228,6 @@ export default function CounselorsScreen() {
                 contentContainerStyle={{ paddingHorizontal: 4 }}
               >
                 <View className="flex-row">
-                  {" "}
                   {[...Array(3)].map((_, index) => (
                     <View key={index} className="mr-4" style={{ width: 180 }}>
                       {/* Skeleton Image */}

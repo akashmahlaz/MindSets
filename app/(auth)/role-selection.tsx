@@ -49,7 +49,7 @@ export default function RoleSelectionScreen() {
             Your trusted platform for mental health support. Choose how you'd
             like to join our community.
           </Text>
-        </View>{" "}
+        </View>
         {/* Role Selection Cards */}
         <View className="space-y-8 mb-8">
           {/* User/Client Option */}

@@ -214,7 +214,6 @@ export default function OverviewScreen() {
               </Text>
             </View>
             <View className="flex-row space-x-2">
-              {" "}
               <TouchableOpacity
                 onPress={() => startChat(item)}
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
@@ -316,11 +315,10 @@ export default function OverviewScreen() {
         {/* Header */}
         <View className="px-4 pt-2 pb-2">
           <View className="flex-row items-center justify-between mb-4">
-            {" "}
             <View>
               <Text className="text-2xl font-bold text-foreground">
                 Welcome back!
-              </Text>{" "}
+              </Text>
               <Text className="text-muted-foreground">
                 Connect with your contacts
               </Text>
@@ -349,7 +347,7 @@ export default function OverviewScreen() {
                 </Avatar>
               </TouchableOpacity>
             </View>
-          </View>{" "}
+          </View>
           <Input
             placeholder="Search users..."
             value={searchQuery}

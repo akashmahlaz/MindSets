@@ -316,7 +316,7 @@ MindConnect Mental Health Platform
                         {counselor.displayName}
                       </Text>
                       <Text className="text-muted-foreground mb-2">
-                        {counselor.licenseType} • {counselor.yearsExperience}{" "}
+                        {counselor.licenseType} • {counselor.yearsExperience}
                         years experience
                       </Text>
                       {counselor.specializations && (

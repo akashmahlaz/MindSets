@@ -279,7 +279,7 @@ MindConnect Mental Health Platform
                         />
                         <Text className="text-lg font-semibold text-foreground">
                           {session.type.charAt(0).toUpperCase() +
-                            session.type.slice(1)}{" "}
+                            session.type.slice(1)}
                           Session
                         </Text>
                       </View>
@@ -387,7 +387,7 @@ MindConnect Mental Health Platform
                         />
                         <Text className="text-lg font-semibold text-foreground">
                           {session.type.charAt(0).toUpperCase() +
-                            session.type.slice(1)}{" "}
+                            session.type.slice(1)}
                           Session
                         </Text>
                       </View>

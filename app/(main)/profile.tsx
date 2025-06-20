@@ -78,7 +78,6 @@ export default function UserProfileScreen() {
       </View>
 
       <ScrollView className="flex-1 px-6 py-4">
-        {" "}
         {/* Profile Photo Section */}
         <Card className="mb-6">
           <CardContent className="p-6 items-center">
@@ -104,7 +103,7 @@ export default function UserProfileScreen() {
               {userProfile.email}
             </Text>
           </CardContent>
-        </Card>{" "}
+        </Card>
         {/* Personal Information */}
         <Card className="mb-6">
           <CardHeader>
@@ -131,7 +130,7 @@ export default function UserProfileScreen() {
               </Text>
             </View>
           </CardContent>
-        </Card>{" "}
+        </Card>
         {/* Mental Health Preferences */}
         <Card className="mb-6">
           <CardHeader>
@@ -177,7 +176,7 @@ export default function UserProfileScreen() {
               </Text>
             </View>
           </CardContent>
-        </Card>{" "}
+        </Card>
         {/* Emergency Contact */}
         <Card className="mb-6">
           <CardHeader>
@@ -243,7 +242,7 @@ export default function UserProfileScreen() {
           <Button variant="outline" onPress={handleLogout} className="w-full">
             <Text className="text-destructive">Sign Out</Text>
           </Button>
-        </View>{" "}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

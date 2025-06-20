@@ -247,10 +247,10 @@ export default function CounsellorProfileScreen() {
           </CardHeader>
           <CardContent>
             <Text className="text-muted-foreground">
-              {counsellor.displayName} is a licensed{" "}
-              {counsellor.licenseType.toLowerCase()} with{" "}
+              {counsellor.displayName} is a licensed
+              {counsellor.licenseType.toLowerCase()} with
               {counsellor.yearsExperience} years of experience. They specialize
-              in helping clients with{" "}
+              in helping clients with
               {counsellor.specializations?.slice(0, 3).join(", ") ||
                 "various mental health concerns"}
               .

@@ -187,7 +187,7 @@ export default function CounsellorDashboard() {
               </View>
             </CardContent>
           </Card>
-        )}{" "}
+        )}
         {/* Quick Stats */}
         <View className="grid grid-cols-2 gap-4 mb-6">
           <Card>
@@ -243,7 +243,7 @@ export default function CounsellorDashboard() {
               variant="outline"
             >
               <Text className="text-foreground">💬 View Messages</Text>
-            </Button>{" "}
+            </Button>
             <Button
               onPress={() => router.push("/(main)/sessions")}
               className="w-full justify-start"
@@ -259,7 +259,7 @@ export default function CounsellorDashboard() {
               <Text className="text-foreground">⚙️ Profile Settings</Text>
             </Button>
           </CardContent>
-        </Card>{" "}
+        </Card>
         {/* My Clients Section */}
         <Card className="mb-6">
           <CardHeader>

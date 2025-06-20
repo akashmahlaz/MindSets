@@ -73,7 +73,7 @@ export default function ChatTabsLayout() {
                   <Ionicons name="mail-unread" size={22} color={color} />
                 ),
               }}
-            />{" "}
+            />
             <Tabs.Screen name="[channelId]" options={{ href: null }} />
             <Tabs.Screen name="[channelId]/info" options={{ href: null }} />
           </Tabs>

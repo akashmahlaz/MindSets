@@ -58,7 +58,6 @@ export default function TabLayout() {
           },
         }}
       >
-        {" "}
         <Tabs.Screen
           name="index"
           options={{
@@ -67,7 +66,7 @@ export default function TabLayout() {
               <IconSymbol size={28} name="house.fill" color={color} />
             ),
           }}
-        />{" "}
+        />
         {/* Only show Counselors tab for regular users, not counselors */}
         {userProfile?.role !== "counsellor" && (
           <Tabs.Screen

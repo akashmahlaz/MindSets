@@ -149,7 +149,6 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        {" "}
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
           backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
