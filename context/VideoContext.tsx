@@ -1,9 +1,11 @@
 import {
   CallingState,
+  DeepPartial,
   RingingCallContent,
   StreamCall,
   StreamVideo,
   StreamVideoClient,
+  Theme,
   useCall,
   useCalls,
   useCallStateHooks,
@@ -11,6 +13,7 @@ import {
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import InCallManager from "react-native-incall-manager";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createVideoClient } from "../services/stream";
 import { useAuth } from "./AuthContext";
 
@@ -90,10 +93,22 @@ const RingingCalls = () => {
     ringingCall.isCreatedByMe,
   );  // Show Stream.io's built-in ringing UI for both callers and callees
   // RingingCallContent automatically handles incoming vs outgoing call UI
+  const { top, right, bottom, left } = useSafeAreaInsets();
+  
   return (
     <StreamCall call={ringingCall}>
       <RingingSound />
-      <SafeAreaView style={StyleSheet.absoluteFill}>
+      <SafeAreaView 
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            paddingTop: top,
+            paddingRight: right,
+            paddingBottom: bottom,
+            paddingLeft: left,
+          }
+        ]}
+      >
         <RingingCallContent />
       </SafeAreaView>
     </StreamCall>
@@ -104,6 +119,7 @@ export default RingingCalls;
 
 export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
+  const customTheme = useCustomTheme(); // Use custom theme with safe area insets
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
     null,
   );
@@ -291,9 +307,15 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Ending call by ID:', callId);
         const call = videoClient.call('default', callId);
         
-        // End the call for everyone
-        await call.endCall();
-        console.log('Call ended successfully for all participants');
+        try {
+          // Get the call first to ensure it exists
+          await call.get();
+          // End the call for everyone
+          await call.endCall();
+          console.log('Call ended successfully for all participants');
+        } catch (getError) {
+          console.log('Call not found or already ended:', getError);
+        }
       }
     } catch (error) {
       console.error('Error ending call:', error);
@@ -350,11 +372,10 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     currentCall,
     isCreatingCall,
     endCall,
-  };
-  return (
+  };  return (
     <VideoContext.Provider value={value}>
       {videoClient ? (
-        <StreamVideo client={videoClient}>
+        <StreamVideo client={videoClient} style={customTheme}>
           {children}
           <RingingCalls />
         </StreamVideo>
@@ -391,12 +412,17 @@ const RingingSound = () => {
       callCreator,
       currentUser: user?.uid,
       sdkIsCreatedByMe: call?.isCreatedByMe,
-    });
-
-    if (isCallCreatedByMe) {
+    });    if (isCallCreatedByMe) {
       // Play outgoing call sound (ringback tone)
       console.log("Playing outgoing call sound");
-      InCallManager.start({ media: "video", ringback: "_BUNDLE_" });
+      // You can customize the ringback sound here
+      // Options: '_BUNDLE_', '_DEFAULT_', or path to custom sound file
+      InCallManager.start({ 
+        media: "video", 
+        ringback: "_BUNDLE_", // Use built-in ringback sound
+        // ringback: "_DEFAULT_", // Use system default
+        // ringback: "custom_ringback.mp3", // Use custom sound file
+      });
       return () => {
         console.log("Stopping outgoing call sound");
         InCallManager.stopRingback();
@@ -405,8 +431,19 @@ const RingingSound = () => {
       // Play incoming call sound (ringtone)
       console.log("Playing incoming call sound");
       try {
-        // Use default system ringtone
-        InCallManager.startRingtone("_DEFAULT_", [1, 2, 3], "playback", 30000);
+        // You can customize the ringtone here
+        // First parameter: ringtone type ('_DEFAULT_', '_BUNDLE_', or file path)
+        // Second parameter: vibration pattern (array of milliseconds)
+        // Third parameter: play type ('playback' or 'ringtone')
+        // Fourth parameter: timeout in milliseconds
+        InCallManager.startRingtone(
+          "_DEFAULT_", // Use system default ringtone
+          // "_BUNDLE_", // Use built-in ringtone
+          // "custom_ringtone.mp3", // Use custom ringtone file
+          [1000, 2000, 1000], // Vibration pattern: vibrate 1s, pause 2s, vibrate 1s
+          "playback", 
+          30000
+        );
       } catch (error) {
         console.log("Error starting ringtone:", error);
       }
@@ -423,4 +460,21 @@ const RingingSound = () => {
 
   // Renderless component
   return null;
+};
+
+// Custom theme hook for proper safe area insets according to Stream.io documentation
+const useCustomTheme = (): DeepPartial<Theme> => {
+  const { top, right, bottom, left } = useSafeAreaInsets();
+  const variants: DeepPartial<Theme["variants"]> = {
+    insets: {
+      top,
+      right,
+      bottom,
+      left,
+    },
+  };
+  const customTheme: DeepPartial<Theme> = {
+    variants,
+  };
+  return customTheme;
 };

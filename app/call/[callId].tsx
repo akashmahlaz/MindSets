@@ -1,13 +1,14 @@
+import { CustomCallControls } from "@/components/call/CustomCallControls";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
-    Call,
-    CallContent,
-    CallingState,
-    RingingCallContent,
-    StreamCall,
-    useCallStateHooks,
-    useStreamVideoClient
+  Call,
+  CallContent,
+  CallingState,
+  RingingCallContent,
+  StreamCall,
+  useCallStateHooks,
+  useStreamVideoClient
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -74,13 +75,19 @@ export default function CallScreen() {
         call.leave().catch(console.error);
       }
     };
-  }, [client, callId, callType, user?.uid]);
-  // Handle call events and state changes
+  }, [client, callId, callType, user?.uid]);  // Handle call events and state changes
   useEffect(() => {
     if (!call) return;
 
     const handleCallEnded = () => {
-      console.log("Call ended, navigating back");
+      console.log("Call ended by someone, navigating back");
+      Alert.alert("Call Ended", "The call has been ended.");
+      router.back();
+    };
+
+    const handleCallSessionEnded = () => {
+      console.log("Call session ended, navigating back");
+      Alert.alert("Call Ended", "The call session has ended.");
       router.back();
     };
 
@@ -96,7 +103,7 @@ export default function CallScreen() {
       router.back();
     };
 
-    const handleCallLeft = () => {
+    const handleParticipantLeft = () => {
       console.log("Participant left the call");
       // Check if there are still participants in the call
       const participants = call.state.participants;
@@ -118,21 +125,23 @@ export default function CallScreen() {
       }
     };
 
-    // Subscribe to call events
-    const unsubscribeEnded = call.on("call.session_ended", handleCallEnded);
+    // Subscribe to all relevant call lifecycle events
+    const unsubscribeEnded = call.on("call.ended", handleCallEnded);
+    const unsubscribeSessionEnded = call.on("call.session_ended", handleCallSessionEnded);
     const unsubscribeRejected = call.on("call.rejected", handleCallRejected);
     const unsubscribeMissed = call.on("call.missed", handleCallMissed);
-    const unsubscribeLeft = call.on("call.session_participant_left", handleCallLeft);
+    const unsubscribeParticipantLeft = call.on("call.session_participant_left", handleParticipantLeft);
     const unsubscribeUpdated = call.on("call.updated", handleCallUpdated);
 
     return () => {
       unsubscribeEnded();
+      unsubscribeSessionEnded();
       unsubscribeRejected();
       unsubscribeMissed();
-      unsubscribeLeft();
+      unsubscribeParticipantLeft();
       unsubscribeUpdated();
     };
-  }, [call]);  const handleEndCall = async () => {
+  }, [call]);const handleEndCall = async () => {
     try {
       if (call) {
         console.log("Ending call for all participants");
@@ -215,13 +224,11 @@ function CallUI({ isVideo, onEndCall }: { isVideo: boolean; onEndCall: () => voi
     case CallingState.RINGING:
       // Use Stream.io's built-in RingingCallContent for both incoming and outgoing calls
       // This component automatically detects if it's incoming or outgoing and shows appropriate UI
-      return <RingingCallContent />;
-
-    case CallingState.JOINED:
-      // Use Stream.io's built-in CallContent with proper end call handler
+      return <RingingCallContent />;    case CallingState.JOINED:      // Use Stream.io's built-in CallContent with custom CallControls for proper safe area handling
       return (
         <CallContent
           onHangupCallHandler={onEndCall}
+          CallControls={CustomCallControls}
           supportedReactions={[
             { type: "like", icon: "👍" },
             { type: "love", icon: "❤️" },
