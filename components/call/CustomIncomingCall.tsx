@@ -1,14 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { useCall, useCallStateHooks } from "@stream-io/video-react-native-sdk";
+import {
+    CallingState,
+    useCall,
+    useCallStateHooks,
+} from "@stream-io/video-react-native-sdk";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Alert, Image, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const CustomIncomingCall = () => {
   const call = useCall();
-  const { useCallMembers } = useCallStateHooks();
+  const { useCallMembers, useCallCallingState } = useCallStateHooks();
   const members = useCallMembers();
+  const callingState = useCallCallingState();
 
   // Find the caller (not the current user)
   const caller = members.find(
@@ -17,15 +22,12 @@ export const CustomIncomingCall = () => {
   const callerName = caller?.user.name || caller?.user.id || "Unknown";
   const callerImage = caller?.user.image;
 
-  const handleAccept = async () => {
-    if (!call) return;
-
-    try {
-      console.log("Accepting incoming call:", call.cid);
-      await call.join();
-      
-      // Navigate to call screen after joining
-      const isVideo = call.state.custom?.isVideo || call.state.custom?.callType === 'video';
+  // Navigate to the call screen once the call is joined
+  useEffect(() => {
+    if (callingState === CallingState.JOINED) {
+      const isVideo =
+        call?.state.custom?.isVideo ||
+        call?.state.custom?.callType === "video";
       router.push({
         pathname: "/call/[callId]",
         params: {
@@ -34,6 +36,14 @@ export const CustomIncomingCall = () => {
           isVideo: isVideo ? "true" : "false",
         },
       });
+    }
+  }, [callingState, call]);
+
+  const handleAccept = async () => {
+    if (!call) return;
+    try {
+      console.log("Accepting incoming call:", call.cid);
+      await call.join();
     } catch (error) {
       console.error("Error accepting call:", error);
       Alert.alert("Error", "Failed to accept call");

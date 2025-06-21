@@ -1,14 +1,14 @@
 import {
-    IncomingCall,
-    StreamCall,
-    StreamVideo,
-    StreamVideoClient,
-    useCalls
+  StreamCall,
+  StreamVideo,
+  StreamVideoClient,
+  useCalls
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import { createVideoClient } from "../services/stream";
 import { useAuth } from "./AuthContext";
+import { CustomIncomingCall } from "../components/call/CustomIncomingCall";
 
 interface VideoContextType {
   videoClient: StreamVideoClient | null;
@@ -29,16 +29,44 @@ const VideoContext = createContext<VideoContextType | null>(null);
 // Component to handle incoming and outgoing ringing calls
 const RingingCalls = () => {
   const { user } = useAuth();
-  // collect all ringing kind of calls managed by the SDK
-  const calls = useCalls().filter((c) => c.ringing);
+  const calls = useCalls();
+  const ringingCalls = calls.filter((c) => c.ringing);
 
-  console.log("RingingCalls: Current user:", user?.uid);
-  console.log("RingingCalls: Ringing calls:", calls.length);
+  // Log call state changes
+  useEffect(() => {
+    console.log("RingingCalls: Calls updated:", {
+      total: calls.length,
+      ringing: ringingCalls.length,
+      callStates: calls.map(c => ({
+        id: c.id,
+        cid: c.cid,
+        state: c.state,
+        ringing: c.ringing,
+        currentUserId: c.currentUserId,
+      }))
+    });
+  }, [calls]);
+
+  if (!ringingCalls.length || !user) {
+    console.log("RingingCalls: No ringing calls or no user");
+    return null;
+  }
 
   // Handle the first ringing call
-  const ringingCall = calls[0];
+  const ringingCall = ringingCalls[0];
 
-  if (!ringingCall || !user) return null;
+  if (!ringingCall || !user) {
+    console.log("RingingCalls: No ringing call or no user");
+    return null;
+  }
+
+  console.log("RingingCalls: Rendering with call:", {
+    id: ringingCall.id,
+    cid: ringingCall.cid,
+    state: ringingCall.state,
+    ringing: ringingCall.ringing,
+    currentUserId: ringingCall.currentUserId,
+  });
 
   // Check if current user is the creator of the call
   const callCreator = ringingCall.state.custom?.createdBy;
@@ -55,17 +83,20 @@ const RingingCalls = () => {
 
   // Only show ringing UI for recipients, not creators
   if (isCallCreatedByMe) {
+    console.log("RingingCalls: Skipping UI for call creator");
     return null;
   }
 
   return (
     <StreamCall call={ringingCall}>
       <SafeAreaView style={StyleSheet.absoluteFill}>
-        <IncomingCall />
+        <CustomIncomingCall />
       </SafeAreaView>
     </StreamCall>
   );
 };
+
+export default RingingCalls;
 
 export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
