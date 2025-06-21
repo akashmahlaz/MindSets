@@ -38,6 +38,9 @@ const RingingCalls = () => {
   const { user } = useAuth();
   const calls = useCalls();
   const ringingCalls = calls.filter((c) => c.ringing);
+  
+  // Always call hooks at the top level - never conditionally
+  const { top, right, bottom, left } = useSafeAreaInsets();
 
   // Log call state changes
   useEffect(() => {
@@ -91,10 +94,10 @@ const RingingCalls = () => {
     isCallCreatedByMe,
     "SDK isCreatedByMe:",
     ringingCall.isCreatedByMe,
-  );  // Show Stream.io's built-in ringing UI for both callers and callees
+  );
+
+  // Show Stream.io's built-in ringing UI for both callers and callees
   // RingingCallContent automatically handles incoming vs outgoing call UI
-  const { top, right, bottom, left } = useSafeAreaInsets();
-  
   return (
     <StreamCall call={ringingCall}>
       <RingingSound />
@@ -402,53 +405,51 @@ const RingingSound = () => {
   const isCallCreatedByMe = call?.isCreatedByMe || callCreator === user?.uid;
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-
   useEffect(() => {
-    if (callingState !== CallingState.RINGING) return;
-
-    console.log("RingingSound: Call state:", {
+    if (callingState !== CallingState.RINGING) return;    console.log("RingingSound: Call state:", {
       callingState,
       isCallCreatedByMe,
       callCreator,
       currentUser: user?.uid,
       sdkIsCreatedByMe: call?.isCreatedByMe,
-    });    if (isCallCreatedByMe) {
-      // Play outgoing call sound (ringback tone)
-      console.log("Playing outgoing call sound");
-      // You can customize the ringback sound here
-      // Options: '_BUNDLE_', '_DEFAULT_', or path to custom sound file
+    });
+
+    // Enhanced debugging for sound selection
+    console.log("🎵 SOUND SELECTION DEBUG:");
+    console.log("   - Call Creator ID:", callCreator);
+    console.log("   - Current User ID:", user?.uid);
+    console.log("   - SDK isCreatedByMe:", call?.isCreatedByMe);
+    console.log("   - Computed isCallCreatedByMe:", isCallCreatedByMe);
+    console.log("   - Will play:", isCallCreatedByMe ? "OUTGOING sound" : "INCOMING sound");    if (isCallCreatedByMe) {
+      // Play outgoing call sound (ringback tone) - NO SOUND for outgoing
+      console.log("🔊 OUTGOING call - Playing silent ringback (no sound)");
+      
+      // For outgoing calls, let's make it silent so it's clearly different
       InCallManager.start({ 
-        media: "video", 
-        ringback: "_BUNDLE_", // Use built-in ringback sound
-        // ringback: "_DEFAULT_", // Use system default
-        // ringback: "custom_ringback.mp3", // Use custom sound file
+        media: "audio",
+        auto: true,
+        // No ringback parameter = silent outgoing call
       });
+      
       return () => {
-        console.log("Stopping outgoing call sound");
-        InCallManager.stopRingback();
+        console.log("⏹️ Stopping outgoing call (silent)");
+        InCallManager.stop();
       };
     } else {
-      // Play incoming call sound (ringtone)
-      console.log("Playing incoming call sound");
+      // Play incoming call sound (ringtone) - SYSTEM DEFAULT
+      console.log("📞 Playing INCOMING call sound (ringtone)");
       try {
-        // You can customize the ringtone here
-        // First parameter: ringtone type ('_DEFAULT_', '_BUNDLE_', or file path)
-        // Second parameter: vibration pattern (array of milliseconds)
-        // Third parameter: play type ('playback' or 'ringtone')
-        // Fourth parameter: timeout in milliseconds
         InCallManager.startRingtone(
-          "_DEFAULT_", // Use system default ringtone
-          // "_BUNDLE_", // Use built-in ringtone
-          // "custom_ringtone.mp3", // Use custom ringtone file
-          [1000, 2000, 1000], // Vibration pattern: vibrate 1s, pause 2s, vibrate 1s
-          "playback", 
+          "_DEFAULT_", // System default ringtone for incoming calls
+          [500, 1000, 500], // Different vibration pattern
+          "ringtone", // Use "ringtone" instead of "playback" 
           30000
         );
       } catch (error) {
         console.log("Error starting ringtone:", error);
       }
       return () => {
-        console.log("Stopping incoming call sound");
+        console.log("⏹️ Stopping incoming call sound");
         try {
           InCallManager.stopRingtone();
         } catch (error) {
