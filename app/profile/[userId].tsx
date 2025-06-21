@@ -152,11 +152,24 @@ export default function ProfileScreen() {
 
     try {
       const callId = generateCallId(user.uid, userData.uid);
-      const call = await createCall(callId, [userData.uid], false); // Voice call
-
+      console.log('Starting voice call with:', userData.displayName);
+      
+      // Create voice call
+      const call = await createCall(callId, [userData.uid], false);
       if (!call) {
         throw new Error("Failed to create call");
       }
+      
+      console.log('Voice call created, navigating to call screen');
+      // Navigate to call screen
+      router.push({
+        pathname: "/call/[callId]",
+        params: {
+          callId: call.id,
+          callType: call.type,
+          isVideo: "false",
+        },
+      });
     } catch (error) {
       console.error("Error starting voice call:", error);
       Alert.alert(
@@ -174,11 +187,24 @@ export default function ProfileScreen() {
 
     try {
       const callId = generateCallId(user.uid, userData.uid);
-      const call = await createCall(callId, [userData.uid], true); // Video call
-
+      console.log('Starting video call with:', userData.displayName);
+      
+      // Create video call
+      const call = await createCall(callId, [userData.uid], true);
       if (!call) {
         throw new Error("Failed to create call");
       }
+      
+      console.log('Video call created, navigating to call screen');
+      // Navigate to call screen
+      router.push({
+        pathname: "/call/[callId]",
+        params: {
+          callId: call.id,
+          callType: call.type,
+          isVideo: "true",
+        },
+      });
     } catch (error) {
       console.error("Error starting video call:", error);
       Alert.alert(

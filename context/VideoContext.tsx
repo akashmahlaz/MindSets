@@ -1,12 +1,9 @@
 import {
-  IncomingCall,
-  OutgoingCall,
-  RingingCallContent,
-  StreamCall,
-  StreamVideo,
-  StreamVideoClient,
-  StreamVideoRN,
-  useCalls,
+    IncomingCall,
+    StreamCall,
+    StreamVideo,
+    StreamVideoClient,
+    useCalls
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
@@ -24,6 +21,7 @@ interface VideoContextType {
   joinCall: (callType: string, callId: string) => Promise<any | null>;
   currentCall: any | null;
   isCreatingCall: boolean;
+  endCall: (callId?: string) => Promise<void>;
 }
 
 const VideoContext = createContext<VideoContextType | null>(null);
@@ -34,12 +32,10 @@ const RingingCalls = () => {
   // collect all ringing kind of calls managed by the SDK
   const calls = useCalls().filter((c) => c.ringing);
 
-  // Add debugging
   console.log("RingingCalls: Current user:", user?.uid);
   console.log("RingingCalls: Ringing calls:", calls.length);
 
-  // for simplicity, we only take the first one but
-  // there could be multiple calls ringing at the same time
+  // Handle the first ringing call
   const ringingCall = calls[0];
 
   if (!ringingCall || !user) return null;
@@ -57,11 +53,15 @@ const RingingCalls = () => {
     isCallCreatedByMe,
   );
 
+  // Only show ringing UI for recipients, not creators
+  if (isCallCreatedByMe) {
+    return null;
+  }
+
   return (
     <StreamCall call={ringingCall}>
       <SafeAreaView style={StyleSheet.absoluteFill}>
-        {/* Use proper incoming/outgoing call components instead of generic RingingCallContent */}
-        {isCallCreatedByMe ? <OutgoingCall /> : <IncomingCall />}
+        <IncomingCall />
       </SafeAreaView>
     </StreamCall>
   );
@@ -174,7 +174,7 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
         ...members.map((memberId) => ({ user_id: memberId })),
       ];
 
-      // Use getOrCreate with ring: true - this is the correct Stream Video pattern
+      // Use getOrCreate with ring: true - this sends ringing notifications
       await call.getOrCreate({
         ring: true, // This sends ringing notifications to members
         video: isVideo,
@@ -184,21 +184,17 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
             isVideo,
             createdAt: new Date().toISOString(),
             createdBy: user.uid, // Track who created the call
+            callType: isVideo ? 'video' : 'voice',
           },
         },
       });
-      console.log("VideoContext: Call created with ring=true");
-      console.log("VideoContext: Members who should receive ringing:", members);
+      
+      console.log("VideoContext: Call created successfully");
       console.log("VideoContext: Call ID:", call.id, "CID:", call.cid);
+      console.log("VideoContext: Ringing notifications sent to:", members);
 
-      // DO NOT auto-join the creator - let them join manually through UI
-      // This allows proper ringing flow where both parties see appropriate UI
       setCurrentCall(call);
 
-      console.log(
-        "Call created with ringing (creator not auto-joined):",
-        call.cid,
-      );
       return call;
     } catch (err) {
       console.error("Error creating call:", err);
@@ -218,6 +214,11 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Joining call:", callType, callId);
       const call = videoClient.call(callType, callId);
+      
+      // Get call info first
+      await call.get();
+      
+      // Then join
       await call.join();
       setCurrentCall(call);
       console.log("Joined call successfully:", call.cid);
@@ -227,6 +228,23 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
       return null;
     }
   };
+  // End a call
+  const endCall = async (callId?: string) => {
+    try {
+      if (currentCall) {
+        console.log('Ending current call:', currentCall.cid);
+        await currentCall.leave();
+        setCurrentCall(null);
+      } else if (callId && videoClient) {
+        console.log('Ending call by ID:', callId);
+        const call = videoClient.call('default', callId);
+        await call.leave();
+      }
+    } catch (error) {
+      console.error('Error ending call:', error);
+    }
+  };
+
   const value = {
     videoClient,
     isVideoConnected,
@@ -234,6 +252,7 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     joinCall,
     currentCall,
     isCreatingCall,
+    endCall,
   };
   return (
     <VideoContext.Provider value={value}>

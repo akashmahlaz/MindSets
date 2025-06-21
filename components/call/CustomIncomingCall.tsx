@@ -23,19 +23,20 @@ export const CustomIncomingCall = () => {
     try {
       console.log("Accepting incoming call:", call.cid);
       await call.join();
-
+      
       // Navigate to call screen after joining
+      const isVideo = call.state.custom?.isVideo || call.state.custom?.callType === 'video';
       router.push({
         pathname: "/call/[callId]",
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: "true", // You can determine this from call data
+          isVideo: isVideo ? "true" : "false",
         },
       });
     } catch (error) {
       console.error("Error accepting call:", error);
-      Alert.alert("Error", "Failed to join call");
+      Alert.alert("Error", "Failed to accept call");
     }
   };
 
@@ -44,7 +45,7 @@ export const CustomIncomingCall = () => {
 
     try {
       console.log("Declining incoming call:", call.cid);
-      await call.leave({ reject: true, reason: "decline" });
+      await call.leave({ reject: true });
     } catch (error) {
       console.error("Error declining call:", error);
     }
@@ -75,7 +76,9 @@ export const CustomIncomingCall = () => {
           <Text className="text-white text-4xl font-bold mb-3">
             {callerName}
           </Text>
-          <Text className="text-white/70 text-xl">Incoming video call</Text>
+          <Text className="text-white/70 text-xl">
+            Incoming {call?.state.custom?.callType || 'video'} call
+          </Text>
         </View>
 
         {/* Call action buttons - positioned to avoid system UI */}

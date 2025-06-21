@@ -23,7 +23,7 @@ export const CustomOutgoingCall = () => {
 
     try {
       console.log("Canceling outgoing call:", call.cid);
-      await call.leave({ reject: true, reason: "cancel" });
+      await call.leave({ reject: true });
     } catch (error) {
       console.error("Error canceling call:", error);
     }
@@ -34,27 +34,19 @@ export const CustomOutgoingCall = () => {
     if (!call) return;
 
     const handleCallAccepted = () => {
-      console.log("Call was accepted, joining and navigating...");
+      console.log("Call was accepted, navigating to call screen...");
       setIsWaiting(false);
 
-      // Join the call
-      call
-        .join()
-        .then(() => {
-          // Navigate to call screen
-          router.push({
-            pathname: "/call/[callId]",
-            params: {
-              callId: call.id,
-              callType: call.type,
-              isVideo: "true",
-            },
-          });
-        })
-        .catch((error) => {
-          console.error("Error joining call after acceptance:", error);
-          Alert.alert("Error", "Failed to join call");
-        });
+      // Navigate to call screen - let the call screen handle joining
+      const isVideo = call.state.custom?.isVideo || call.state.custom?.callType === 'video';
+      router.push({
+        pathname: "/call/[callId]",
+        params: {
+          callId: call.id,
+          callType: call.type,
+          isVideo: isVideo ? "true" : "false",
+        },
+      });
     };
 
     // Listen for call state changes
@@ -91,7 +83,7 @@ export const CustomOutgoingCall = () => {
             {recipientName}
           </Text>
           <Text className="text-white/70 text-xl">
-            {isWaiting ? "Calling..." : "Connecting..."}
+            {isWaiting ? "Calling..." : "Call accepted"}
           </Text>
         </View>
 
