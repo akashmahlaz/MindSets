@@ -5,26 +5,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-    Channel,
-    MessageInput,
-    MessageList,
-    OverlayProvider,
+  Channel,
+  MessageInput,
+  MessageList,
+  OverlayProvider,
 } from "stream-chat-expo";
 import { useChat } from "../../context/ChatContext";
 
