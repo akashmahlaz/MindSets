@@ -2,6 +2,7 @@ import "@/app/global.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
 import { getUserProfile } from "@/services/userService";
 import { CounsellorProfileData } from "@/types/user";
@@ -13,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function CounsellorProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { user } = useAuth();
+  const { chatClient, isChatConnected, connectToChat } = useChat();
   const { createCall } = useVideo();
   const router = useRouter();
   const [counsellor, setCounsellor] = useState<CounsellorProfileData | null>(
@@ -40,12 +42,40 @@ export default function CounsellorProfileScreen() {
     }
   };
 
-  const handleStartChat = () => {
+  // Start chat function - same as in index.tsx
+  const startChat = async (targetUserId: string) => {
+    if (!user || !chatClient) {
+      Alert.alert("Error", "Chat not available");
+      return;
+    }
+
+    if (!isChatConnected) {
+      try {
+        await connectToChat();
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error) {
+        Alert.alert("Error", "Failed to connect to chat");
+        return;
+      }
+    }
+
+    try {
+      const { createOrGetDirectChannel } = await import(
+        "@/services/chatHelpers"
+      );
+      const channel = await createOrGetDirectChannel(user, targetUserId);
+      router.push(`/chat/${channel.id}` as any);
+    } catch (error) {
+      Alert.alert(
+        "Chat Error",
+        `Failed to start chat with ${counsellor?.displayName || "counsellor"}. Please try again.`,
+      );
+    }
+  };
+
+  const handleStartChat = async () => {
     if (!counsellor) return;
-    router.push({
-      pathname: "/users/chat",
-      params: { userId: counsellor.uid },
-    });
+    await startChat(counsellor.uid);
   };
 
   const handleVideoCall = async () => {

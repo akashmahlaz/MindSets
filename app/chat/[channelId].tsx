@@ -5,25 +5,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-  Channel,
-  MessageInput,
-  MessageList,
-  OverlayProvider,
+    Channel,
+    MessageInput,
+    MessageList,
+    OverlayProvider,
 } from "stream-chat-expo";
 import { useChat } from "../../context/ChatContext";
 
@@ -87,6 +88,24 @@ export default function ChatScreen() {
     );
   }
 
+  // Helper to get other member's user object
+  const getOtherMember = () => {
+    if (!channel || !channel.state?.members) return null;
+    const members = Object.values(channel.state.members);
+    return members.find((m: any) => m.user?.id !== user?.uid)?.user || null;
+  };
+  const otherUser = getOtherMember();
+  // Helper to get online status (Stream presence)
+  const getOnlineStatus = () => {
+    if (!otherUser) return "Offline";
+    if (otherUser.online) return "Online";
+    return "Offline";
+  };
+  // Helper to get avatar URL
+  const getAvatarUrl = () => {
+    return otherUser?.image || undefined;
+  };
+
   const getHeaderTitle = () => {
     if (!channel) return "Chat";
     if ((channel.id as string).startsWith("dm-") && channel.state?.members) {
@@ -116,14 +135,41 @@ export default function ChatScreen() {
             color={isDarkColorScheme ? "#ffffff" : "#000000"}
           />
         </TouchableOpacity>
-
-        <View className="flex-1">
-          <Text className="text-lg font-semibold text-foreground mb-0.5">
-            {getHeaderTitle()}
-          </Text>
-          <Text className="text-sm text-muted-foreground">Online now</Text>
-        </View>
-
+        {/* Avatar, Name, and Status */}
+        {otherUser && (
+          <View className="flex-row items-center flex-1">
+            <View className="mr-3">
+              <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: '#e5e7eb' }}>
+                {getAvatarUrl() ? (
+                  <Image
+                    source={{ uri: getAvatarUrl() }}
+                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                  />
+                ) : (
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#e5e7eb', justifyContent: 'center', alignItems: 'center' }}>
+                    <Ionicons name="person" size={24} color="#9ca3af" />
+                  </View>
+                )}
+              </View>
+            </View>
+            <View>
+              <Text className="text-lg font-semibold text-foreground mb-0.5">
+                {otherUser.name || otherUser.id || "Chat"}
+              </Text>
+              <Text className={getOnlineStatus() === "Online" ? "text-green-500 text-sm" : "text-gray-400 text-sm"}>
+                {getOnlineStatus()}
+              </Text>
+            </View>
+          </View>
+        )}
+        {!otherUser && (
+          <View className="flex-1">
+            <Text className="text-lg font-semibold text-foreground mb-0.5">
+              {getHeaderTitle()}
+            </Text>
+            <Text className="text-sm text-muted-foreground">Offline</Text>
+          </View>
+        )}
         <TouchableOpacity className="w-10 h-10 rounded-full bg-secondary justify-center items-center">
           <Ionicons name="call" size={18} color="#3b82f6" />
         </TouchableOpacity>
