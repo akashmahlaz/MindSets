@@ -13,8 +13,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
@@ -139,20 +139,18 @@ export default function ProfileScreen() {
         `Failed to start chat with ${targetUser.displayName}. Please try again.`,
       );
     }
-  };
-  const generateCallId = (user1: string, user2: string) => {
-    return [user1, user2].sort().join("-");
+  };  const generateCallId = () => {
+    // Generate unique call ID for ring calls as recommended by Stream.io
+    return `call-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
   const handleStartCall = async () => {
     if (!user?.uid || !userData) {
       Alert.alert("Error", "Unable to start call. Please try again.");
       return;
-    }
-
-    try {
-      const callId = generateCallId(user.uid, userData.uid);
-      console.log('Starting voice call with:', userData.displayName);
+    }    try {
+      const callId = generateCallId();
+      console.log('Starting voice call with:', userData.displayName, 'Call ID:', callId);
       
       // Create voice call
       const call = await createCall(callId, [userData.uid], false);
@@ -183,11 +181,9 @@ export default function ProfileScreen() {
     if (!user?.uid || !userData) {
       Alert.alert("Error", "Unable to start video call. Please try again.");
       return;
-    }
-
-    try {
-      const callId = generateCallId(user.uid, userData.uid);
-      console.log('Starting video call with:', userData.displayName);
+    }    try {
+      const callId = generateCallId();
+      console.log('Starting video call with:', userData.displayName, 'Call ID:', callId);
       
       // Create video call
       const call = await createCall(callId, [userData.uid], true);

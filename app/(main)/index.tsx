@@ -16,13 +16,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -93,23 +93,11 @@ export default function OverviewScreen() {
       pathname: "/profile/[userId]",
       params: { userId: selectedUser.uid },
     });
-  }; // Generate a short call ID that fits within 64 character limit
-  const generateCallId = (userId1: string, userId2: string) => {
-    // Take first 8 characters of each user ID and add timestamp
-    const user1Short = userId1.substring(0, 8);
-    const user2Short = userId2.substring(0, 8);
-    const timestamp = Date.now().toString(36); // Base36 is shorter
-    const callId = `${user1Short}-${user2Short}-${timestamp}`;
-
-    // Ensure it's under 64 characters
-    if (callId.length > 64) {
-      // Fallback to even shorter format
-      const shortTimestamp = timestamp.substring(0, 6);
-      return `${user1Short.substring(0, 6)}-${user2Short.substring(0, 6)}-${shortTimestamp}`;
-    }
-
-    return callId;
-  }; // Start video call function
+  };  // Generate a unique call ID for ring calls as recommended by Stream.io
+  const generateCallId = () => {
+    // Generate unique call ID for ring calls as recommended by Stream.io
+    return `call-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };  // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
       Alert.alert("Error", "Video service not available. Please try again.");
@@ -117,12 +105,25 @@ export default function OverviewScreen() {
     }
 
     try {
-      const callId = generateCallId(user.uid, targetUser.uid);
+      const callId = generateCallId();
+      console.log('Starting call with:', targetUser.displayName, 'Call ID:', callId, 'Is Video:', isVideo);
+      
       const call = await createCall(callId, [targetUser.uid], isVideo);
 
       if (!call) {
         throw new Error("Failed to create call");
       }
+      
+      console.log('Call created successfully, navigating to call screen');
+      // Navigate to call screen
+      router.push({
+        pathname: "/call/[callId]",
+        params: {
+          callId: call.id,
+          callType: call.type,
+          isVideo: isVideo.toString(),
+        },
+      });
     } catch (error) {
       console.error("Error starting call:", error);
       Alert.alert(
