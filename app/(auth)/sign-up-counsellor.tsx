@@ -545,12 +545,12 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
 // Add new step 5 for documents
 const renderStep5 = () => (
   <CardContent className="space-y-4">
-    <H2 className="mb-2">Required Documents</H2>
-    <P className="mb-4">Please upload the required professional documents.</P>
+    <Text className="mb-2">Required Documents</Text>
+    <Text className="mb-4">Please upload the required professional documents.</Text>
     
     {/* License Document */}
     <View className="space-y-2">
-      <Label className="font-semibold text-base">Professional License *</Label>
+      <Text className="font-semibold text-base">Professional License *</Text>
       <Pressable
         onPress={() => pickDocument('license')}
         className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
@@ -562,7 +562,7 @@ const renderStep5 = () => (
       </Pressable>
     </View>    {/* Degree Document */}
     <View className="space-y-2">
-      <Label className="font-semibold text-base">Degree Certificate *</Label>
+      <Text className="font-semibold text-base">Degree Certificate *</Text>
       <Pressable
         onPress={() => pickDocument('degree')}
         className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
@@ -576,7 +576,7 @@ const renderStep5 = () => (
 
     {/* Additional Certifications */}
     <View className="space-y-2">
-      <Label className="font-semibold text-base">Additional Certifications</Label>
+      <Text className="font-semibold text-base">Additional Certifications</Text>
       <Pressable
         onPress={() => pickDocument('certification')}
         className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
@@ -590,7 +590,7 @@ const renderStep5 = () => (
 
     {/* Malpractice Insurance */}
     <View className="space-y-2">
-      <Label className="font-semibold text-base">Malpractice Insurance</Label>
+      <Text className="font-semibold text-base">Malpractice Insurance</Text>
       <Pressable
         onPress={() => pickDocument('insurance')}
         className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
