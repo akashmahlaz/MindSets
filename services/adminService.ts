@@ -10,7 +10,6 @@ import {
     doc,
     getDoc,
     getDocs,
-    orderBy,
     query,
     Timestamp,
     updateDoc,
@@ -88,18 +87,16 @@ export class AdminService {
     
     return uploadedDocs;
   }
-
   /**
    * Get all pending counsellor applications
    */
   static async getPendingApplications(): Promise<CounsellorApplication[]> {
     try {
       const counsellorsRef = collection(db, 'users');
+      // Simplified query - filter by role only, then filter pending on client side
       const q = query(
         counsellorsRef,
-        where('role', '==', 'counsellor'),
-        where('verificationStatus', '==', 'pending'),
-        orderBy('createdAt', 'desc')
+        where('role', '==', 'counsellor')
       );
       
       const snapshot = await getDocs(q);
@@ -107,12 +104,22 @@ export class AdminService {
       
       snapshot.forEach((doc) => {
         const data = doc.data() as CounsellorProfileData;
-        applications.push({
-          uid: doc.id,
-          profileData: data,
-          submittedAt: data.createdAt,
-          status: 'pending'
-        });
+        // Filter for pending applications on client side
+        if (data.verificationStatus === 'pending') {
+          applications.push({
+            uid: doc.id,
+            profileData: data,
+            submittedAt: data.createdAt,
+            status: 'pending'
+          });
+        }
+      });
+      
+      // Sort by creation date (newest first) on client side
+      applications.sort((a, b) => {
+        const dateA = a.submittedAt?.toDate?.() || new Date(0);
+        const dateB = b.submittedAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
       });
       
       return applications;
@@ -121,17 +128,16 @@ export class AdminService {
       throw new Error('Failed to fetch applications');
     }
   }
-
   /**
    * Get all counsellor applications (all statuses)
    */
   static async getAllApplications(): Promise<CounsellorApplication[]> {
     try {
       const counsellorsRef = collection(db, 'users');
+      // Simplified query - filter by role only
       const q = query(
         counsellorsRef,
-        where('role', '==', 'counsellor'),
-        orderBy('createdAt', 'desc')
+        where('role', '==', 'counsellor')
       );
       
       const snapshot = await getDocs(q);
@@ -148,6 +154,13 @@ export class AdminService {
           reviewedBy: data.verifiedBy,
           reviewedAt: data.verifiedAt
         });
+      });
+      
+      // Sort by creation date (newest first) on client side
+      applications.sort((a, b) => {
+        const dateA = a.submittedAt?.toDate?.() || new Date(0);
+        const dateB = b.submittedAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
       });
       
       return applications;
