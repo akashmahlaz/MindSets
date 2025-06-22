@@ -32,16 +32,7 @@ export default function OverviewScreen() {
   const { chatClient, isChatConnected, connectToChat } = useChat();
   const { createCall, isVideoConnected } = useVideo();
 
-  // Show role-based dashboard if user profile is complete
-  if (userProfile?.isProfileComplete) {
-    if (userProfile.role === "counsellor") {
-      return <CounsellorDashboard />;
-    } else if (userProfile.role === "user") {
-      return <UserDashboard />;
-    }
-  }
-
-  // Fallback to contact list for incomplete profiles
+  // Always declare hooks first
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,8 +49,8 @@ export default function OverviewScreen() {
       const otherUsers = allUsers.filter((u) => u.uid !== user?.uid);
       setUsers(otherUsers);
       setFilteredUsers(otherUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (fetchError) {
+      console.error("Error fetching users:", fetchError);
     } finally {
       setLoading(false);
     }
@@ -80,13 +71,22 @@ export default function OverviewScreen() {
       setFilteredUsers(users);
     } else {
       const filtered = users.filter(
-        (user) =>
-          user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+        (u) =>
+          u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.email?.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredUsers(filtered);
     }
   }, [searchQuery, users]);
+
+  // Show role-based dashboard if user profile is complete
+  if (userProfile?.isProfileComplete) {
+    if (userProfile.role === "counsellor") {
+      return <CounsellorDashboard />;
+    } else if (userProfile.role === "user") {
+      return <UserDashboard />;
+    }
+  }
 
   const handleUserPress = (selectedUser: UserProfile) => {
     router.push({
@@ -142,8 +142,7 @@ export default function OverviewScreen() {
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      } catch (error) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));      } catch (connectionError) {
         Alert.alert("Error", "Failed to connect to chat");
         return;
       }
@@ -154,8 +153,7 @@ export default function OverviewScreen() {
         "@/services/chatHelpers"
       );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
-      router.push(`/chat/${channel.id}` as any);
-    } catch (error) {
+      router.push(`/chat/${channel.id}` as any);    } catch (chatError) {
       Alert.alert(
         "Chat Error",
         `Failed to start chat with ${targetUser.displayName}. Please try again.`,
@@ -336,6 +334,7 @@ export default function OverviewScreen() {
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
                 <AntDesign name="user" size={20} color="#3B82F6" />
+                <Text>admin</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push("/profile")}

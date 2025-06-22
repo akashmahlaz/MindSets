@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,26 +13,26 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { AdminService } from "@/services/adminService";
 import {
-  CounsellorProfileData,
-  LICENSE_TYPES,
-  MENTAL_HEALTH_CONCERNS,
-  THERAPY_APPROACHES
+    CounsellorProfileData,
+    LICENSE_TYPES,
+    MENTAL_HEALTH_CONCERNS,
+    THERAPY_APPROACHES
 } from "@/types/user";
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -235,7 +235,7 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
 
       Alert.alert(
         "Application Submitted",
-        "Thank you for applying to join MindConnect as a counsellor. Your application is under review and we'll contact you within 3-5 business days.",
+        "Thank you for applying to join MindConnect as a counsellor. Your application is under review and we&apos;ll contact you within 3-5 business days.",
         [{ text: "OK", onPress: () => router.replace("/(auth)/sign-in") }],
       );
     } catch (error: any) {
@@ -251,7 +251,7 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
   const renderStep1 = () => (
     <CardContent className="space-y-4">
       <H2 className="mb-2">Personal Information</H2>
-      <P className="mb-4">Let's start with your basic information.</P>
+      <P className="mb-4">Let&apos;s start with your basic information.</P>
       <View className="space-y-2">
         <Label className="font-semibold text-base">First Name</Label>
         <Input

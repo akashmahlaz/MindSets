@@ -129,8 +129,7 @@ export default function AdminIndex() {
                 <Text className="text-primary-foreground">
                   Review Applications ({stats?.pendingApplications || 0} pending)
                 </Text>
-              </Button>
-                <Button 
+              </Button>              <Button 
                 variant="outline"
                 onPress={() => router.push("/(admin)/requests")}
                 className="w-full"
@@ -138,15 +137,20 @@ export default function AdminIndex() {
                 <Text className="text-foreground">Manage All Counsellors</Text>
               </Button>
             </CardContent>
-          </Card>         
-           <Card className="mb-3">
+          </Card>
+          
+          <Card className="mb-3">
             <CardHeader>
               <CardTitle><Text>User Management</Text></CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Text className="text-muted-foreground text-center">
-                Coming soon: User management features
-              </Text>
+              <Button 
+                variant="outline"
+                onPress={() => router.push("/(admin)/users")}
+                className="w-full"
+              >
+                <Text className="text-foreground">Manage All Users</Text>
+              </Button>
             </CardContent>
           </Card>
 

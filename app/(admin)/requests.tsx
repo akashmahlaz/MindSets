@@ -5,21 +5,21 @@ import { useAuth } from "@/context/AuthContext";
 import { AdminService, CounsellorApplication } from "@/services/adminService";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Linking,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function AdminRequests() {
-  const [applications, setApplications] = useState<CounsellorApplication[]>([]);
+export default function AdminRequests() {  const [applications, setApplications] = useState<CounsellorApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const { user } = useAuth();
 
@@ -44,7 +44,6 @@ export default function AdminRequests() {
   useEffect(() => {
     loadApplications();
   }, []);
-
   const handleApprove = async (counsellorId: string) => {
     if (!user?.uid) return;
     
@@ -57,46 +56,91 @@ export default function AdminRequests() {
           text: 'Approve',
           onPress: async () => {
             try {
+              setProcessingIds(prev => new Set(prev).add(counsellorId));
               await AdminService.approveCounsellor(counsellorId, user.uid);
               Alert.alert('Success', 'Counsellor approved successfully');
-              loadApplications();
-            } catch (error) {
+              loadApplications();            } catch (approveError) {
+              console.error('Approve error:', approveError);
               Alert.alert('Error', 'Failed to approve counsellor');
+            } finally {
+              setProcessingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(counsellorId);
+                return newSet;
+              });
             }
           }
         }
       ]
     );
   };
-
   const handleReject = async (counsellorId: string) => {
     if (!user?.uid) return;
     
-    Alert.prompt(
+    // Use a more reliable approach for getting rejection reason
+    Alert.alert(
       'Reject Application',
-      'Please provide a reason for rejection:',
+      'This will reject the counsellor application. Continue?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Reject',
-          onPress: async (reason) => {
-            if (!reason?.trim()) {
-              Alert.alert('Error', 'Please provide a reason for rejection');
-              return;
-            }
-            
-            try {
-              await AdminService.rejectCounsellor(counsellorId, user.uid, reason);
-              Alert.alert('Success', 'Application rejected');
-              loadApplications();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to reject application');
-            }
-          }
+          style: 'destructive',
+          onPress: () => showRejectReasonDialog(counsellorId)
         }
-      ],
-      'plain-text'
+      ]
     );
+  };
+
+  const showRejectReasonDialog = (counsellorId: string) => {
+    // Common rejection reasons
+    const reasons = [
+      'Incomplete documentation',
+      'Invalid license verification',
+      'Insufficient experience',
+      'Missing required certifications',
+      'Application does not meet requirements',
+      'Other (Custom reason)'
+    ];
+
+    Alert.alert(
+      'Select Rejection Reason',
+      'Choose a reason for rejection:',
+      [
+        ...reasons.slice(0, 5).map(reason => ({
+          text: reason,
+          onPress: () => executeReject(counsellorId, reason)
+        })),
+        {
+          text: 'Other',
+          onPress: () => {
+            // For custom reason, we'll use a simpler approach
+            executeReject(counsellorId, 'Application requires additional review. Please contact support for details.');
+          }
+        },
+        { text: 'Cancel', style: 'cancel' }
+      ],
+      { cancelable: true }
+    );
+  };
+  const executeReject = async (counsellorId: string, reason: string) => {
+    if (!user?.uid) return;
+    
+    try {
+      setProcessingIds(prev => new Set(prev).add(counsellorId));
+      await AdminService.rejectCounsellor(counsellorId, user.uid, reason);
+      Alert.alert('Success', 'Application rejected successfully');
+      loadApplications();
+    } catch (error) {
+      console.error('Reject error:', error);
+      Alert.alert('Error', 'Failed to reject application. Please try again.');
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(counsellorId);
+        return newSet;
+      });
+    }
   };
 
   const handleViewDocument = async (documentUrl: string, documentName: string) => {
@@ -193,10 +237,9 @@ export default function AdminRequests() {
                     <Text className="text-muted-foreground">
                       {application.profileData.email}
                     </Text>
-                  </View>
-                  <Badge className={`${getStatusColor(application.status)} border-0`}>
+                  </View>                  <Badge className={`${getStatusColor(application.status)} border-0`}>
                     <Text className="text-white text-xs">
-                      {application.status.toUpperCase()}
+                      {(application.status || 'unknown').toUpperCase()}
                     </Text>
                   </Badge>
                 </View>
@@ -251,9 +294,8 @@ export default function AdminRequests() {
                             onPress={() => handleViewDocument(doc.url, doc.name)}
                             className="flex-row justify-between items-center p-2 border border-border rounded"
                           >
-                            <View>
-                              <Text className="text-sm font-medium text-foreground">
-                                {docType.charAt(0).toUpperCase() + docType.slice(1)}
+                            <View>                              <Text className="text-sm font-medium text-foreground">
+                                {(docType || '').charAt(0).toUpperCase() + (docType || '').slice(1)}
                               </Text>
                               <Text className="text-xs text-muted-foreground">{doc.name}</Text>
                             </View>
@@ -276,23 +318,27 @@ export default function AdminRequests() {
                     <Text className="text-sm font-medium text-foreground mb-1">Admin Notes:</Text>
                     <Text className="text-sm text-muted-foreground">{application.adminNotes}</Text>
                   </View>
-                )}
-
-                {/* Action Buttons */}
+                )}                {/* Action Buttons */}
                 {application.status === 'pending' && (
                   <View className="flex-row space-x-2 pt-2">
                     <Button
                       onPress={() => handleApprove(application.uid)}
                       className="flex-1 bg-green-600"
+                      disabled={processingIds.has(application.uid)}
                     >
-                      <Text className="text-white">Approve</Text>
+                      <Text className="text-white">
+                        {processingIds.has(application.uid) ? 'Approving...' : 'Approve'}
+                      </Text>
                     </Button>
                     <Button
                       onPress={() => handleReject(application.uid)}
                       variant="destructive"
                       className="flex-1"
+                      disabled={processingIds.has(application.uid)}
                     >
-                      <Text className="text-white">Reject</Text>
+                      <Text className="text-white">
+                        {processingIds.has(application.uid) ? 'Rejecting...' : 'Reject'}
+                      </Text>
                     </Button>
                   </View>
                 )}

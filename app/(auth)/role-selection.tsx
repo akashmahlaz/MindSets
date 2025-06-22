@@ -46,7 +46,7 @@ export default function RoleSelectionScreen() {
             Welcome to MindConnect
           </Text>
           <Text className="text-muted-foreground text-center text-lg leading-relaxed">
-            Your trusted platform for mental health support. Choose how you'd
+            Your trusted platform for mental health support. Choose how you&apos;d
             like to join our community.
           </Text>
         </View>
@@ -83,7 +83,7 @@ export default function RoleSelectionScreen() {
                       : "text-foreground"
                   }`}
                 >
-                  I'm seeking support
+                  I&apos;m seeking support
                 </Text>
                 <Text className="text-muted-foreground text-base">
                   Connect with licensed mental health professionals for therapy
@@ -127,7 +127,7 @@ export default function RoleSelectionScreen() {
                       : "text-foreground"
                   }`}
                 >
-                  I'm a mental health professional
+                  I&apos;m a mental health professional
                 </Text>
                 <Text className="text-muted-foreground text-base">
                   Join our platform to provide therapy and support to those in

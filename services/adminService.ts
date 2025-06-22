@@ -10,6 +10,7 @@ import {
     doc,
     getDoc,
     getDocs,
+    orderBy,
     query,
     Timestamp,
     updateDoc,
@@ -378,7 +379,6 @@ export class AdminService {
       throw new Error('Failed to update documents');
     }
   }
-
   /**
    * Delete document from storage
    */
@@ -389,6 +389,218 @@ export class AdminService {
     } catch (error) {
       console.error('Error deleting document:', error);
       throw new Error('Failed to delete document');
+    }
+  }
+
+  /**
+   * Get all users (for admin management)
+   */
+  static async getAllUsers(): Promise<any[]> {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      
+      const users: any[] = [];
+      snapshot.forEach((doc) => {
+        users.push({
+          uid: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return users;
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      // Fallback to simple query if ordering fails
+      try {
+        const usersRef = collection(db, 'users');
+        const snapshot = await getDocs(usersRef);
+        const users: any[] = [];
+        snapshot.forEach((doc) => {
+          users.push({
+            uid: doc.id,
+            ...doc.data()
+          });
+        });
+        return users;
+      } catch (fallbackError) {
+        throw new Error('Failed to fetch users');
+      }
+    }
+  }
+
+  /**
+   * Update user role
+   */
+  static async updateUserRole(
+    userId: string, 
+    newRole: 'user' | 'counsellor' | 'admin',
+    adminId: string
+  ): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const updates: any = {
+        role: newRole,
+        updatedBy: adminId,
+        updatedAt: Timestamp.now()
+      };
+
+      // If changing to counsellor, set initial verification status
+      if (newRole === 'counsellor') {
+        updates.verificationStatus = 'pending';
+        updates.isApproved = false;
+      }
+
+      // If changing from counsellor, remove counsellor-specific fields
+      if (newRole !== 'counsellor') {
+        updates.verificationStatus = null;
+        updates.isApproved = null;
+        updates.verificationDocuments = null;
+        updates.verificationNotes = null;
+      }
+
+      await updateDoc(userRef, updates);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      throw new Error('Failed to update user role');
+    }
+  }
+
+  /**
+   * Update user status (active/inactive)
+   */
+  static async updateUserStatus(
+    userId: string, 
+    isActive: boolean,
+    adminId: string,
+    reason?: string
+  ): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        isActive: isActive,
+        statusUpdatedBy: adminId,
+        statusUpdatedAt: Timestamp.now(),
+        statusReason: reason || '',
+        // If deactivating, also set offline status
+        ...(isActive ? {} : { status: 'offline' })
+      });
+
+      // Create notification for user
+      const notificationRef = doc(collection(db, 'notifications'));
+      await updateDoc(notificationRef, {
+        userId: userId,
+        type: isActive ? 'account_activated' : 'account_deactivated',
+        title: isActive ? 'Account Activated' : 'Account Deactivated',
+        message: isActive 
+          ? 'Your account has been activated and you can now use the platform.'
+          : `Your account has been deactivated. ${reason ? `Reason: ${reason}` : 'Contact support for more information.'}`,
+        read: false,
+        createdAt: Timestamp.now(),
+        data: {
+          type: isActive ? 'activation' : 'deactivation',
+          reason: reason || ''
+        }
+      });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      throw new Error('Failed to update user status');
+    }
+  }
+
+  /**
+   * Delete user account (soft delete)
+   */
+  static async deleteUser(
+    userId: string, 
+    adminId: string,
+    reason: string
+  ): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        isDeleted: true,
+        deletedBy: adminId,
+        deletedAt: Timestamp.now(),
+        deletionReason: reason,
+        status: 'offline'
+      });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw new Error('Failed to delete user');
+    }
+  }
+
+  /**
+   * Search users by email, name, or role
+   */
+  static async searchUsers(searchTerm: string): Promise<any[]> {
+    try {
+      const allUsers = await this.getAllUsers();
+      
+      const searchLower = searchTerm.toLowerCase();
+      return allUsers.filter(user => 
+        user.email?.toLowerCase().includes(searchLower) ||
+        user.displayName?.toLowerCase().includes(searchLower) ||
+        user.firstName?.toLowerCase().includes(searchLower) ||
+        user.lastName?.toLowerCase().includes(searchLower) ||
+        user.role?.toLowerCase().includes(searchLower) ||
+        user.licenseNumber?.toLowerCase().includes(searchLower)
+      );
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw new Error('Failed to search users');
+    }
+  }
+
+  /**
+   * Get user activity statistics
+   */
+  static async getUserActivityStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    inactiveUsers: number;
+    newUsersThisMonth: number;
+    usersByRole: { [key: string]: number };
+  }> {
+    try {
+      const allUsers = await this.getAllUsers();
+      
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      let activeUsers = 0;
+      let newUsersThisMonth = 0;
+      const usersByRole: { [key: string]: number } = {};
+      
+      allUsers.forEach(user => {
+        // Count active users (not deleted and not inactive)
+        if (!user.isDeleted && user.isActive !== false) {
+          activeUsers++;
+        }
+        
+        // Count new users this month
+        const createdAt = user.createdAt?.toDate?.() || new Date(0);
+        if (createdAt >= startOfMonth) {
+          newUsersThisMonth++;
+        }
+        
+        // Count by role
+        const role = user.role || 'unknown';
+        usersByRole[role] = (usersByRole[role] || 0) + 1;
+      });
+      
+      return {
+        totalUsers: allUsers.length,
+        activeUsers,
+        inactiveUsers: allUsers.length - activeUsers,
+        newUsersThisMonth,
+        usersByRole
+      };
+    } catch (error) {
+      console.error('Error getting user activity stats:', error);
+      throw new Error('Failed to get user statistics');
     }
   }
 }
