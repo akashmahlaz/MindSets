@@ -11,7 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { BaseUserProfile, UserProfile, UserRole } from "../types/user";
+import { BaseUserProfile, CounsellorProfileData, UserProfile, UserRole } from "../types/user";
 
 // Legacy interface for backward compatibility
 export interface LegacyUserProfile {
@@ -108,6 +108,65 @@ export const debugUsersCollection = async (): Promise<void> => {
   }
 };
 
+// Debug function to check counsellor verification status
+export const debugCounsellorsVerification = async (): Promise<void> => {
+  try {
+    const usersCollection = collection(db, "users");
+    const q = query(usersCollection, where("role", "==", "counsellor"));
+    const querySnapshot = await getDocs(q);
+
+    console.log("=== DEBUG: Counsellors Verification Status ===");
+    console.log("Total counsellors:", querySnapshot.size);
+
+    querySnapshot.forEach((doc) => {
+      const userData = doc.data();
+      console.log("Counsellor:", {
+        id: doc.id,
+        name: userData.displayName,
+        email: userData.email,
+        isApproved: userData.isApproved,
+        verificationStatus: userData.verificationStatus,
+        createdAt: userData.createdAt?.toDate?.() || 'No date'
+      });
+    });
+    console.log("=== END DEBUG ===");
+  } catch (error) {
+    console.error("Error in debug counsellors function:", error);
+  }
+};
+
+// Function to fix existing auto-approved test counsellors
+export const fixTestCounsellors = async (): Promise<void> => {
+  try {
+    const usersCollection = collection(db, "users");
+    const q = query(usersCollection, where("role", "==", "counsellor"));
+    const querySnapshot = await getDocs(q);
+
+    let fixedCount = 0;
+    
+    for (const docSnap of querySnapshot.docs) {
+      const userData = docSnap.data();
+      
+      // Check if this is a test counsellor that was auto-approved
+      if (userData.uid?.startsWith('test-') && userData.isApproved === true) {
+        console.log(`Fixing test counsellor: ${userData.displayName}`);
+        
+        await updateDoc(doc(db, "users", docSnap.id), {
+          isApproved: false,
+          verificationStatus: "pending"
+        });
+        
+        fixedCount++;
+      }
+    }
+    
+    console.log(`✅ Fixed ${fixedCount} test counsellors - they now need admin approval`);
+  } catch (error) {
+    console.error("Error fixing test counsellors:", error);
+    throw error;
+  }
+};
+
 // Get all users except current user
 export const getAllUsers = async (
   currentUserId: string,
@@ -177,10 +236,9 @@ export const createEnhancedUserProfile = async (
       lastSeen: serverTimestamp(),
       createdAt: serverTimestamp(),
       role,
-      isProfileComplete: true,
-      ...(role === "counsellor" && {
-        isApproved: true, // Auto-approve for testing - change back to false for production
-        verificationStatus: "approved" as const,
+      isProfileComplete: true,      ...(role === "counsellor" && {
+        isApproved: false, // Don't auto-approve - require admin verification
+        verificationStatus: "pending" as const,
       }),
     };
 
@@ -229,11 +287,10 @@ export const createTestCounsellor = async (
       photoURL: photoURL,
       status: Math.random() > 0.3 ? "online" : "away", // 70% online, 30% away
       lastSeen: serverTimestamp(),
-      createdAt: serverTimestamp(),
-      role: "counsellor",
+      createdAt: serverTimestamp(),      role: "counsellor",
       isProfileComplete: true,
-      isApproved: true,
-      verificationStatus: "approved",
+      isApproved: false, // Don't auto-approve test counsellors
+      verificationStatus: "pending", // Test counsellors need admin approval too
       licenseNumber: `LIC${Math.floor(Math.random() * 10000)}`,
       licenseType:
         Math.random() > 0.5
@@ -290,14 +347,14 @@ export const getCounsellors = async (filters?: {
     let q = query(collection(db, "users"), where("role", "==", "counsellor"));
 
     const querySnapshot = await getDocs(q);
-    console.log("📊 Found counsellors in database:", querySnapshot.size);
-
-    let counsellors = querySnapshot.docs.map((doc) => {
+    console.log("📊 Found counsellors in database:", querySnapshot.size);    let counsellors = querySnapshot.docs.map((doc) => {
       const data = doc.data() as UserProfile;
+      const counsellorData = data as CounsellorProfileData;
       console.log("👨‍⚕️ Counsellor found:", {
         name: data.displayName,
         email: data.email,
         approved: data.isApproved,
+        verificationStatus: counsellorData.verificationStatus || 'none',
         hasProfile: data.isProfileComplete,
         specializations:
           "specializations" in data ? data.specializations : "none",
@@ -305,14 +362,30 @@ export const getCounsellors = async (filters?: {
       return data;
     });
 
-    // Show approved counsellors or all if in development mode
-    const isDevelopment = __DEV__;
-    if (!isDevelopment) {
-      counsellors = counsellors.filter((c) => c.isApproved === true);
-      console.log("✅ Filtered to approved counsellors:", counsellors.length);
-    } else {
-      console.log("🚧 Development mode: showing all counsellors");
-    }
+    // Show only verified counsellors and exclude rejected/pending ones
+    counsellors = counsellors.filter((c) => {
+      const counsellorData = c as CounsellorProfileData;
+      
+      console.log(`🔍 Checking counsellor ${c.displayName}:`, {
+        isApproved: c.isApproved,
+        verificationStatus: counsellorData.verificationStatus,
+        willShow: c.isApproved === true && counsellorData.verificationStatus === 'verified'
+      });
+      
+      // Always exclude rejected counsellors
+      if (counsellorData.verificationStatus === 'rejected') {
+        console.log(`❌ Excluding rejected counsellor: ${c.displayName}`);
+        return false;
+      }
+      
+      // Only show verified counsellors (approved by admin)
+      const shouldShow = c.isApproved === true && counsellorData.verificationStatus === 'verified';
+      if (!shouldShow) {
+        console.log(`⏳ Excluding unverified counsellor: ${c.displayName} (approved: ${c.isApproved}, status: ${counsellorData.verificationStatus})`);
+      }
+      return shouldShow;
+    });
+    console.log("✅ Filtered counsellors by approval status:", counsellors.length);
 
     // Apply additional filters (client-side for complex queries)
     if (filters) {

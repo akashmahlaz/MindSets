@@ -1,24 +1,25 @@
 import "@/app/global.css";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
 import {
-  CounsellorProfileData,
-  UserProfile,
-  UserProfileData,
+    CounsellorProfileData,
+    UserProfile,
+    UserProfileData,
 } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  View,
+    Image,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -92,9 +93,8 @@ export default function CounselorsScreen() {
         className="mr-4 active:opacity-95"
         style={{ width: 150 }}
       >
-        <View>
-          {/* Profile Image - Rounded Rectangle */}
-          <View className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3">
+        <View>          {/* Profile Image - Rounded Rectangle */}
+          <View className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3 relative">
             {counsellor.photoURL ? (
               <Image
                 source={{ uri: counsellor.photoURL }}
@@ -106,16 +106,29 @@ export default function CounselorsScreen() {
                 <Text className="text-5xl">👨‍⚕️</Text>
               </View>
             )}
+            {/* Verification Badge */}
+            {counsellor.verificationStatus === "verified" && (
+              <View className="absolute top-2 right-2">
+                <Badge variant="default" className="bg-green-500">
+                  <Text className="text-white text-xs font-semibold">✓</Text>
+                </Badge>
+              </View>
+            )}
           </View>
 
           {/* Info Section */}
           <View>
-            <Text
-              className="text-lg font-bold text-gray-900 dark:text-white mb-1"
-              numberOfLines={1}
-            >
-              Dr. {counsellor.displayName}
-            </Text>
+            <View className="flex-row items-center mb-1">
+              <Text
+                className="text-lg font-bold text-gray-900 dark:text-white flex-1"
+                numberOfLines={1}
+              >
+                Dr. {counsellor.displayName}
+              </Text>
+              {counsellor.verificationStatus === "verified" && (
+                <Text className="text-green-500 text-xs ml-1">✓</Text>
+              )}
+            </View>
             <Text
               className="text-sm text-gray-600 dark:text-gray-400"
               numberOfLines={2}

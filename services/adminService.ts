@@ -1,27 +1,27 @@
 import { db, storage } from '@/firebaseConfig';
 import {
-    CounsellorDocuments,
-    CounsellorProfileData,
-    DocumentFile
+  CounsellorDocuments,
+  CounsellorProfileData,
+  DocumentFile
 } from '@/types/user';
 import * as DocumentPicker from 'expo-document-picker';
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    Timestamp,
-    updateDoc,
-    where,
-    writeBatch
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  Timestamp,
+  updateDoc,
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import {
-    deleteObject,
-    getDownloadURL,
-    ref,
-    uploadBytes
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes
 } from 'firebase/storage';
 
 export interface CounsellorApplication {
@@ -199,7 +199,6 @@ export class AdminService {
       throw new Error('Failed to fetch application');
     }
   }
-
   /**
    * Approve counsellor application
    */
@@ -236,12 +235,34 @@ export class AdminService {
       });
       
       await batch.commit();
+
+      // Send push notification using existing service
+      try {
+        const { getUserPushToken } = await import('./userService');
+        const { PushNotificationService } = await import('../lib/pushNotificationService');
+        
+        const pushToken = await getUserPushToken(counsellorId);
+        if (pushToken) {
+          const pushService = PushNotificationService.getInstance();
+          await pushService.sendToUser(
+            pushToken,
+            'Application Approved! 🎉',
+            'Congratulations! Your counsellor application has been approved. You can now start accepting clients.',
+            {
+              type: 'counsellor_approval',
+              counsellorId: counsellorId
+            }
+          );
+        }
+      } catch (pushError) {
+        console.error('Error sending push notification:', pushError);
+        // Don't throw error for push notification failure
+      }
     } catch (error) {
       console.error('Error approving counsellor:', error);
       throw new Error('Failed to approve counsellor');
     }
   }
-
   /**
    * Reject counsellor application
    */
@@ -279,6 +300,30 @@ export class AdminService {
       });
       
       await batch.commit();
+
+      // Send push notification using existing service
+      try {
+        const { getUserPushToken } = await import('./userService');
+        const { PushNotificationService } = await import('../lib/pushNotificationService');
+        
+        const pushToken = await getUserPushToken(counsellorId);
+        if (pushToken) {
+          const pushService = PushNotificationService.getInstance();
+          await pushService.sendToUser(
+            pushToken,
+            'Application Update Required',
+            `Your counsellor application needs revision: ${reason}`,
+            {
+              type: 'counsellor_rejection',
+              counsellorId: counsellorId,
+              reason: reason
+            }
+          );
+        }
+      } catch (pushError) {
+        console.error('Error sending push notification:', pushError);
+        // Don't throw error for push notification failure
+      }
     } catch (error) {
       console.error('Error rejecting counsellor:', error);
       throw new Error('Failed to reject counsellor');

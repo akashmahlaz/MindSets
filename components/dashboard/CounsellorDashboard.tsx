@@ -1,9 +1,10 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import {
-  getUpcomingSessions,
-  getUserSessions,
+    getUpcomingSessions,
+    getUserSessions,
 } from "@/services/sessionService";
 import { getAllUsers } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
@@ -152,26 +153,37 @@ export default function CounsellorDashboard() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView className="flex-1 px-6 py-4">
-        {/* Header */}
+      <ScrollView className="flex-1 px-6 py-4">        {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
-          <View>
-            <Text className="text-2xl font-bold text-foreground">
-              Welcome back, Dr. {counsellorProfile.firstName}
-            </Text>
+          <View className="flex-1">
+            <View className="flex-row items-center mb-2">
+              <Text className="text-2xl font-bold text-foreground mr-3">
+                Welcome back, Dr. {counsellorProfile.firstName}
+              </Text>
+              {counsellorProfile.verificationStatus === "verified" && (
+                <Badge variant="default" className="bg-green-500">
+                  <Text className="text-white text-xs font-semibold">✓ Verified</Text>
+                </Badge>
+              )}
+            </View>
             <Text className="text-muted-foreground">
               {counsellorProfile.verificationStatus === "verified"
                 ? "Verified Professional"
-                : "Pending Verification"}
+                : counsellorProfile.verificationStatus === "pending"
+                ? "Verification Pending"
+                : counsellorProfile.verificationStatus === "rejected"
+                ? "Application Needs Updates"
+                : "Status Unknown"}
             </Text>
           </View>
           <Button variant="ghost" onPress={handleLogout} className="p-2">
             <Text className="text-primary">Sign Out</Text>
           </Button>
         </View>
-        {/* Verification Status */}
+
+        {/* Verification Status Cards */}
         {counsellorProfile.verificationStatus === "pending" && (
-          <Card className="mb-6 border-yellow-500">
+          <Card className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
             <CardContent className="p-4">
               <View className="flex-row items-center">
                 <Text className="text-yellow-600 text-2xl mr-3">⏳</Text>
@@ -182,6 +194,50 @@ export default function CounsellorDashboard() {
                   <Text className="text-sm text-muted-foreground">
                     Your credentials are being reviewed. This typically takes
                     3-5 business days.
+                  </Text>
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+        )}
+
+        {counsellorProfile.verificationStatus === "rejected" && (
+          <Card className="mb-6 border-red-500 bg-red-50 dark:bg-red-900/20">
+            <CardContent className="p-4">
+              <View className="flex-row items-center">
+                <Text className="text-red-600 text-2xl mr-3">❌</Text>
+                <View className="flex-1">
+                  <Text className="font-semibold text-red-600">
+                    Application Needs Updates
+                  </Text>
+                  <Text className="text-sm text-muted-foreground mb-2">
+                    {counsellorProfile.verificationNotes || "Your application requires some updates. Please review and resubmit."}
+                  </Text>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onPress={() => router.push('/profile/edit')}
+                    className="self-start"
+                  >
+                    <Text className="text-red-600">Update Application</Text>
+                  </Button>
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+        )}
+
+        {counsellorProfile.verificationStatus === "verified" && (
+          <Card className="mb-6 border-green-500 bg-green-50 dark:bg-green-900/20">
+            <CardContent className="p-4">
+              <View className="flex-row items-center">
+                <Text className="text-green-600 text-2xl mr-3">✅</Text>
+                <View className="flex-1">
+                  <Text className="font-semibold text-green-600">
+                    Verified Professional
+                  </Text>
+                  <Text className="text-sm text-muted-foreground">
+                    Your credentials have been verified. You can now accept new clients and start sessions.
                   </Text>
                 </View>
               </View>
