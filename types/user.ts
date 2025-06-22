@@ -1,6 +1,22 @@
 // User types for mental health support app
 
-export type UserRole = "user" | "counsellor";
+export type UserRole = "user" | "counsellor" | "admin";
+
+export interface DocumentFile {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  uploadedAt: any;
+}
+
+export interface CounsellorDocuments {
+  license?: DocumentFile;
+  degree?: DocumentFile;
+  certification?: DocumentFile;
+  insurance?: DocumentFile;
+  resume?: DocumentFile;
+}
 
 export interface BaseUserProfile {
   uid: string;
@@ -85,9 +101,11 @@ export interface CounsellorProfileData extends BaseUserProfile {
   };
 
   // Professional verification
-  verificationDocuments?: string[]; // URLs to uploaded documents
+  verificationDocuments?: CounsellorDocuments; // Updated to use proper document structure
   verificationStatus: "pending" | "verified" | "rejected";
   verificationNotes?: string;
+  verifiedAt?: any;
+  verifiedBy?: string; // Admin UID who verified
 
   // Statistics
   totalSessions?: number;
@@ -100,7 +118,21 @@ export interface CounsellorProfileData extends BaseUserProfile {
   languages: string[];
 }
 
-export type UserProfile = UserProfileData | CounsellorProfileData;
+// Admin-specific profile data
+export interface AdminProfileData extends BaseUserProfile {
+  role: "admin";
+  firstName: string;
+  lastName: string;
+  permissions: AdminPermission[];
+  createdBy?: string; // Super admin who created this admin
+}
+
+export interface AdminPermission {
+  resource: "counsellors" | "users" | "sessions" | "reports" | "settings";
+  actions: ("read" | "write" | "approve" | "reject" | "delete")[];
+}
+
+export type UserProfile = UserProfileData | CounsellorProfileData | AdminProfileData;
 
 // Mental health concern options
 export const MENTAL_HEALTH_CONCERNS = [

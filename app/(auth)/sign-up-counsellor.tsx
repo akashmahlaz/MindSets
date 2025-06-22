@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label";
 import { H2, P } from "@/components/ui/typography";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { AdminService } from "@/services/adminService";
 import {
   CounsellorProfileData,
   LICENSE_TYPES,
   MENTAL_HEALTH_CONCERNS,
-  THERAPY_APPROACHES,
+  THERAPY_APPROACHES
 } from "@/types/user";
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -56,6 +58,14 @@ interface CounsellorSignUpData {
   hourlyRate: string;
   maxClientsPerWeek: string;
   languages: string[];
+  // Documents
+  resume?: string; // Base64 encoded string
+  documents: {
+    license?: DocumentPicker.DocumentPickerAsset;
+    degree?: DocumentPicker.DocumentPickerAsset;
+    certification?: DocumentPicker.DocumentPickerAsset;
+    insurance?: DocumentPicker.DocumentPickerAsset;
+  };
 }
 
 export default function CounsellorSignUpScreen() {
@@ -81,7 +91,30 @@ export default function CounsellorSignUpScreen() {
     hourlyRate: "",
     maxClientsPerWeek: "",
     languages: ["English"],
+    resume: "",
+    documents: {},
   });
+  // Add document picker functions
+const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+    
+    if (!result.canceled && result.assets[0]) {
+      setFormData(prev => ({
+        ...prev,
+        documents: {
+          ...prev.documents,
+          [type]: result.assets[0]
+        }
+      }));
+    }
+  } catch (error) {
+    Alert.alert('Error', 'Failed to pick document');
+  }
+};
 
   const isStep1Valid =
     formData.email &&
@@ -95,7 +128,8 @@ export default function CounsellorSignUpScreen() {
     formData.licenseNumber && formData.licenseType && formData.yearsExperience;
 
   const isStep3Valid =
-    formData.specializations.length > 0 && formData.approaches.length > 0;
+    formData.specializations.length > 0 && formData.approaches.length > 0;    // Update step validation
+    const isStep5Valid = formData.documents.license && formData.documents.degree;
   const handleArrayToggle = (
     array: string[],
     value: string,
@@ -137,7 +171,7 @@ export default function CounsellorSignUpScreen() {
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -148,8 +182,7 @@ export default function CounsellorSignUpScreen() {
     } else {
       router.back();
     }
-  };
-  const handleSubmit = async () => {
+  };  const handleSubmit = async () => {
     setLoading(true);
     try {
       // Create the enhanced profile data for counsellor
@@ -173,12 +206,32 @@ export default function CounsellorSignUpScreen() {
         },
       };
 
-      await signUpEnhanced(
+      // Sign up the user first
+      const userCredential = await signUpEnhanced(
         formData.email,
         formData.password,
         profileData,
         "counsellor",
       );
+
+      // Upload documents if user was created successfully
+      if (userCredential?.user?.uid && Object.keys(formData.documents).length > 0) {
+        try {
+          const uploadedDocuments = await AdminService.uploadCounsellorDocuments(
+            formData.documents,
+            userCredential.user.uid
+          );
+
+          // Update the user profile with document URLs
+          await AdminService.updateCounsellorDocuments(userCredential.user.uid, uploadedDocuments);
+        } catch (uploadError) {
+          console.error('Error uploading documents:', uploadError);
+          Alert.alert(
+            'Documents Upload Failed',
+            'Your account was created but documents failed to upload. You can upload them later from your profile.',
+          );
+        }
+      }
 
       Alert.alert(
         "Application Submitted",
@@ -487,6 +540,81 @@ export default function CounsellorSignUpScreen() {
       </View>
     </CardContent>
   );
+  // Render the appropriate step based on currentStep
+  
+// Add new step 5 for documents
+const renderStep5 = () => (
+  <CardContent className="space-y-4">
+    <H2 className="mb-2">Required Documents</H2>
+    <P className="mb-4">Please upload the required professional documents.</P>
+    
+    {/* License Document */}
+    <View className="space-y-2">
+      <Label className="font-semibold text-base">Professional License *</Label>
+      <Pressable
+        onPress={() => pickDocument('license')}
+        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+      >
+        <Text className={formData.documents.license ? "text-foreground" : "text-muted-foreground"}>
+          {formData.documents.license ? formData.documents.license.name : "Tap to upload license"}
+        </Text>
+        <Text className="text-primary">Browse</Text>
+      </Pressable>
+    </View>    {/* Degree Document */}
+    <View className="space-y-2">
+      <Label className="font-semibold text-base">Degree Certificate *</Label>
+      <Pressable
+        onPress={() => pickDocument('degree')}
+        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+      >
+        <Text className={formData.documents.degree ? "text-foreground" : "text-muted-foreground"}>
+          {formData.documents.degree ? formData.documents.degree.name : "Tap to upload degree"}
+        </Text>
+        <Text className="text-primary">Browse</Text>
+      </Pressable>
+    </View>
+
+    {/* Additional Certifications */}
+    <View className="space-y-2">
+      <Label className="font-semibold text-base">Additional Certifications</Label>
+      <Pressable
+        onPress={() => pickDocument('certification')}
+        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+      >
+        <Text className={formData.documents.certification ? "text-foreground" : "text-muted-foreground"}>
+          {formData.documents.certification ? formData.documents.certification.name : "Tap to upload certifications"}
+        </Text>
+        <Text className="text-primary">Browse</Text>
+      </Pressable>
+    </View>
+
+    {/* Malpractice Insurance */}
+    <View className="space-y-2">
+      <Label className="font-semibold text-base">Malpractice Insurance</Label>
+      <Pressable
+        onPress={() => pickDocument('insurance')}
+        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+      >
+        <Text className={formData.documents.insurance ? "text-foreground" : "text-muted-foreground"}>
+          {formData.documents.insurance ? formData.documents.insurance.name : "Tap to upload insurance"}
+        </Text>
+        <Text className="text-primary">Browse</Text>
+      </Pressable>
+    </View>
+
+    <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+      <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium mb-2">
+        Document Requirements:
+      </Text>
+      <Text className="text-blue-800 dark:text-blue-200 text-sm">
+        • All documents must be clear and legible{"\n"}
+        • Accepted formats: PDF, JPG, PNG{"\n"}
+        • Maximum file size: 10MB per document{"\n"}
+        • Documents will be securely stored and verified
+      </Text>
+    </View>
+  </CardContent>
+);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -527,7 +655,7 @@ export default function CounsellorSignUpScreen() {
                   </CardDescription>
                   {/* Step Indicator */}
                   <View className="flex-row justify-center items-center mb-2">
-                    {[1, 2, 3, 4].map((step) => (
+                    {[1, 2, 3, 4,5].map((step) => (
                       <View
                         key={step}
                         className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-blue-500" : "bg-gray-300"}`}
@@ -554,6 +682,7 @@ export default function CounsellorSignUpScreen() {
                 {currentStep === 2 && renderStep2()}
                 {currentStep === 3 && renderStep3()}
                 {currentStep === 4 && renderStep4()}
+                {currentStep === 5 && renderStep5()}
                 {/* Navigation Buttons */}
                 <CardContent>
                   <View className="flex-row justify-between mt-4">
@@ -565,14 +694,15 @@ export default function CounsellorSignUpScreen() {
                     >
                       <Text className="text-foreground">Back</Text>
                     </Button>
-                    {currentStep < 4 ? (
+                    {currentStep < 5 ? (
                       <Button
                         onPress={handleNext}
                         disabled={
                           loading ||
                           (currentStep === 1 && !isStep1Valid) ||
                           (currentStep === 2 && !isStep2Valid) ||
-                          (currentStep === 3 && !isStep3Valid)
+                          (currentStep === 3 && !isStep3Valid) ||
+                          (currentStep === 5 && !isStep5Valid)
                         }
                         style={{ flex: 1, marginLeft: 8 }}
                       >

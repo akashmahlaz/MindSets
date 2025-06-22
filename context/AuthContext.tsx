@@ -1,22 +1,23 @@
 import { auth } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  User,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+    User,
+    UserCredential,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { disablePushNotifications } from "../lib/pushNotificationHelpers";
 import { pushNotificationService } from "../lib/pushNotificationService";
 import { requestNotificationPermissions } from "../lib/requestPermissions";
 import {
-  createUserProfile,
-  createEnhancedUserProfile,
-  updateUserPushToken,
-  updateUserStatus,
-  getUserProfile,
+    createEnhancedUserProfile,
+    createUserProfile,
+    getUserProfile,
+    updateUserPushToken,
+    updateUserStatus,
 } from "../services/userService";
 import { UserProfile, UserRole } from "../types/user";
 
@@ -31,7 +32,7 @@ interface AuthContextType {
     password: string,
     profileData: Partial<UserProfile>,
     role: UserRole,
-  ) => Promise<void>;
+  ) => Promise<UserCredential>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
@@ -58,7 +59,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     await createUserWithEmailAndPassword(auth, email, password);
   };
-
   const signUpEnhanced = async (
     email: string,
     password: string,
@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password,
     );
     await createEnhancedUserProfile(userCredential.user, profileData, role);
+    return userCredential;
   };
 
   const refreshUserProfile = async () => {

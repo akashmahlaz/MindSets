@@ -12,7 +12,7 @@ import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getAllUsers } from "@/services/userService";
 import { UserProfile } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -330,6 +330,12 @@ export default function OverviewScreen() {
                 className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
               >
                 <Ionicons name="chatbubbles" size={20} color="#3B82F6" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push("/(admin)")}
+                className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
+              >
+                <AntDesign name="user" size={20} color="#3B82F6" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push("/profile")}
