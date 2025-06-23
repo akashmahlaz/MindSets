@@ -8,7 +8,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
-import FontAwesome6 from "@expo/vector-icons";
+import { FontAwesome6 } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function TabLayout() {
@@ -66,19 +66,16 @@ export default function TabLayout() {
               <IconSymbol size={28} name="house.fill" color={color} />
             ),
           }}
-        />
-        {/* Only show Counselors tab for regular users, not counselors */}
-        {userProfile?.role !== "counsellor" && (
+        />       
           <Tabs.Screen
             name="Counselors"
             options={{
               title: "Counselors",
               tabBarIcon: ({ color }) => (
-                <AntDesign size={28} name="calendar" color={color} />
+                <FontAwesome6 size={28} name="user-doctor" color={color} />
               ),
             }}
           />
-        )}
         <Tabs.Screen
           name="sessions"
           options={{
