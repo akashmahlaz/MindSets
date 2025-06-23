@@ -1,18 +1,18 @@
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    setDoc,
-    Timestamp,
-    updateDoc,
-    where
-} from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export interface Review {
   id: string;
@@ -44,8 +44,8 @@ export interface ReviewStats {
   };
 }
 
-const REVIEWS_COLLECTION = 'reviews';
-const COUNSELLOR_STATS_COLLECTION = 'counsellorStats';
+const REVIEWS_COLLECTION = "reviews";
+const COUNSELLOR_STATS_COLLECTION = "counsellorStats";
 
 export class ReviewService {
   /**
@@ -59,18 +59,21 @@ export class ReviewService {
     title: string,
     comment: string,
     sessionId?: string,
-    userPhoto?: string
+    userPhoto?: string,
   ): Promise<string> {
     try {
       // Check if user already reviewed this counsellor
-      const existingReview = await this.getUserReviewForCounsellor(userId, counsellorId);
+      const existingReview = await this.getUserReviewForCounsellor(
+        userId,
+        counsellorId,
+      );
       if (existingReview) {
-        throw new Error('You have already reviewed this counsellor');
+        throw new Error("You have already reviewed this counsellor");
       }
 
       // Validate rating
       if (rating < 1 || rating > 5) {
-        throw new Error('Rating must be between 1 and 5');
+        throw new Error("Rating must be between 1 and 5");
       }
 
       const now = new Date();
@@ -78,27 +81,30 @@ export class ReviewService {
         counsellorId,
         userId,
         userName,
-        userPhoto: userPhoto || '',
+        userPhoto: userPhoto || "",
         rating,
         title: title.trim(),
         comment: comment.trim(),
-        sessionId: sessionId || '',
+        sessionId: sessionId || "",
         createdAt: Timestamp.fromDate(now),
         updatedAt: Timestamp.fromDate(now),
         isVerified: !!sessionId, // Verified if from completed session
         helpfulCount: 0,
         reportCount: 0,
-        isVisible: true
+        isVisible: true,
       };
 
-      const docRef = await addDoc(collection(db, REVIEWS_COLLECTION), reviewData);
-      
+      const docRef = await addDoc(
+        collection(db, REVIEWS_COLLECTION),
+        reviewData,
+      );
+
       // Update counsellor's rating stats
       await this.updateCounsellorRatingStats(counsellorId);
-      
+
       return docRef.id;
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error("Error submitting review:", error);
       throw error;
     }
   }
@@ -106,13 +112,16 @@ export class ReviewService {
   /**
    * Get reviews for a counsellor
    */
-  static async getCounsellorReviews(counsellorId: string, limit: number = 10): Promise<Review[]> {
+  static async getCounsellorReviews(
+    counsellorId: string,
+    limit: number = 10,
+  ): Promise<Review[]> {
     try {
       const q = query(
         collection(db, REVIEWS_COLLECTION),
-        where('counsellorId', '==', counsellorId),
-        where('isVisible', '==', true),
-        orderBy('createdAt', 'desc')
+        where("counsellorId", "==", counsellorId),
+        where("isVisible", "==", true),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
@@ -135,13 +144,13 @@ export class ReviewService {
           isVerified: data.isVerified,
           helpfulCount: data.helpfulCount || 0,
           reportCount: data.reportCount || 0,
-          isVisible: data.isVisible
+          isVisible: data.isVisible,
         });
       });
 
       return reviews.slice(0, limit);
     } catch (error) {
-      console.error('Error getting counsellor reviews:', error);
+      console.error("Error getting counsellor reviews:", error);
       return [];
     }
   }
@@ -149,27 +158,37 @@ export class ReviewService {
   /**
    * Get review statistics for a counsellor
    */
-  static async getCounsellorReviewStats(counsellorId: string): Promise<ReviewStats> {
+  static async getCounsellorReviewStats(
+    counsellorId: string,
+  ): Promise<ReviewStats> {
     try {
-      const statsDoc = await getDoc(doc(db, COUNSELLOR_STATS_COLLECTION, counsellorId));
-      
+      const statsDoc = await getDoc(
+        doc(db, COUNSELLOR_STATS_COLLECTION, counsellorId),
+      );
+
       if (statsDoc.exists()) {
         const data = statsDoc.data();
         return {
           averageRating: data.averageRating || 0,
           totalReviews: data.totalReviews || 0,
-          ratingDistribution: data.ratingDistribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          ratingDistribution: data.ratingDistribution || {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+          },
         };
       } else {
         // If no stats exist, calculate them
         return await this.calculateAndUpdateStats(counsellorId);
       }
     } catch (error) {
-      console.error('Error getting counsellor review stats:', error);
+      console.error("Error getting counsellor review stats:", error);
       return {
         averageRating: 0,
         totalReviews: 0,
-        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       };
     }
   }
@@ -177,16 +196,19 @@ export class ReviewService {
   /**
    * Check if user has already reviewed a counsellor
    */
-  static async getUserReviewForCounsellor(userId: string, counsellorId: string): Promise<Review | null> {
+  static async getUserReviewForCounsellor(
+    userId: string,
+    counsellorId: string,
+  ): Promise<Review | null> {
     try {
       const q = query(
         collection(db, REVIEWS_COLLECTION),
-        where('userId', '==', userId),
-        where('counsellorId', '==', counsellorId)
+        where("userId", "==", userId),
+        where("counsellorId", "==", counsellorId),
       );
 
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
         const data = doc.data();
@@ -205,13 +227,13 @@ export class ReviewService {
           isVerified: data.isVerified,
           helpfulCount: data.helpfulCount || 0,
           reportCount: data.reportCount || 0,
-          isVisible: data.isVisible
+          isVisible: data.isVisible,
         };
       }
-      
+
       return null;
     } catch (error) {
-      console.error('Error checking user review:', error);
+      console.error("Error checking user review:", error);
       return null;
     }
   }
@@ -219,23 +241,27 @@ export class ReviewService {
   /**
    * Update counsellor rating statistics
    */
-  static async updateCounsellorRatingStats(counsellorId: string): Promise<void> {
+  static async updateCounsellorRatingStats(
+    counsellorId: string,
+  ): Promise<void> {
     try {
       await this.calculateAndUpdateStats(counsellorId);
     } catch (error) {
-      console.error('Error updating counsellor rating stats:', error);
+      console.error("Error updating counsellor rating stats:", error);
     }
   }
 
   /**
    * Calculate and update counsellor statistics
    */
-  private static async calculateAndUpdateStats(counsellorId: string): Promise<ReviewStats> {
+  private static async calculateAndUpdateStats(
+    counsellorId: string,
+  ): Promise<ReviewStats> {
     try {
       const q = query(
         collection(db, REVIEWS_COLLECTION),
-        where('counsellorId', '==', counsellorId),
-        where('isVisible', '==', true)
+        where("counsellorId", "==", counsellorId),
+        where("isVisible", "==", true),
       );
 
       const querySnapshot = await getDocs(q);
@@ -249,14 +275,15 @@ export class ReviewService {
       });
 
       const totalReviews = reviews.length;
-      const averageRating = totalReviews > 0 
-        ? reviews.reduce((sum, rating) => sum + rating, 0) / totalReviews 
-        : 0;
+      const averageRating =
+        totalReviews > 0
+          ? reviews.reduce((sum, rating) => sum + rating, 0) / totalReviews
+          : 0;
 
       const stats: ReviewStats = {
         averageRating,
         totalReviews,
-        ratingDistribution
+        ratingDistribution,
       };
 
       // Update counsellor stats document
@@ -264,16 +291,16 @@ export class ReviewService {
         averageRating,
         totalReviews,
         ratingDistribution,
-        updatedAt: Timestamp.fromDate(new Date())
+        updatedAt: Timestamp.fromDate(new Date()),
       });
 
       return stats;
     } catch (error) {
-      console.error('Error calculating stats:', error);
+      console.error("Error calculating stats:", error);
       return {
         averageRating: 0,
         totalReviews: 0,
-        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       };
     }
   }
@@ -281,12 +308,15 @@ export class ReviewService {
   /**
    * Delete a review
    */
-  static async deleteReview(reviewId: string, counsellorId: string): Promise<void> {
+  static async deleteReview(
+    reviewId: string,
+    counsellorId: string,
+  ): Promise<void> {
     try {
       await deleteDoc(doc(db, REVIEWS_COLLECTION, reviewId));
       await this.updateCounsellorRatingStats(counsellorId);
     } catch (error) {
-      console.error('Error deleting review:', error);
+      console.error("Error deleting review:", error);
       throw error;
     }
   }
@@ -299,19 +329,19 @@ export class ReviewService {
     counsellorId: string,
     rating: number,
     title: string,
-    comment: string
+    comment: string,
   ): Promise<void> {
     try {
       await updateDoc(doc(db, REVIEWS_COLLECTION, reviewId), {
         rating,
         title: title.trim(),
         comment: comment.trim(),
-        updatedAt: Timestamp.fromDate(new Date())
+        updatedAt: Timestamp.fromDate(new Date()),
       });
-      
+
       await this.updateCounsellorRatingStats(counsellorId);
     } catch (error) {
-      console.error('Error updating review:', error);
+      console.error("Error updating review:", error);
       throw error;
     }
   }

@@ -8,7 +8,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
-import  FontAwesome6  from "@expo/vector-icons";
+import FontAwesome6 from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function TabLayout() {

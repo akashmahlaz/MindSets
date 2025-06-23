@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
-    CallingState,
-    useCall,
-    useCallStateHooks,
-    useConnectedUser,
-    UserResponse,
+  CallingState,
+  useCall,
+  useCallStateHooks,
+  useConnectedUser,
+  UserResponse,
 } from "@stream-io/video-react-native-sdk";
 import React, { useCallback } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,7 +14,7 @@ export const UserInfoComponent = () => {
   const connectedUser = useConnectedUser();
   const { useCallMembers } = useCallStateHooks();
   const members = useCallMembers();
-  
+
   const membersToShow: UserResponse[] = (members || [])
     .map(({ user }) => user)
     .filter((user) => user.id !== connectedUser?.id);
@@ -136,7 +136,12 @@ export const IncomingCallButtonGroup = () => {
         style={[styles.callButton, styles.rejectButton]}
         onPress={rejectCallHandler}
       >
-        <Ionicons name="call" size={32} color="white" style={{ transform: [{ rotate: '135deg' }] }} />
+        <Ionicons
+          name="call"
+          size={32}
+          color="white"
+          style={{ transform: [{ rotate: "135deg" }] }}
+        />
       </Pressable>
       <Pressable
         style={[styles.callButton, styles.acceptButton]}
@@ -172,14 +177,23 @@ export const OutgoingCallButtonGroup = () => {
         style={[styles.callButton, styles.hangupButton]}
         onPress={hangupCallHandler}
       >
-        <Ionicons name="call" size={32} color="white" style={{ transform: [{ rotate: '135deg' }] }} />
+        <Ionicons
+          name="call"
+          size={32}
+          color="white"
+          style={{ transform: [{ rotate: "135deg" }] }}
+        />
       </Pressable>
     </View>
   );
 };
 
 // Active Call Controls (End Call + Media Controls)
-export const ActiveCallButtonGroup = ({ onEndCall }: { onEndCall: () => void }) => {
+export const ActiveCallButtonGroup = ({
+  onEndCall,
+}: {
+  onEndCall: () => void;
+}) => {
   const call = useCall();
   const { useMicrophoneState, useCameraState } = useCallStateHooks();
   const { isMute: microphoneMuted } = useMicrophoneState();
@@ -235,14 +249,19 @@ export const ActiveCallButtonGroup = ({ onEndCall }: { onEndCall: () => void }) 
           color="white"
         />
       </Pressable>
-      
+
       <Pressable
         style={[styles.callButton, styles.endCallButton]}
         onPress={handleEndCall}
       >
-        <Ionicons name="call" size={32} color="white" style={{ transform: [{ rotate: '135deg' }] }} />
+        <Ionicons
+          name="call"
+          size={32}
+          color="white"
+          style={{ transform: [{ rotate: "135deg" }] }}
+        />
       </Pressable>
-      
+
       <Pressable
         onPress={toggleVideoMuted}
         style={[

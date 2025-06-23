@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
-    CallingState,
-    useCall,
-    useCallStateHooks,
+  CallingState,
+  useCall,
+  useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
@@ -26,8 +26,7 @@ export const CustomIncomingCall = () => {
   useEffect(() => {
     if (callingState === CallingState.JOINED) {
       const isVideo =
-        call?.state.custom?.isVideo ||
-        call?.state.custom?.callType === "video";
+        call?.state.custom?.isVideo || call?.state.custom?.callType === "video";
       router.push({
         pathname: "/call/[callId]",
         params: {
@@ -87,7 +86,7 @@ export const CustomIncomingCall = () => {
             {callerName}
           </Text>
           <Text className="text-white/70 text-xl">
-            Incoming {call?.state.custom?.callType || 'video'} call
+            Incoming {call?.state.custom?.callType || "video"} call
           </Text>
         </View>
 

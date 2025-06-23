@@ -16,13 +16,13 @@ import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    RefreshControl,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -93,11 +93,11 @@ export default function OverviewScreen() {
       pathname: "/profile/[userId]",
       params: { userId: selectedUser.uid },
     });
-  };  // Generate a unique call ID for ring calls as recommended by Stream.io
+  }; // Generate a unique call ID for ring calls as recommended by Stream.io
   const generateCallId = () => {
     // Generate unique call ID for ring calls as recommended by Stream.io
     return `call-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  };  // Start video call function
+  }; // Start video call function
   const startCall = async (targetUser: UserProfile, isVideo = true) => {
     if (!isVideoConnected || !user?.uid) {
       Alert.alert("Error", "Video service not available. Please try again.");
@@ -106,15 +106,22 @@ export default function OverviewScreen() {
 
     try {
       const callId = generateCallId();
-      console.log('Starting call with:', targetUser.displayName, 'Call ID:', callId, 'Is Video:', isVideo);
-      
+      console.log(
+        "Starting call with:",
+        targetUser.displayName,
+        "Call ID:",
+        callId,
+        "Is Video:",
+        isVideo,
+      );
+
       const call = await createCall(callId, [targetUser.uid], isVideo);
 
       if (!call) {
         throw new Error("Failed to create call");
       }
-      
-      console.log('Call created successfully, navigating to call screen');
+
+      console.log("Call created successfully, navigating to call screen");
       // Navigate to call screen
       router.push({
         pathname: "/call/[callId]",
@@ -142,7 +149,8 @@ export default function OverviewScreen() {
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise((resolve) => setTimeout(resolve, 2000));      } catch (connectionError) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (connectionError) {
         Alert.alert("Error", "Failed to connect to chat");
         return;
       }
@@ -153,7 +161,8 @@ export default function OverviewScreen() {
         "@/services/chatHelpers"
       );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
-      router.push(`/chat/${channel.id}` as any);    } catch (chatError) {
+      router.push(`/chat/${channel.id}` as any);
+    } catch (chatError) {
       Alert.alert(
         "Chat Error",
         `Failed to start chat with ${targetUser.displayName}. Please try again.`,

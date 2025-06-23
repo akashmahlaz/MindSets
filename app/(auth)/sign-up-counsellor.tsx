@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,26 +13,26 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { AdminService } from "@/services/adminService";
 import {
-    CounsellorProfileData,
-    LICENSE_TYPES,
-    MENTAL_HEALTH_CONCERNS,
-    THERAPY_APPROACHES
+  CounsellorProfileData,
+  LICENSE_TYPES,
+  MENTAL_HEALTH_CONCERNS,
+  THERAPY_APPROACHES,
 } from "@/types/user";
-import * as DocumentPicker from 'expo-document-picker';
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -95,26 +95,28 @@ export default function CounsellorSignUpScreen() {
     documents: {},
   });
   // Add document picker functions
-const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
-  try {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['application/pdf', 'image/*'],
-      copyToCacheDirectory: true,
-    });
-    
-    if (!result.canceled && result.assets[0]) {
-      setFormData(prev => ({
-        ...prev,
-        documents: {
-          ...prev.documents,
-          [type]: result.assets[0]
-        }
-      }));
+  const pickDocument = async (
+    type: keyof CounsellorSignUpData["documents"],
+  ) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setFormData((prev) => ({
+          ...prev,
+          documents: {
+            ...prev.documents,
+            [type]: result.assets[0],
+          },
+        }));
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick document");
     }
-  } catch (error) {
-    Alert.alert('Error', 'Failed to pick document');
-  }
-};
+  };
 
   const isStep1Valid =
     formData.email &&
@@ -128,8 +130,8 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
     formData.licenseNumber && formData.licenseType && formData.yearsExperience;
 
   const isStep3Valid =
-    formData.specializations.length > 0 && formData.approaches.length > 0;    // Update step validation
-    const isStep5Valid = formData.documents.license && formData.documents.degree;
+    formData.specializations.length > 0 && formData.approaches.length > 0; // Update step validation
+  const isStep5Valid = formData.documents.license && formData.documents.degree;
   const handleArrayToggle = (
     array: string[],
     value: string,
@@ -182,7 +184,8 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
     } else {
       router.back();
     }
-  };  const handleSubmit = async () => {
+  };
+  const handleSubmit = async () => {
     setLoading(true);
     try {
       // Create the enhanced profile data for counsellor
@@ -215,20 +218,27 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
       );
 
       // Upload documents if user was created successfully
-      if (userCredential?.user?.uid && Object.keys(formData.documents).length > 0) {
+      if (
+        userCredential?.user?.uid &&
+        Object.keys(formData.documents).length > 0
+      ) {
         try {
-          const uploadedDocuments = await AdminService.uploadCounsellorDocuments(
-            formData.documents,
-            userCredential.user.uid
-          );
+          const uploadedDocuments =
+            await AdminService.uploadCounsellorDocuments(
+              formData.documents,
+              userCredential.user.uid,
+            );
 
           // Update the user profile with document URLs
-          await AdminService.updateCounsellorDocuments(userCredential.user.uid, uploadedDocuments);
+          await AdminService.updateCounsellorDocuments(
+            userCredential.user.uid,
+            uploadedDocuments,
+          );
         } catch (uploadError) {
-          console.error('Error uploading documents:', uploadError);
+          console.error("Error uploading documents:", uploadError);
           Alert.alert(
-            'Documents Upload Failed',
-            'Your account was created but documents failed to upload. You can upload them later from your profile.',
+            "Documents Upload Failed",
+            "Your account was created but documents failed to upload. You can upload them later from your profile.",
           );
         }
       }
@@ -541,80 +551,112 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
     </CardContent>
   );
   // Render the appropriate step based on currentStep
-  
-// Add new step 5 for documents
-const renderStep5 = () => (
-  <CardContent className="space-y-4">
-    <Text className="mb-2">Required Documents</Text>
-    <Text className="mb-4">Please upload the required professional documents.</Text>
-    
-    {/* License Document */}
-    <View className="space-y-2">
-      <Text className="font-semibold text-base">Professional License *</Text>
-      <Pressable
-        onPress={() => pickDocument('license')}
-        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-      >
-        <Text className={formData.documents.license ? "text-foreground" : "text-muted-foreground"}>
-          {formData.documents.license ? formData.documents.license.name : "Tap to upload license"}
-        </Text>
-        <Text className="text-primary">Browse</Text>
-      </Pressable>
-    </View>    {/* Degree Document */}
-    <View className="space-y-2">
-      <Text className="font-semibold text-base">Degree Certificate *</Text>
-      <Pressable
-        onPress={() => pickDocument('degree')}
-        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-      >
-        <Text className={formData.documents.degree ? "text-foreground" : "text-muted-foreground"}>
-          {formData.documents.degree ? formData.documents.degree.name : "Tap to upload degree"}
-        </Text>
-        <Text className="text-primary">Browse</Text>
-      </Pressable>
-    </View>
 
-    {/* Additional Certifications */}
-    <View className="space-y-2">
-      <Text className="font-semibold text-base">Additional Certifications</Text>
-      <Pressable
-        onPress={() => pickDocument('certification')}
-        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-      >
-        <Text className={formData.documents.certification ? "text-foreground" : "text-muted-foreground"}>
-          {formData.documents.certification ? formData.documents.certification.name : "Tap to upload certifications"}
-        </Text>
-        <Text className="text-primary">Browse</Text>
-      </Pressable>
-    </View>
-
-    {/* Malpractice Insurance */}
-    <View className="space-y-2">
-      <Text className="font-semibold text-base">Malpractice Insurance</Text>
-      <Pressable
-        onPress={() => pickDocument('insurance')}
-        className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-      >
-        <Text className={formData.documents.insurance ? "text-foreground" : "text-muted-foreground"}>
-          {formData.documents.insurance ? formData.documents.insurance.name : "Tap to upload insurance"}
-        </Text>
-        <Text className="text-primary">Browse</Text>
-      </Pressable>
-    </View>
-
-    <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-      <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium mb-2">
-        Document Requirements:
+  // Add new step 5 for documents
+  const renderStep5 = () => (
+    <CardContent className="space-y-4">
+      <Text className="mb-2">Required Documents</Text>
+      <Text className="mb-4">
+        Please upload the required professional documents.
       </Text>
-      <Text className="text-blue-800 dark:text-blue-200 text-sm">
-        • All documents must be clear and legible{"\n"}
-        • Accepted formats: PDF, JPG, PNG{"\n"}
-        • Maximum file size: 10MB per document{"\n"}
-        • Documents will be securely stored and verified
-      </Text>
-    </View>
-  </CardContent>
-);
+      {/* License Document */}
+      <View className="space-y-2">
+        <Text className="font-semibold text-base">Professional License *</Text>
+        <Pressable
+          onPress={() => pickDocument("license")}
+          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+        >
+          <Text
+            className={
+              formData.documents.license
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }
+          >
+            {formData.documents.license
+              ? formData.documents.license.name
+              : "Tap to upload license"}
+          </Text>
+          <Text className="text-primary">Browse</Text>
+        </Pressable>
+      </View>
+      {/* Degree Document */}
+      <View className="space-y-2">
+        <Text className="font-semibold text-base">Degree Certificate *</Text>
+        <Pressable
+          onPress={() => pickDocument("degree")}
+          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+        >
+          <Text
+            className={
+              formData.documents.degree
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }
+          >
+            {formData.documents.degree
+              ? formData.documents.degree.name
+              : "Tap to upload degree"}
+          </Text>
+          <Text className="text-primary">Browse</Text>
+        </Pressable>
+      </View>
+      {/* Additional Certifications */}
+      <View className="space-y-2">
+        <Text className="font-semibold text-base">
+          Additional Certifications
+        </Text>
+        <Pressable
+          onPress={() => pickDocument("certification")}
+          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+        >
+          <Text
+            className={
+              formData.documents.certification
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }
+          >
+            {formData.documents.certification
+              ? formData.documents.certification.name
+              : "Tap to upload certifications"}
+          </Text>
+          <Text className="text-primary">Browse</Text>
+        </Pressable>
+      </View>
+      {/* Malpractice Insurance */}
+      <View className="space-y-2">
+        <Text className="font-semibold text-base">Malpractice Insurance</Text>
+        <Pressable
+          onPress={() => pickDocument("insurance")}
+          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
+        >
+          <Text
+            className={
+              formData.documents.insurance
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }
+          >
+            {formData.documents.insurance
+              ? formData.documents.insurance.name
+              : "Tap to upload insurance"}
+          </Text>
+          <Text className="text-primary">Browse</Text>
+        </Pressable>
+      </View>
+      <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+        <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium mb-2">
+          Document Requirements:
+        </Text>
+        <Text className="text-blue-800 dark:text-blue-200 text-sm">
+          • All documents must be clear and legible{"\n"}• Accepted formats:
+          PDF, JPG, PNG{"\n"}• Maximum file size: 10MB per document{"\n"}•
+          Documents will be securely stored and verified
+        </Text>
+      </View>
+    </CardContent>
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -648,14 +690,14 @@ const renderStep5 = () => (
               >
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-center mb-2">
-                   <Text> Sign Up as Counsellor</Text>
+                    <Text> Sign Up as Counsellor</Text>
                   </CardTitle>
                   <CardDescription className="text-center mb-2">
                     <Text>Apply to join MindConnect as a professional</Text>
                   </CardDescription>
                   {/* Step Indicator */}
                   <View className="flex-row justify-center items-center mb-2">
-                    {[1, 2, 3, 4,5].map((step) => (
+                    {[1, 2, 3, 4, 5].map((step) => (
                       <View
                         key={step}
                         className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-blue-500" : "bg-gray-300"}`}

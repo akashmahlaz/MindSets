@@ -155,19 +155,16 @@ app/
 ### Common Issues
 
 1. **"No FCM token available"**
-
    - Check notification permissions
    - Ensure Firebase is properly configured
    - Check device connectivity
 
 2. **"Service Account credentials not found"**
-
    - Verify environment variables are set
    - Check `.env.local` file exists
    - Confirm private key format (includes `\n` for line breaks)
 
 3. **"Authentication failed"**
-
    - Verify service account has FCM permissions
    - Check project ID matches
    - Ensure service account JSON is not corrupted

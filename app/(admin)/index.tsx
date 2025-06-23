@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminService } from "@/services/adminService";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface AdminStats {
@@ -24,7 +30,7 @@ export default function AdminIndex() {
       const adminStats = await AdminService.getAdminStats();
       setStats(adminStats);
     } catch (error) {
-      console.error('Error loading admin stats:', error);
+      console.error("Error loading admin stats:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -40,7 +46,12 @@ export default function AdminIndex() {
     loadStats();
   }, []);
 
-  const StatCard = ({ title, value, color, onPress }: {
+  const StatCard = ({
+    title,
+    value,
+    color,
+    onPress,
+  }: {
     title: string;
     value: number;
     color: string;
@@ -66,20 +77,28 @@ export default function AdminIndex() {
       >
         {/* Header */}
         <View className="mb-6">
-          <Text className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</Text>
-          <Text className="text-muted-foreground">Manage your MindConnect platform</Text>
+          <Text className="text-3xl font-bold text-foreground mb-2">
+            Admin Dashboard
+          </Text>
+          <Text className="text-muted-foreground">
+            Manage your MindConnect platform
+          </Text>
         </View>
 
         {/* Quick Stats */}
         {loading ? (
           <Card className="mb-6">
             <CardContent className="p-4">
-              <Text className="text-center text-muted-foreground">Loading statistics...</Text>
+              <Text className="text-center text-muted-foreground">
+                Loading statistics...
+              </Text>
             </CardContent>
           </Card>
         ) : stats ? (
           <View className="mb-6">
-            <Text className="text-lg font-semibold text-foreground mb-3">Overview</Text>
+            <Text className="text-lg font-semibold text-foreground mb-3">
+              Overview
+            </Text>
             <View className="flex-row mb-3">
               <StatCard
                 title="Total Users"
@@ -115,26 +134,29 @@ export default function AdminIndex() {
 
         {/* Quick Actions */}
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-foreground mb-3">Quick Actions</Text>
+          <Text className="text-lg font-semibold text-foreground mb-3">
+            Quick Actions
+          </Text>
 
-          <Card className="mb-3">          
-              <CardHeader>
-            <CardTitle>Counsellor Management</CardTitle>
-          </CardHeader>
-            <CardContent className="space-y-3">            
-                <Button
-              onPress={() => router.push("/(admin)/requests")}
-              className="w-full"
-            >
-              <Text className="text-primary-foreground">
-                Review Applications ({stats?.pendingApplications || 0} pending)
-              </Text>
-            </Button>             
-             <Button
-              variant="outline"
-              onPress={() => router.push("/(admin)/requests")}
-              className="w-full"
-            >
+          <Card className="mb-3">
+            <CardHeader>
+              <CardTitle>Counsellor Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                onPress={() => router.push("/(admin)/requests")}
+                className="w-full"
+              >
+                <Text className="text-primary-foreground">
+                  Review Applications ({stats?.pendingApplications || 0}
+                  pending)
+                </Text>
+              </Button>
+              <Button
+                variant="outline"
+                onPress={() => router.push("/(admin)/requests")}
+                className="w-full"
+              >
                 <Text className="text-foreground">Manage All Counsellors</Text>
               </Button>
             </CardContent>

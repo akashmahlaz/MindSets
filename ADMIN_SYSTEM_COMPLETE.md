@@ -3,14 +3,16 @@
 ## ✅ Issues Fixed
 
 ### 1. **Reject Functionality Fixed**
+
 - **Problem**: Reject button wasn't working properly
-- **Solution**: 
+- **Solution**:
   - Replaced `Alert.prompt` (unreliable on React Native) with multi-step alerts
   - Added predefined rejection reasons for quick selection
   - Added loading states for individual operations
   - Improved error handling with detailed logging
 
 ### 2. **User & Counsellor Management Added**
+
 - **New Feature**: Complete user management system
 - **Capabilities**:
   - View all users (users, counsellors, admins)
@@ -23,6 +25,7 @@
 ## 🆕 New Files Created
 
 ### 1. **`app/(admin)/users.tsx`** - User Management Page
+
 - **Search & Filter**: Search by name/email, filter by role
 - **Role Management**: Change user roles with admin approval
 - **Status Management**: Activate/deactivate accounts with reasons
@@ -30,6 +33,7 @@
 - **Real-time Updates**: Refresh capabilities
 
 ### 2. **Enhanced AdminService** - New Methods Added
+
 - `getAllUsers()` - Get all users for management
 - `updateUserRole()` - Change user roles
 - `updateUserStatus()` - Activate/deactivate users
@@ -40,18 +44,21 @@
 ## 🔧 Improvements Made
 
 ### Admin Requests Page (`app/(admin)/requests.tsx`)
+
 - ✅ Fixed reject functionality with predefined reasons
 - ✅ Added loading states for approve/reject buttons
 - ✅ Improved error handling and user feedback
 - ✅ Better visual feedback during operations
 
 ### Admin Dashboard (`app/(admin)/index.tsx`)
+
 - ✅ Added link to user management page
 - ✅ Updated navigation structure
 
 ## 🧪 How to Test
 
 ### Test Reject Functionality:
+
 1. Go to `/(admin)/requests`
 2. Find a pending counsellor application
 3. Click "Reject" button
@@ -59,7 +66,8 @@
 5. Verify application status changes to "rejected"
 
 ### Test User Management:
-1. Go to `/(admin)/users` 
+
+1. Go to `/(admin)/users`
 2. **Search**: Try searching for users by name/email
 3. **Filter**: Filter by role (All, Users, Counsellors, Admins)
 4. **Change Role**: Click on role buttons to change user roles
@@ -67,6 +75,7 @@
 6. **Delete**: Test soft delete functionality
 
 ### Admin Workflow:
+
 1. **Counsellor applies** with documents → Status: Pending
 2. **Admin reviews** in `/(admin)/requests`
 3. **Admin approves/rejects** with proper feedback
@@ -75,14 +84,14 @@
 
 ## 📱 Admin Features Summary
 
-| Feature | Location | Description |
-|---------|----------|-------------|
-| **Dashboard** | `/(admin)/index` | Overview, stats, navigation |
-| **Applications** | `/(admin)/requests` | Review counsellor applications |
-| **User Management** | `/(admin)/users` | Manage all users and roles |
-| **Document Review** | `/(admin)/requests` | View/download uploaded documents |
-| **Role Management** | `/(admin)/users` | Change user roles (user/counsellor/admin) |
-| **Account Control** | `/(admin)/users` | Activate/deactivate/delete accounts |
+| Feature             | Location            | Description                               |
+| ------------------- | ------------------- | ----------------------------------------- |
+| **Dashboard**       | `/(admin)/index`    | Overview, stats, navigation               |
+| **Applications**    | `/(admin)/requests` | Review counsellor applications            |
+| **User Management** | `/(admin)/users`    | Manage all users and roles                |
+| **Document Review** | `/(admin)/requests` | View/download uploaded documents          |
+| **Role Management** | `/(admin)/users`    | Change user roles (user/counsellor/admin) |
+| **Account Control** | `/(admin)/users`    | Activate/deactivate/delete accounts       |
 
 ## 🚀 What Works Now
 

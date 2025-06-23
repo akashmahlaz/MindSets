@@ -132,7 +132,10 @@ export interface AdminPermission {
   actions: ("read" | "write" | "approve" | "reject" | "delete")[];
 }
 
-export type UserProfile = UserProfileData | CounsellorProfileData | AdminProfileData;
+export type UserProfile =
+  | UserProfileData
+  | CounsellorProfileData
+  | AdminProfileData;
 
 // Mental health concern options
 export const MENTAL_HEALTH_CONCERNS = [

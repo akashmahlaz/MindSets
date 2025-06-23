@@ -35,28 +35,33 @@
 ## Files Updated:
 
 ### 1. User Service (`services/userService.ts`)
+
 - ✅ Updated `getCounsellors()` to filter out rejected counsellors
 - ✅ In production: only show verified counsellors
 - ✅ In development: show pending and verified (exclude rejected)
 
 ### 2. Admin Service (`services/adminService.ts`)
+
 - ✅ `approveCounsellor()` sets verificationStatus to "verified"
 - ✅ `rejectCounsellor()` sets verificationStatus to "rejected"
 - ✅ Both methods send push notifications using existing service
 - ✅ Creates in-app notifications for counsellors
 
 ### 3. Counsellor Dashboard (`components/dashboard/CounsellorDashboard.tsx`)
+
 - ✅ Added verification badge in header for verified counsellors
 - ✅ Status-specific cards showing current verification state
 - ✅ Helpful messaging for each state
 - ✅ "Update Application" button for rejected status
 
 ### 4. Counsellors List (`app/(main)/Counselors.tsx`)
+
 - ✅ Added verification badges to counsellor cards
 - ✅ Badge appears on profile image and next to name
 - ✅ Only verified counsellors show the badge
 
 ### 5. Sign-up Process (`app/(auth)/sign-up-counsellor.tsx`)
+
 - ✅ Sets initial verificationStatus to "pending"
 - ✅ Proper document upload integration
 
@@ -79,7 +84,7 @@
 
 ## Production Considerations:
 
-1. **__DEV__ Flag**: Currently uses `__DEV__` to show pending counsellors in development
+1. ****DEV** Flag**: Currently uses `__DEV__` to show pending counsellors in development
 2. **Environment**: Ensure production only shows verified counsellors
 3. **Notifications**: Push notification service is integrated and working
 4. **Documents**: Document upload/viewing system is in place

@@ -75,7 +75,8 @@
         {
           "fieldPath": "status",
           "order": "ASCENDING"
-        }      ]
+        }
+      ]
     },
     {
       "collectionGroup": "reviews",

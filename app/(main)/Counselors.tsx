@@ -4,21 +4,21 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
 import {
-    CounsellorProfileData,
-    UserProfile,
-    UserProfileData,
+  CounsellorProfileData,
+  UserProfile,
+  UserProfileData,
 } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    View,
+  Image,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -92,7 +92,8 @@ export default function CounselorsScreen() {
         className="mr-4 active:opacity-95"
         style={{ width: 150 }}
       >
-        <View>          {/* Profile Image - Rounded Rectangle */}
+        <View>
+          {/* Profile Image - Rounded Rectangle */}
           <View className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3 relative">
             {counsellor.photoURL ? (
               <Image
@@ -104,7 +105,8 @@ export default function CounselorsScreen() {
               <View className="w-full h-full items-center justify-center bg-gray-200 dark:bg-gray-700">
                 <Text className="text-5xl">👨‍⚕️</Text>
               </View>
-            )}            {/* Verification Badge */}
+            )}
+            {/* Verification Badge */}
             {counsellor.verificationStatus === "verified" && (
               <View className="absolute top-2 right-2">
                 <View className="bg-green-500 px-2 py-1 rounded-full">
@@ -113,7 +115,6 @@ export default function CounselorsScreen() {
               </View>
             )}
           </View>
-
           {/* Info Section */}
           <View>
             <View className="flex-row items-center mb-1">

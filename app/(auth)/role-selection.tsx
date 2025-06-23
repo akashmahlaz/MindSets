@@ -46,8 +46,8 @@ export default function RoleSelectionScreen() {
             Welcome to MindConnect
           </Text>
           <Text className="text-muted-foreground text-center text-lg leading-relaxed">
-            Your trusted platform for mental health support. Choose how you&apos;d
-            like to join our community.
+            Your trusted platform for mental health support. Choose how
+            you&apos;d like to join our community.
           </Text>
         </View>
         {/* Role Selection Cards */}

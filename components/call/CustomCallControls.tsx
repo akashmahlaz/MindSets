@@ -1,10 +1,10 @@
- import {
-    HangUpCallButton,
-    ReactionsButton,
-    ToggleAudioPublishingButton,
-    ToggleCameraFaceButton,
-    ToggleVideoPublishingButton,
-    useCall,
+import {
+  HangUpCallButton,
+  ReactionsButton,
+  ToggleAudioPublishingButton,
+  ToggleCameraFaceButton,
+  ToggleVideoPublishingButton,
+  useCall,
 } from "@stream-io/video-react-native-sdk";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -14,7 +14,9 @@ interface CustomCallControlsProps {
   onHangupCallHandler?: () => void;
 }
 
-export const CustomCallControls = ({ onHangupCallHandler }: CustomCallControlsProps) => {
+export const CustomCallControls = ({
+  onHangupCallHandler,
+}: CustomCallControlsProps) => {
   const insets = useSafeAreaInsets();
   const call = useCall();
 
@@ -42,7 +44,9 @@ export const CustomCallControls = ({ onHangupCallHandler }: CustomCallControlsPr
     }
   };
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+    <View
+      style={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) }]}
+    >
       <View style={styles.controlsRow}>
         <ToggleAudioPublishingButton />
         <ToggleVideoPublishingButton />
@@ -56,17 +60,17 @@ export const CustomCallControls = ({ onHangupCallHandler }: CustomCallControlsPr
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 20,
     paddingTop: 20,
   },
   controlsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
 });

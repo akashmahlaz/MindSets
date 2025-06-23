@@ -1,11 +1,11 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
-import { Review, ReviewService, ReviewStats } from '@/services/reviewService';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { Review, ReviewService, ReviewStats } from "@/services/reviewService";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface ReviewDisplayProps {
   counsellorId: string;
@@ -13,10 +13,10 @@ interface ReviewDisplayProps {
   showWriteReviewButton?: boolean;
 }
 
-export default function ReviewDisplay({ 
-  counsellorId, 
+export default function ReviewDisplay({
+  counsellorId,
   onWriteReview,
-  showWriteReviewButton = true 
+  showWriteReviewButton = true,
 }: ReviewDisplayProps) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -35,13 +35,13 @@ export default function ReviewDisplay({
     try {
       const [reviewsData, statsData] = await Promise.all([
         ReviewService.getCounsellorReviews(counsellorId, 10),
-        ReviewService.getCounsellorReviewStats(counsellorId)
+        ReviewService.getCounsellorReviewStats(counsellorId),
       ]);
-      
+
       setReviews(reviewsData);
       setStats(statsData);
     } catch (error) {
-      console.error('Error loading reviews:', error);
+      console.error("Error loading reviews:", error);
     } finally {
       setLoading(false);
     }
@@ -49,12 +49,15 @@ export default function ReviewDisplay({
 
   const checkUserReview = async () => {
     if (!user) return;
-    
+
     try {
-      const existingReview = await ReviewService.getUserReviewForCounsellor(user.uid, counsellorId);
+      const existingReview = await ReviewService.getUserReviewForCounsellor(
+        user.uid,
+        counsellorId,
+      );
       setUserReview(existingReview);
     } catch (error) {
-      console.error('Error checking user review:', error);
+      console.error("Error checking user review:", error);
     }
   };
 
@@ -79,15 +82,21 @@ export default function ReviewDisplay({
     return (
       <View className="space-y-2">
         {[5, 4, 3, 2, 1].map((rating) => {
-          const count = stats.ratingDistribution[rating as keyof typeof stats.ratingDistribution] || 0;
-          const percentage = stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0;
-          
+          const count =
+            stats.ratingDistribution[
+              rating as keyof typeof stats.ratingDistribution
+            ] || 0;
+          const percentage =
+            stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0;
+
           return (
             <View key={rating} className="flex-row items-center space-x-2">
-              <Text className="text-sm text-muted-foreground w-2">{rating}</Text>
+              <Text className="text-sm text-muted-foreground w-2">
+                {rating}
+              </Text>
               <Ionicons name="star" size={12} color="#F59E0B" />
               <View className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <View 
+                <View
                   className="h-full bg-yellow-500 rounded-full"
                   style={{ width: `${percentage}%` }}
                 />
@@ -125,7 +134,7 @@ export default function ReviewDisplay({
           )}
         </View>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Rating Summary */}
         {stats && stats.totalReviews > 0 ? (
@@ -137,20 +146,21 @@ export default function ReviewDisplay({
                 </Text>
                 {renderStars(Math.round(stats.averageRating), 20)}
                 <Text className="text-sm text-muted-foreground mt-1">
-                  {stats.totalReviews} review{stats.totalReviews !== 1 ? 's' : ''}
+                  {stats.totalReviews} review
+                  {stats.totalReviews !== 1 ? "s" : ""}
                 </Text>
               </View>
-              
-              <View className="flex-1">
-                {renderRatingDistribution()}
-              </View>
+
+              <View className="flex-1">{renderRatingDistribution()}</View>
             </View>
 
             {/* User's Review */}
             {userReview && (
               <View className="border-l-4 border-primary pl-4 bg-primary/5 p-3 rounded-r-lg">
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="font-medium text-foreground">Your Review</Text>
+                  <Text className="font-medium text-foreground">
+                    Your Review
+                  </Text>
                   {renderStars(userReview.rating)}
                 </View>
                 <Text className="text-sm font-medium text-foreground mb-1">
@@ -164,9 +174,14 @@ export default function ReviewDisplay({
 
             {/* Recent Reviews */}
             <View className="space-y-3">
-              <Text className="font-medium text-foreground">Recent Reviews</Text>
+              <Text className="font-medium text-foreground">
+                Recent Reviews
+              </Text>
               {reviews.slice(0, 3).map((review) => (
-                <View key={review.id} className="border-b border-border pb-3 last:border-b-0">
+                <View
+                  key={review.id}
+                  className="border-b border-border pb-3 last:border-b-0"
+                >
                   <View className="flex-row items-start space-x-3">
                     <Avatar className="w-8 h-8" alt={review.userName}>
                       {review.userPhoto ? (
@@ -179,7 +194,7 @@ export default function ReviewDisplay({
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    
+
                     <View className="flex-1">
                       <View className="flex-row items-center justify-between mb-1">
                         <Text className="font-medium text-foreground text-sm">
@@ -187,28 +202,30 @@ export default function ReviewDisplay({
                         </Text>
                         {renderStars(review.rating, 14)}
                       </View>
-                      
+
                       {review.title && (
                         <Text className="text-sm font-medium text-foreground mb-1">
                           {review.title}
                         </Text>
                       )}
-                      
+
                       <Text className="text-sm text-muted-foreground">
                         {review.comment}
                       </Text>
-                      
+
                       <Text className="text-xs text-muted-foreground mt-1">
                         {review.createdAt.toLocaleDateString()}
                         {review.isVerified && (
-                          <Text className="text-green-600 ml-2">• Verified</Text>
+                          <Text className="text-green-600 ml-2">
+                            • Verified
+                          </Text>
                         )}
                       </Text>
                     </View>
                   </View>
                 </View>
               ))}
-              
+
               {reviews.length > 3 && (
                 <TouchableOpacity className="pt-2">
                   <Text className="text-primary text-sm font-medium text-center">
@@ -229,7 +246,9 @@ export default function ReviewDisplay({
             </Text>
             {showWriteReviewButton && (
               <Button onPress={onWriteReview} className="mt-4">
-                <Text className="text-primary-foreground">Write First Review</Text>
+                <Text className="text-primary-foreground">
+                  Write First Review
+                </Text>
               </Button>
             )}
           </View>

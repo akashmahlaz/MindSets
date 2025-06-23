@@ -1,23 +1,23 @@
 import { auth } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-    createUserWithEmailAndPassword,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut,
-    User,
-    UserCredential,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  User,
+  UserCredential,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { disablePushNotifications } from "../lib/pushNotificationHelpers";
 import { pushNotificationService } from "../lib/pushNotificationService";
 import { requestNotificationPermissions } from "../lib/requestPermissions";
 import {
-    createEnhancedUserProfile,
-    createUserProfile,
-    getUserProfile,
-    updateUserPushToken,
-    updateUserStatus,
+  createEnhancedUserProfile,
+  createUserProfile,
+  getUserProfile,
+  updateUserPushToken,
+  updateUserStatus,
 } from "../services/userService";
 import { UserProfile, UserRole } from "../types/user";
 

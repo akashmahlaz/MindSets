@@ -3,36 +3,36 @@
  * Run this to test the admin system without UI
  */
 
-import { AdminService } from '../services/adminService';
+import { AdminService } from "../services/adminService";
 
 export async function testAdminFunctionality() {
-  console.log('🔥 Testing Admin Functionality...');
-  
+  console.log("🔥 Testing Admin Functionality...");
+
   try {
     // Test 1: Get admin statistics
-    console.log('\n📊 Testing Admin Statistics...');
+    console.log("\n📊 Testing Admin Statistics...");
     const stats = await AdminService.getAdminStats();
-    console.log('Stats:', {
+    console.log("Stats:", {
       totalUsers: stats.totalUsers,
       totalCounsellors: stats.totalCounsellors,
       pendingApplications: stats.pendingApplications,
       approvedCounsellors: stats.approvedCounsellors,
-      rejectedApplications: stats.rejectedApplications
+      rejectedApplications: stats.rejectedApplications,
     });
-    
+
     // Test 2: Get all applications
-    console.log('\n📋 Testing Get All Applications...');
+    console.log("\n📋 Testing Get All Applications...");
     const allApplications = await AdminService.getAllApplications();
     console.log(`Found ${allApplications.length} total applications`);
-    
+
     // Test 3: Get pending applications
-    console.log('\n⏳ Testing Get Pending Applications...');
+    console.log("\n⏳ Testing Get Pending Applications...");
     const pendingApplications = await AdminService.getPendingApplications();
     console.log(`Found ${pendingApplications.length} pending applications`);
-    
+
     // Show sample data
     if (allApplications.length > 0) {
-      console.log('\n📄 Sample Application:');
+      console.log("\n📄 Sample Application:");
       const sample = allApplications[0];
       console.log({
         name: sample.profileData.displayName,
@@ -41,15 +41,14 @@ export async function testAdminFunctionality() {
         license: sample.profileData.licenseType,
         experience: sample.profileData.yearsExperience,
         specializations: sample.profileData.specializations?.slice(0, 3),
-        hasDocuments: !!sample.profileData.verificationDocuments
+        hasDocuments: !!sample.profileData.verificationDocuments,
       });
     }
-    
-    console.log('\n✅ Admin functionality test completed successfully!');
+
+    console.log("\n✅ Admin functionality test completed successfully!");
     return true;
-    
   } catch (error) {
-    console.error('\n❌ Admin functionality test failed:', error);
+    console.error("\n❌ Admin functionality test failed:", error);
     return false;
   }
 }

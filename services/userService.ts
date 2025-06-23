@@ -11,7 +11,12 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { BaseUserProfile, CounsellorProfileData, UserProfile, UserRole } from "../types/user";
+import {
+  BaseUserProfile,
+  CounsellorProfileData,
+  UserProfile,
+  UserRole,
+} from "../types/user";
 
 // Legacy interface for backward compatibility
 export interface LegacyUserProfile {
@@ -177,7 +182,8 @@ export const createEnhancedUserProfile = async (
       lastSeen: serverTimestamp(),
       createdAt: serverTimestamp(),
       role,
-      isProfileComplete: true,      ...(role === "counsellor" && {
+      isProfileComplete: true,
+      ...(role === "counsellor" && {
         isApproved: false, // Don't auto-approve - require admin verification
         verificationStatus: "pending" as const,
       }),
@@ -230,7 +236,8 @@ export const createTestCounsellor = async (
       lastSeen: serverTimestamp(),
       createdAt: serverTimestamp(),
       role: "counsellor",
-      isProfileComplete: true,      isApproved: true,
+      isProfileComplete: true,
+      isApproved: true,
       verificationStatus: "verified",
       licenseNumber: `LIC${Math.floor(Math.random() * 10000)}`,
       licenseType:
@@ -301,18 +308,24 @@ export const getCounsellors = async (filters?: {
           "specializations" in data ? data.specializations : "none",
       });
       return data;
-    });    // Show only verified counsellors and exclude rejected/pending ones
+    }); // Show only verified counsellors and exclude rejected/pending ones
     counsellors = counsellors.filter((c) => {
       const counsellorData = c as CounsellorProfileData;
       // Always exclude rejected counsellors
-      if (counsellorData.verificationStatus === 'rejected') {
+      if (counsellorData.verificationStatus === "rejected") {
         return false;
       }
-      
+
       // Only show verified counsellors (approved by admin)
-      return c.isApproved === true && counsellorData.verificationStatus === 'verified';
+      return (
+        c.isApproved === true &&
+        counsellorData.verificationStatus === "verified"
+      );
     });
-    console.log("✅ Filtered counsellors by approval status:", counsellors.length);
+    console.log(
+      "✅ Filtered counsellors by approval status:",
+      counsellors.length,
+    );
 
     // Apply additional filters (client-side for complex queries)
     if (filters) {

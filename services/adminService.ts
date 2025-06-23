@@ -1,10 +1,10 @@
-import { db, storage } from '@/firebaseConfig';
+import { db, storage } from "@/firebaseConfig";
 import {
   CounsellorDocuments,
   CounsellorProfileData,
-  DocumentFile
-} from '@/types/user';
-import * as DocumentPicker from 'expo-document-picker';
+  DocumentFile,
+} from "@/types/user";
+import * as DocumentPicker from "expo-document-picker";
 import {
   collection,
   doc,
@@ -15,58 +15,57 @@ import {
   Timestamp,
   updateDoc,
   where,
-  writeBatch
-} from 'firebase/firestore';
+  writeBatch,
+} from "firebase/firestore";
 import {
   deleteObject,
   getDownloadURL,
   ref,
-  uploadBytes
-} from 'firebase/storage';
+  uploadBytes,
+} from "firebase/storage";
 
 export interface CounsellorApplication {
   uid: string;
   profileData: CounsellorProfileData;
   submittedAt: Timestamp;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   adminNotes?: string;
   reviewedBy?: string;
   reviewedAt?: Timestamp;
 }
 
 export class AdminService {
-  
   /**
    * Upload document to Firebase Storage
    */
   static async uploadDocument(
-    file: DocumentPicker.DocumentPickerAsset, 
-    userId: string, 
-    documentType: string
+    file: DocumentPicker.DocumentPickerAsset,
+    userId: string,
+    documentType: string,
   ): Promise<DocumentFile> {
     try {
       // Read file as blob
       const response = await fetch(file.uri);
       const blob = await response.blob();
-      
+
       // Create storage reference
-      const fileName = `counsellors/${userId}/documents/${documentType}_${Date.now()}.${file.name.split('.').pop()}`;
+      const fileName = `counsellors/${userId}/documents/${documentType}_${Date.now()}.${file.name.split(".").pop()}`;
       const storageRef = ref(storage, fileName);
-      
+
       // Upload file
       const snapshot = await uploadBytes(storageRef, blob);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      
+
       return {
         name: file.name,
         url: downloadURL,
-        type: file.mimeType || 'application/octet-stream',
+        type: file.mimeType || "application/octet-stream",
         size: file.size || 0,
-        uploadedAt: Timestamp.now()
+        uploadedAt: Timestamp.now(),
       };
     } catch (error) {
-      console.error('Error uploading document:', error);
-      throw new Error('Failed to upload document');
+      console.error("Error uploading document:", error);
+      throw new Error("Failed to upload document");
     }
   }
 
@@ -75,17 +74,17 @@ export class AdminService {
    */
   static async uploadCounsellorDocuments(
     documents: { [key: string]: DocumentPicker.DocumentPickerAsset },
-    userId: string
+    userId: string,
   ): Promise<CounsellorDocuments> {
     const uploadedDocs: CounsellorDocuments = {};
-    
+
     for (const [docType, file] of Object.entries(documents)) {
       if (file) {
-        uploadedDocs[docType as keyof CounsellorDocuments] = 
+        uploadedDocs[docType as keyof CounsellorDocuments] =
           await this.uploadDocument(file, userId, docType);
       }
     }
-    
+
     return uploadedDocs;
   }
   /**
@@ -93,40 +92,37 @@ export class AdminService {
    */
   static async getPendingApplications(): Promise<CounsellorApplication[]> {
     try {
-      const counsellorsRef = collection(db, 'users');
+      const counsellorsRef = collection(db, "users");
       // Simplified query - filter by role only, then filter pending on client side
-      const q = query(
-        counsellorsRef,
-        where('role', '==', 'counsellor')
-      );
-      
+      const q = query(counsellorsRef, where("role", "==", "counsellor"));
+
       const snapshot = await getDocs(q);
       const applications: CounsellorApplication[] = [];
-      
+
       snapshot.forEach((doc) => {
         const data = doc.data() as CounsellorProfileData;
         // Filter for pending applications on client side
-        if (data.verificationStatus === 'pending') {
+        if (data.verificationStatus === "pending") {
           applications.push({
             uid: doc.id,
             profileData: data,
             submittedAt: data.createdAt,
-            status: 'pending'
+            status: "pending",
           });
         }
       });
-      
+
       // Sort by creation date (newest first) on client side
       applications.sort((a, b) => {
         const dateA = a.submittedAt?.toDate?.() || new Date(0);
         const dateB = b.submittedAt?.toDate?.() || new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
-      
+
       return applications;
     } catch (error) {
-      console.error('Error fetching pending applications:', error);
-      throw new Error('Failed to fetch applications');
+      console.error("Error fetching pending applications:", error);
+      throw new Error("Failed to fetch applications");
     }
   }
   /**
@@ -134,199 +130,206 @@ export class AdminService {
    */
   static async getAllApplications(): Promise<CounsellorApplication[]> {
     try {
-      const counsellorsRef = collection(db, 'users');
+      const counsellorsRef = collection(db, "users");
       // Simplified query - filter by role only
-      const q = query(
-        counsellorsRef,
-        where('role', '==', 'counsellor')
-      );
-      
+      const q = query(counsellorsRef, where("role", "==", "counsellor"));
+
       const snapshot = await getDocs(q);
       const applications: CounsellorApplication[] = [];
-      
+
       snapshot.forEach((doc) => {
         const data = doc.data() as CounsellorProfileData;
         applications.push({
           uid: doc.id,
           profileData: data,
           submittedAt: data.createdAt,
-          status: data.verificationStatus as 'pending' | 'approved' | 'rejected',
+          status: data.verificationStatus as
+            | "pending"
+            | "approved"
+            | "rejected",
           adminNotes: data.verificationNotes,
           reviewedBy: data.verifiedBy,
-          reviewedAt: data.verifiedAt
+          reviewedAt: data.verifiedAt,
         });
       });
-      
+
       // Sort by creation date (newest first) on client side
       applications.sort((a, b) => {
         const dateA = a.submittedAt?.toDate?.() || new Date(0);
         const dateB = b.submittedAt?.toDate?.() || new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
-      
+
       return applications;
     } catch (error) {
-      console.error('Error fetching all applications:', error);
-      throw new Error('Failed to fetch applications');
+      console.error("Error fetching all applications:", error);
+      throw new Error("Failed to fetch applications");
     }
   }
 
   /**
    * Get counsellor application by ID
    */
-  static async getCounsellorApplication(uid: string): Promise<CounsellorApplication | null> {
+  static async getCounsellorApplication(
+    uid: string,
+  ): Promise<CounsellorApplication | null> {
     try {
-      const docRef = doc(db, 'users', uid);
+      const docRef = doc(db, "users", uid);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
         return null;
       }
-      
+
       const data = docSnap.data() as CounsellorProfileData;
-      
+
       return {
         uid: docSnap.id,
         profileData: data,
         submittedAt: data.createdAt,
-        status: data.verificationStatus as 'pending' | 'approved' | 'rejected',
+        status: data.verificationStatus as "pending" | "approved" | "rejected",
         adminNotes: data.verificationNotes,
         reviewedBy: data.verifiedBy,
-        reviewedAt: data.verifiedAt
+        reviewedAt: data.verifiedAt,
       };
     } catch (error) {
-      console.error('Error fetching counsellor application:', error);
-      throw new Error('Failed to fetch application');
+      console.error("Error fetching counsellor application:", error);
+      throw new Error("Failed to fetch application");
     }
   }
   /**
    * Approve counsellor application
    */
   static async approveCounsellor(
-    counsellorId: string, 
-    adminId: string, 
-    notes?: string
+    counsellorId: string,
+    adminId: string,
+    notes?: string,
   ): Promise<void> {
     try {
       const batch = writeBatch(db);
-      
+
       // Update counsellor status
-      const counsellorRef = doc(db, 'users', counsellorId);
+      const counsellorRef = doc(db, "users", counsellorId);
       batch.update(counsellorRef, {
-        verificationStatus: 'verified',
+        verificationStatus: "verified",
         isApproved: true,
-        verificationNotes: notes || '',
+        verificationNotes: notes || "",
         verifiedBy: adminId,
-        verifiedAt: Timestamp.now()
+        verifiedAt: Timestamp.now(),
       });
-      
+
       // Create notification for counsellor
-      const notificationRef = doc(collection(db, 'notifications'));
+      const notificationRef = doc(collection(db, "notifications"));
       batch.set(notificationRef, {
         userId: counsellorId,
-        type: 'approval',
-        title: 'Application Approved!',
-        message: 'Congratulations! Your counsellor application has been approved. You can now start accepting clients.',
+        type: "approval",
+        title: "Application Approved!",
+        message:
+          "Congratulations! Your counsellor application has been approved. You can now start accepting clients.",
         read: false,
         createdAt: Timestamp.now(),
         data: {
-          type: 'counsellor_approval'
-        }
+          type: "counsellor_approval",
+        },
       });
-      
+
       await batch.commit();
 
       // Send push notification using existing service
       try {
-        const { getUserPushToken } = await import('./userService');
-        const { PushNotificationService } = await import('../lib/pushNotificationService');
-        
+        const { getUserPushToken } = await import("./userService");
+        const { PushNotificationService } = await import(
+          "../lib/pushNotificationService"
+        );
+
         const pushToken = await getUserPushToken(counsellorId);
         if (pushToken) {
           const pushService = PushNotificationService.getInstance();
           await pushService.sendToUser(
             pushToken,
-            'Application Approved! 🎉',
-            'Congratulations! Your counsellor application has been approved. You can now start accepting clients.',
+            "Application Approved! 🎉",
+            "Congratulations! Your counsellor application has been approved. You can now start accepting clients.",
             {
-              type: 'counsellor_approval',
-              counsellorId: counsellorId
-            }
+              type: "counsellor_approval",
+              counsellorId: counsellorId,
+            },
           );
         }
       } catch (pushError) {
-        console.error('Error sending push notification:', pushError);
+        console.error("Error sending push notification:", pushError);
         // Don't throw error for push notification failure
       }
     } catch (error) {
-      console.error('Error approving counsellor:', error);
-      throw new Error('Failed to approve counsellor');
+      console.error("Error approving counsellor:", error);
+      throw new Error("Failed to approve counsellor");
     }
   }
   /**
    * Reject counsellor application
    */
   static async rejectCounsellor(
-    counsellorId: string, 
-    adminId: string, 
-    reason: string
+    counsellorId: string,
+    adminId: string,
+    reason: string,
   ): Promise<void> {
     try {
       const batch = writeBatch(db);
-      
+
       // Update counsellor status
-      const counsellorRef = doc(db, 'users', counsellorId);
+      const counsellorRef = doc(db, "users", counsellorId);
       batch.update(counsellorRef, {
-        verificationStatus: 'rejected',
+        verificationStatus: "rejected",
         isApproved: false,
         verificationNotes: reason,
         verifiedBy: adminId,
-        verifiedAt: Timestamp.now()
+        verifiedAt: Timestamp.now(),
       });
-      
+
       // Create notification for counsellor
-      const notificationRef = doc(collection(db, 'notifications'));
+      const notificationRef = doc(collection(db, "notifications"));
       batch.set(notificationRef, {
         userId: counsellorId,
-        type: 'rejection',
-        title: 'Application Update',
+        type: "rejection",
+        title: "Application Update",
         message: `Your counsellor application needs revision: ${reason}`,
         read: false,
         createdAt: Timestamp.now(),
         data: {
-          type: 'counsellor_rejection',
-          reason: reason
-        }
+          type: "counsellor_rejection",
+          reason: reason,
+        },
       });
-      
+
       await batch.commit();
 
       // Send push notification using existing service
       try {
-        const { getUserPushToken } = await import('./userService');
-        const { PushNotificationService } = await import('../lib/pushNotificationService');
-        
+        const { getUserPushToken } = await import("./userService");
+        const { PushNotificationService } = await import(
+          "../lib/pushNotificationService"
+        );
+
         const pushToken = await getUserPushToken(counsellorId);
         if (pushToken) {
           const pushService = PushNotificationService.getInstance();
           await pushService.sendToUser(
             pushToken,
-            'Application Update Required',
+            "Application Update Required",
             `Your counsellor application needs revision: ${reason}`,
             {
-              type: 'counsellor_rejection',
+              type: "counsellor_rejection",
               counsellorId: counsellorId,
-              reason: reason
-            }
+              reason: reason,
+            },
           );
         }
       } catch (pushError) {
-        console.error('Error sending push notification:', pushError);
+        console.error("Error sending push notification:", pushError);
         // Don't throw error for push notification failure
       }
     } catch (error) {
-      console.error('Error rejecting counsellor:', error);
-      throw new Error('Failed to reject counsellor');
+      console.error("Error rejecting counsellor:", error);
+      throw new Error("Failed to reject counsellor");
     }
   }
 
@@ -337,16 +340,16 @@ export class AdminService {
     try {
       // For React Native, we'll open the URL in browser
       // In a web environment, this would trigger a download
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = filename;
-      link.target = '_blank';
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error downloading document:', error);
-      throw new Error('Failed to download document');
+      console.error("Error downloading document:", error);
+      throw new Error("Failed to download document");
     }
   }
 
@@ -361,67 +364,67 @@ export class AdminService {
     totalUsers: number;
   }> {
     try {
-      const usersRef = collection(db, 'users');
-      
+      const usersRef = collection(db, "users");
+
       // Get all users
       const allUsersQuery = query(usersRef);
       const allUsersSnapshot = await getDocs(allUsersQuery);
-      
+
       let totalUsers = 0;
       let totalCounsellors = 0;
       let pendingApplications = 0;
       let approvedCounsellors = 0;
       let rejectedApplications = 0;
-      
+
       allUsersSnapshot.forEach((doc) => {
         const data = doc.data();
         totalUsers++;
-        
-        if (data.role === 'counsellor') {
+
+        if (data.role === "counsellor") {
           totalCounsellors++;
-          
+
           switch (data.verificationStatus) {
-            case 'pending':
+            case "pending":
               pendingApplications++;
               break;
-            case 'verified':
+            case "verified":
               approvedCounsellors++;
               break;
-            case 'rejected':
+            case "rejected":
               rejectedApplications++;
               break;
           }
         }
       });
-      
+
       return {
         totalCounsellors,
         pendingApplications,
         approvedCounsellors,
         rejectedApplications,
-        totalUsers
+        totalUsers,
       };
     } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      throw new Error('Failed to fetch statistics');
+      console.error("Error fetching admin stats:", error);
+      throw new Error("Failed to fetch statistics");
     }
   }
   /**
    * Update counsellor documents in profile
    */
   static async updateCounsellorDocuments(
-    counsellorId: string, 
-    documents: CounsellorDocuments
+    counsellorId: string,
+    documents: CounsellorDocuments,
   ): Promise<void> {
     try {
-      const counsellorRef = doc(db, 'users', counsellorId);
+      const counsellorRef = doc(db, "users", counsellorId);
       await updateDoc(counsellorRef, {
         verificationDocuments: documents,
-        'profile.verificationDocuments': documents // Also update nested profile if exists
+        "profile.verificationDocuments": documents, // Also update nested profile if exists
       });
     } catch (error) {
-      console.error('Error updating counsellor documents:', error);
-      throw new Error('Failed to update documents');
+      console.error("Error updating counsellor documents:", error);
+      throw new Error("Failed to update documents");
     }
   }
   /**
@@ -432,8 +435,8 @@ export class AdminService {
       const storageRef = ref(storage, documentUrl);
       await deleteObject(storageRef);
     } catch (error) {
-      console.error('Error deleting document:', error);
-      throw new Error('Failed to delete document');
+      console.error("Error deleting document:", error);
+      throw new Error("Failed to delete document");
     }
   }
 
@@ -442,35 +445,35 @@ export class AdminService {
    */
   static async getAllUsers(): Promise<any[]> {
     try {
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, orderBy('createdAt', 'desc'));
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-      
+
       const users: any[] = [];
       snapshot.forEach((doc) => {
         users.push({
           uid: doc.id,
-          ...doc.data()
+          ...doc.data(),
         });
       });
-      
+
       return users;
     } catch (error) {
-      console.error('Error fetching all users:', error);
+      console.error("Error fetching all users:", error);
       // Fallback to simple query if ordering fails
       try {
-        const usersRef = collection(db, 'users');
+        const usersRef = collection(db, "users");
         const snapshot = await getDocs(usersRef);
         const users: any[] = [];
         snapshot.forEach((doc) => {
           users.push({
             uid: doc.id,
-            ...doc.data()
+            ...doc.data(),
           });
         });
         return users;
       } catch (fallbackError) {
-        throw new Error('Failed to fetch users');
+        throw new Error("Failed to fetch users");
       }
     }
   }
@@ -479,26 +482,26 @@ export class AdminService {
    * Update user role
    */
   static async updateUserRole(
-    userId: string, 
-    newRole: 'user' | 'counsellor' | 'admin',
-    adminId: string
+    userId: string,
+    newRole: "user" | "counsellor" | "admin",
+    adminId: string,
   ): Promise<void> {
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, "users", userId);
       const updates: any = {
         role: newRole,
         updatedBy: adminId,
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       };
 
       // If changing to counsellor, set initial verification status
-      if (newRole === 'counsellor') {
-        updates.verificationStatus = 'pending';
+      if (newRole === "counsellor") {
+        updates.verificationStatus = "pending";
         updates.isApproved = false;
       }
 
       // If changing from counsellor, remove counsellor-specific fields
-      if (newRole !== 'counsellor') {
+      if (newRole !== "counsellor") {
         updates.verificationStatus = null;
         updates.isApproved = null;
         updates.verificationDocuments = null;
@@ -507,8 +510,8 @@ export class AdminService {
 
       await updateDoc(userRef, updates);
     } catch (error) {
-      console.error('Error updating user role:', error);
-      throw new Error('Failed to update user role');
+      console.error("Error updating user role:", error);
+      throw new Error("Failed to update user role");
     }
   }
 
@@ -516,41 +519,41 @@ export class AdminService {
    * Update user status (active/inactive)
    */
   static async updateUserStatus(
-    userId: string, 
+    userId: string,
     isActive: boolean,
     adminId: string,
-    reason?: string
+    reason?: string,
   ): Promise<void> {
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         isActive: isActive,
         statusUpdatedBy: adminId,
         statusUpdatedAt: Timestamp.now(),
-        statusReason: reason || '',
+        statusReason: reason || "",
         // If deactivating, also set offline status
-        ...(isActive ? {} : { status: 'offline' })
+        ...(isActive ? {} : { status: "offline" }),
       });
 
       // Create notification for user
-      const notificationRef = doc(collection(db, 'notifications'));
+      const notificationRef = doc(collection(db, "notifications"));
       await updateDoc(notificationRef, {
         userId: userId,
-        type: isActive ? 'account_activated' : 'account_deactivated',
-        title: isActive ? 'Account Activated' : 'Account Deactivated',
-        message: isActive 
-          ? 'Your account has been activated and you can now use the platform.'
-          : `Your account has been deactivated. ${reason ? `Reason: ${reason}` : 'Contact support for more information.'}`,
+        type: isActive ? "account_activated" : "account_deactivated",
+        title: isActive ? "Account Activated" : "Account Deactivated",
+        message: isActive
+          ? "Your account has been activated and you can now use the platform."
+          : `Your account has been deactivated. ${reason ? `Reason: ${reason}` : "Contact support for more information."}`,
         read: false,
         createdAt: Timestamp.now(),
         data: {
-          type: isActive ? 'activation' : 'deactivation',
-          reason: reason || ''
-        }
+          type: isActive ? "activation" : "deactivation",
+          reason: reason || "",
+        },
       });
     } catch (error) {
-      console.error('Error updating user status:', error);
-      throw new Error('Failed to update user status');
+      console.error("Error updating user status:", error);
+      throw new Error("Failed to update user status");
     }
   }
 
@@ -558,22 +561,22 @@ export class AdminService {
    * Delete user account (soft delete)
    */
   static async deleteUser(
-    userId: string, 
+    userId: string,
     adminId: string,
-    reason: string
+    reason: string,
   ): Promise<void> {
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         isDeleted: true,
         deletedBy: adminId,
         deletedAt: Timestamp.now(),
         deletionReason: reason,
-        status: 'offline'
+        status: "offline",
       });
     } catch (error) {
-      console.error('Error deleting user:', error);
-      throw new Error('Failed to delete user');
+      console.error("Error deleting user:", error);
+      throw new Error("Failed to delete user");
     }
   }
 
@@ -583,19 +586,20 @@ export class AdminService {
   static async searchUsers(searchTerm: string): Promise<any[]> {
     try {
       const allUsers = await this.getAllUsers();
-      
+
       const searchLower = searchTerm.toLowerCase();
-      return allUsers.filter(user => 
-        user.email?.toLowerCase().includes(searchLower) ||
-        user.displayName?.toLowerCase().includes(searchLower) ||
-        user.firstName?.toLowerCase().includes(searchLower) ||
-        user.lastName?.toLowerCase().includes(searchLower) ||
-        user.role?.toLowerCase().includes(searchLower) ||
-        user.licenseNumber?.toLowerCase().includes(searchLower)
+      return allUsers.filter(
+        (user) =>
+          user.email?.toLowerCase().includes(searchLower) ||
+          user.displayName?.toLowerCase().includes(searchLower) ||
+          user.firstName?.toLowerCase().includes(searchLower) ||
+          user.lastName?.toLowerCase().includes(searchLower) ||
+          user.role?.toLowerCase().includes(searchLower) ||
+          user.licenseNumber?.toLowerCase().includes(searchLower),
       );
     } catch (error) {
-      console.error('Error searching users:', error);
-      throw new Error('Failed to search users');
+      console.error("Error searching users:", error);
+      throw new Error("Failed to search users");
     }
   }
 
@@ -611,41 +615,41 @@ export class AdminService {
   }> {
     try {
       const allUsers = await this.getAllUsers();
-      
+
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
+
       let activeUsers = 0;
       let newUsersThisMonth = 0;
       const usersByRole: { [key: string]: number } = {};
-      
-      allUsers.forEach(user => {
+
+      allUsers.forEach((user) => {
         // Count active users (not deleted and not inactive)
         if (!user.isDeleted && user.isActive !== false) {
           activeUsers++;
         }
-        
+
         // Count new users this month
         const createdAt = user.createdAt?.toDate?.() || new Date(0);
         if (createdAt >= startOfMonth) {
           newUsersThisMonth++;
         }
-        
+
         // Count by role
-        const role = user.role || 'unknown';
+        const role = user.role || "unknown";
         usersByRole[role] = (usersByRole[role] || 0) + 1;
       });
-      
+
       return {
         totalUsers: allUsers.length,
         activeUsers,
         inactiveUsers: allUsers.length - activeUsers,
         newUsersThisMonth,
-        usersByRole
+        usersByRole,
       };
     } catch (error) {
-      console.error('Error getting user activity stats:', error);
-      throw new Error('Failed to get user statistics');
+      console.error("Error getting user activity stats:", error);
+      throw new Error("Failed to get user statistics");
     }
   }
 }

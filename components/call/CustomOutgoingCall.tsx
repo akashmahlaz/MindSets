@@ -38,7 +38,8 @@ export const CustomOutgoingCall = () => {
       setIsWaiting(false);
 
       // Navigate to call screen - let the call screen handle joining
-      const isVideo = call.state.custom?.isVideo || call.state.custom?.callType === 'video';
+      const isVideo =
+        call.state.custom?.isVideo || call.state.custom?.callType === "video";
       router.push({
         pathname: "/call/[callId]",
         params: {

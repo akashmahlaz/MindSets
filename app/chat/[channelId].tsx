@@ -139,14 +139,31 @@ export default function ChatScreen() {
         {otherUser && (
           <View className="flex-row items-center flex-1">
             <View className="mr-3">
-              <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: '#e5e7eb' }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  backgroundColor: "#e5e7eb",
+                }}
+              >
                 {getAvatarUrl() ? (
                   <Image
                     source={{ uri: getAvatarUrl() }}
                     style={{ width: 40, height: 40, borderRadius: 20 }}
                   />
                 ) : (
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#e5e7eb', justifyContent: 'center', alignItems: 'center' }}>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: "#e5e7eb",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Ionicons name="person" size={24} color="#9ca3af" />
                   </View>
                 )}
@@ -156,7 +173,13 @@ export default function ChatScreen() {
               <Text className="text-lg font-semibold text-foreground mb-0.5">
                 {otherUser.name || otherUser.id || "Chat"}
               </Text>
-              <Text className={getOnlineStatus() === "Online" ? "text-green-500 text-sm" : "text-gray-400 text-sm"}>
+              <Text
+                className={
+                  getOnlineStatus() === "Online"
+                    ? "text-green-500 text-sm"
+                    : "text-gray-400 text-sm"
+                }
+              >
                 {getOnlineStatus()}
               </Text>
             </View>

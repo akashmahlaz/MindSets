@@ -1,10 +1,17 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
-import { ReviewService } from '@/services/reviewService';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { ReviewService } from "@/services/reviewService";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ReviewSubmissionProps {
   counsellorId: string;
@@ -19,27 +26,30 @@ export default function ReviewSubmission({
   counsellorName,
   onReviewSubmitted,
   onCancel,
-  sessionId
+  sessionId,
 }: ReviewSubmissionProps) {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!user) {
-      Alert.alert('Error', 'You must be logged in to submit a review');
+      Alert.alert("Error", "You must be logged in to submit a review");
       return;
     }
 
     if (rating === 0) {
-      Alert.alert('Rating Required', 'Please select a rating');
+      Alert.alert("Rating Required", "Please select a rating");
       return;
     }
 
     if (comment.trim().length < 10) {
-      Alert.alert('Comment Required', 'Please write at least 10 characters in your review');
+      Alert.alert(
+        "Comment Required",
+        "Please write at least 10 characters in your review",
+      );
       return;
     }
 
@@ -49,24 +59,24 @@ export default function ReviewSubmission({
       await ReviewService.submitReview(
         counsellorId,
         user.uid,
-        user.displayName || 'Anonymous',
+        user.displayName || "Anonymous",
         rating,
         title.trim(),
         comment.trim(),
         sessionId,
-        user.photoURL || undefined
+        user.photoURL || undefined,
       );
 
-      Alert.alert(
-        'Review Submitted',
-        'Thank you for your feedback!',
-        [{ text: 'OK', onPress: onReviewSubmitted }]
-      );
+      Alert.alert("Review Submitted", "Thank you for your feedback!", [
+        { text: "OK", onPress: onReviewSubmitted },
+      ]);
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error("Error submitting review:", error);
       Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : 'Failed to submit review. Please try again.'
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to submit review. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -95,12 +105,18 @@ export default function ReviewSubmission({
 
   const getRatingText = (rating: number) => {
     switch (rating) {
-      case 1: return 'Poor';
-      case 2: return 'Fair';
-      case 3: return 'Good';
-      case 4: return 'Very Good';
-      case 5: return 'Excellent';
-      default: return 'Select Rating';
+      case 1:
+        return "Poor";
+      case 2:
+        return "Fair";
+      case 3:
+        return "Good";
+      case 4:
+        return "Very Good";
+      case 5:
+        return "Excellent";
+      default:
+        return "Select Rating";
     }
   };
 
@@ -110,7 +126,9 @@ export default function ReviewSubmission({
         <TouchableOpacity onPress={onCancel}>
           <Ionicons name="close" size={24} color="#374151" />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-foreground">Write Review</Text>
+        <Text className="text-lg font-semibold text-foreground">
+          Write Review
+        </Text>
         <View className="w-6" />
       </View>
 
@@ -167,7 +185,7 @@ export default function ReviewSubmission({
                 className="border border-border rounded-lg p-3 text-foreground bg-card"
                 placeholderTextColor="#9CA3AF"
                 maxLength={500}
-                style={{ minHeight: 120, textAlignVertical: 'top' }}
+                style={{ minHeight: 120, textAlignVertical: "top" }}
               />
               <Text className="text-xs text-muted-foreground mt-1">
                 {comment.length}/500 characters (minimum 10)
@@ -195,11 +213,9 @@ export default function ReviewSubmission({
                 Review Guidelines:
               </Text>
               <Text className="text-blue-600 text-xs leading-4">
-                • Be honest and constructive{'\n'}
-                • Focus on your experience{'\n'}
-                • Respect confidentiality{'\n'}
-                • Avoid personal details{'\n'}
-                • Help others make informed decisions
+                • Be honest and constructive{"\n"}• Focus on your experience
+                {"\n"}• Respect confidentiality{"\n"}• Avoid personal details
+                {"\n"}• Help others make informed decisions
               </Text>
             </View>
 
@@ -207,19 +223,17 @@ export default function ReviewSubmission({
             <View className="space-y-3 pt-4">
               <Button
                 onPress={handleSubmit}
-                disabled={submitting || rating === 0 || comment.trim().length < 10}
+                disabled={
+                  submitting || rating === 0 || comment.trim().length < 10
+                }
                 className="w-full"
               >
                 <Text className="text-primary-foreground font-medium">
-                  {submitting ? 'Submitting...' : 'Submit Review'}
+                  {submitting ? "Submitting..." : "Submit Review"}
                 </Text>
               </Button>
 
-              <Button
-                variant="outline"
-                onPress={onCancel}
-                className="w-full"
-              >
+              <Button variant="outline" onPress={onCancel} className="w-full">
                 <Text className="text-foreground">Cancel</Text>
               </Button>
             </View>

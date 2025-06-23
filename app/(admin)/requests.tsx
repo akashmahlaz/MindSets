@@ -11,15 +11,18 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function AdminRequests() {  const [applications, setApplications] = useState<CounsellorApplication[]>([]);
+export default function AdminRequests() {
+  const [applications, setApplications] = useState<CounsellorApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >("pending");
   const { user } = useAuth();
 
   const loadApplications = async () => {
@@ -27,8 +30,8 @@ export default function AdminRequests() {  const [applications, setApplications]
       const allApplications = await AdminService.getAllApplications();
       setApplications(allApplications);
     } catch (error) {
-      console.error('Error loading applications:', error);
-      Alert.alert('Error', 'Failed to load applications');
+      console.error("Error loading applications:", error);
+      Alert.alert("Error", "Failed to load applications");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -45,96 +48,100 @@ export default function AdminRequests() {  const [applications, setApplications]
   }, []);
   const handleApprove = async (counsellorId: string) => {
     if (!user?.uid) return;
-    
+
     Alert.alert(
-      'Approve Application',
-      'Are you sure you want to approve this counsellor application?',
+      "Approve Application",
+      "Are you sure you want to approve this counsellor application?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Approve',
+          text: "Approve",
           onPress: async () => {
             try {
-              setProcessingIds(prev => new Set(prev).add(counsellorId));
+              setProcessingIds((prev) => new Set(prev).add(counsellorId));
               await AdminService.approveCounsellor(counsellorId, user.uid);
-              Alert.alert('Success', 'Counsellor approved successfully');
-              loadApplications();            } catch (approveError) {
-              console.error('Approve error:', approveError);
-              Alert.alert('Error', 'Failed to approve counsellor');
+              Alert.alert("Success", "Counsellor approved successfully");
+              loadApplications();
+            } catch (approveError) {
+              console.error("Approve error:", approveError);
+              Alert.alert("Error", "Failed to approve counsellor");
             } finally {
-              setProcessingIds(prev => {
+              setProcessingIds((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(counsellorId);
                 return newSet;
               });
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
   const handleReject = async (counsellorId: string) => {
     if (!user?.uid) return;
-    
+
     // Use a more reliable approach for getting rejection reason
     Alert.alert(
-      'Reject Application',
-      'This will reject the counsellor application. Continue?',
+      "Reject Application",
+      "This will reject the counsellor application. Continue?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Reject',
-          style: 'destructive',
-          onPress: () => showRejectReasonDialog(counsellorId)
-        }
-      ]
+          text: "Reject",
+          style: "destructive",
+          onPress: () => showRejectReasonDialog(counsellorId),
+        },
+      ],
     );
   };
 
   const showRejectReasonDialog = (counsellorId: string) => {
     // Common rejection reasons
     const reasons = [
-      'Incomplete documentation',
-      'Invalid license verification',
-      'Insufficient experience',
-      'Missing required certifications',
-      'Application does not meet requirements',
-      'Other (Custom reason)'
+      "Incomplete documentation",
+      "Invalid license verification",
+      "Insufficient experience",
+      "Missing required certifications",
+      "Application does not meet requirements",
+      "Other (Custom reason)",
     ];
 
     Alert.alert(
-      'Select Rejection Reason',
-      'Choose a reason for rejection:',
+      "Select Rejection Reason",
+      "Choose a reason for rejection:",
       [
-        ...reasons.slice(0, 5).map(reason => ({
+        ...reasons.slice(0, 5).map((reason) => ({
           text: reason,
-          onPress: () => executeReject(counsellorId, reason)
+          onPress: () => executeReject(counsellorId, reason),
         })),
         {
-          text: 'Other',
+          text: "Other",
           onPress: () => {
             // For custom reason, we'll use a simpler approach
-            executeReject(counsellorId, 'Application requires additional review. Please contact support for details.');
-          }
+            executeReject(
+              counsellorId,
+              "Application requires additional review. Please contact support for details.",
+            );
+          },
         },
-        { text: 'Cancel', style: 'cancel' }
+        { text: "Cancel", style: "cancel" },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
   const executeReject = async (counsellorId: string, reason: string) => {
     if (!user?.uid) return;
-    
+
     try {
-      setProcessingIds(prev => new Set(prev).add(counsellorId));
+      setProcessingIds((prev) => new Set(prev).add(counsellorId));
       await AdminService.rejectCounsellor(counsellorId, user.uid, reason);
-      Alert.alert('Success', 'Application rejected successfully');
+      Alert.alert("Success", "Application rejected successfully");
       loadApplications();
     } catch (error) {
-      console.error('Reject error:', error);
-      Alert.alert('Error', 'Failed to reject application. Please try again.');
+      console.error("Reject error:", error);
+      Alert.alert("Error", "Failed to reject application. Please try again.");
     } finally {
-      setProcessingIds(prev => {
+      setProcessingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(counsellorId);
         return newSet;
@@ -142,41 +149,56 @@ export default function AdminRequests() {  const [applications, setApplications]
     }
   };
 
-  const handleViewDocument = async (documentUrl: string, documentName: string) => {
+  const handleViewDocument = async (
+    documentUrl: string,
+    documentName: string,
+  ) => {
     try {
       // Open document in browser
       await Linking.openURL(documentUrl);
     } catch (error) {
-      Alert.alert('Error', 'Failed to open document');
+      Alert.alert("Error", "Failed to open document");
     }
   };
 
-  const filteredApplications = applications.filter(app => {
-    if (filter === 'all') return true;
+  const filteredApplications = applications.filter((app) => {
+    if (filter === "all") return true;
     return app.status === filter;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'approved': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case "pending":
+        return "bg-yellow-500";
+      case "approved":
+        return "bg-green-500";
+      case "rejected":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
-  const FilterButton = ({ value, label }: { value: typeof filter, label: string }) => (
+  const FilterButton = ({
+    value,
+    label,
+  }: {
+    value: typeof filter;
+    label: string;
+  }) => (
     <TouchableOpacity
       onPress={() => setFilter(value)}
       className={`px-4 py-2 rounded-full border ${
-        filter === value 
-          ? 'bg-primary border-primary' 
-          : 'bg-background border-border'
+        filter === value
+          ? "bg-primary border-primary"
+          : "bg-background border-border"
       }`}
     >
-      <Text className={`text-sm ${
-        filter === value ? 'text-primary-foreground' : 'text-foreground'
-      }`}>
+      <Text
+        className={`text-sm ${
+          filter === value ? "text-primary-foreground" : "text-foreground"
+        }`}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -186,7 +208,9 @@ export default function AdminRequests() {  const [applications, setApplications]
     return (
       <SafeAreaView className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" />
-        <Text className="mt-2 text-muted-foreground">Loading applications...</Text>
+        <Text className="mt-2 text-muted-foreground">
+          Loading applications...
+        </Text>
       </SafeAreaView>
     );
   }
@@ -203,14 +227,17 @@ export default function AdminRequests() {  const [applications, setApplications]
 
         {/* Filter Buttons */}
         <View className="flex-row space-x-2 mb-4">
-          <FilterButton value="pending" label={`Pending (${applications.filter(a => a.status === 'pending').length})`} />
+          <FilterButton
+            value="pending"
+            label={`Pending (${applications.filter((a) => a.status === "pending").length})`}
+          />
           <FilterButton value="approved" label="Approved" />
           <FilterButton value="rejected" label="Rejected" />
           <FilterButton value="all" label="All" />
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1 px-4"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -235,20 +262,25 @@ export default function AdminRequests() {  const [applications, setApplications]
                     </CardTitle>
                     <Text className="text-muted-foreground">
                       {application.profileData.email}
-                    </Text>                  </View>
-                  
-                  <View className={`px-3 py-1 rounded-full ${getStatusColor(application.status)} border-0`}>
+                    </Text>
+                  </View>
+
+                  <View
+                    className={`px-3 py-1 rounded-full ${getStatusColor(application.status)} border-0`}
+                  >
                     <Text className="text-white text-xs">
-                      {(application.status || 'unknown').toUpperCase()}
+                      {(application.status || "unknown").toUpperCase()}
                     </Text>
                   </View>
                 </View>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 {/* Professional Info */}
                 <View>
-                  <Text className="font-semibold text-foreground mb-2">Professional Information</Text>
+                  <Text className="font-semibold text-foreground mb-2">
+                    Professional Information
+                  </Text>
                   <View className="space-y-1">
                     <Text className="text-sm text-muted-foreground">
                       License: {application.profileData.licenseType}
@@ -257,68 +289,96 @@ export default function AdminRequests() {  const [applications, setApplications]
                       License #: {application.profileData.licenseNumber}
                     </Text>
                     <Text className="text-sm text-muted-foreground">
-                      Experience: {application.profileData.yearsExperience} years
+                      Experience: {application.profileData.yearsExperience}
+                      years
                     </Text>
                     <Text className="text-sm text-muted-foreground">
                       Rate: ${application.profileData.hourlyRate}/hour
                     </Text>
                   </View>
                 </View>
-
-                {/* Specializations */}                <View>
-                  <Text className="font-semibold text-foreground mb-2">Specializations</Text>
+                {/* Specializations */}
+                <View>
+                  <Text className="font-semibold text-foreground mb-2">
+                    Specializations
+                  </Text>
                   <View className="flex-row flex-wrap gap-1">
-                    {application.profileData.specializations.slice(0, 3).map((spec) => (
-                      <View key={spec} className="px-3 py-1 border border-gray-300 rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-600">
-                        <Text className="text-xs text-gray-700 dark:text-gray-300">{spec}</Text>
-                      </View>
-                    ))}
+                    {application.profileData.specializations
+                      .slice(0, 3)
+                      .map((spec) => (
+                        <View
+                          key={spec}
+                          className="px-3 py-1 border border-gray-300 rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
+                        >
+                          <Text className="text-xs text-gray-700 dark:text-gray-300">
+                            {spec}
+                          </Text>
+                        </View>
+                      ))}
                     {application.profileData.specializations.length > 3 && (
                       <View className="px-3 py-1 border border-gray-300 rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-600">
-                        <Text className="text-xs text-gray-700 dark:text-gray-300">+{application.profileData.specializations.length - 3} more</Text>
+                        <Text className="text-xs text-gray-700 dark:text-gray-300">
+                          +{application.profileData.specializations.length - 3}
+                          more
+                        </Text>
                       </View>
                     )}
                   </View>
                 </View>
-
                 {/* Documents */}
                 {application.profileData.verificationDocuments && (
                   <View>
-                    <Text className="font-semibold text-foreground mb-2">Documents</Text>
+                    <Text className="font-semibold text-foreground mb-2">
+                      Documents
+                    </Text>
                     <View className="space-y-2">
-                      {Object.entries(application.profileData.verificationDocuments).map(([docType, doc]) => (
-                        doc && (
-                          <TouchableOpacity
-                            key={docType}
-                            onPress={() => handleViewDocument(doc.url, doc.name)}
-                            className="flex-row justify-between items-center p-2 border border-border rounded"
-                          >
-                            <View>                              <Text className="text-sm font-medium text-foreground">
-                                {(docType || '').charAt(0).toUpperCase() + (docType || '').slice(1)}
-                              </Text>
-                              <Text className="text-xs text-muted-foreground">{doc.name}</Text>
-                            </View>
-                            <Text className="text-primary text-sm">View</Text>
-                          </TouchableOpacity>
-                        )
-                      ))}
+                      {Object.entries(
+                        application.profileData.verificationDocuments,
+                      ).map(
+                        ([docType, doc]) =>
+                          doc && (
+                            <TouchableOpacity
+                              key={docType}
+                              onPress={() =>
+                                handleViewDocument(doc.url, doc.name)
+                              }
+                              className="flex-row justify-between items-center p-2 border border-border rounded"
+                            >
+                              <View>
+                                <Text className="text-sm font-medium text-foreground">
+                                  {(docType || "").charAt(0).toUpperCase() +
+                                    (docType || "").slice(1)}
+                                </Text>
+                                <Text className="text-xs text-muted-foreground">
+                                  {doc.name}
+                                </Text>
+                              </View>
+                              <Text className="text-primary text-sm">View</Text>
+                            </TouchableOpacity>
+                          ),
+                      )}
                     </View>
                   </View>
                 )}
-
                 {/* Submission Date */}
                 <Text className="text-xs text-muted-foreground">
-                  Submitted: {application.submittedAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                  Submitted:
+                  {application.submittedAt?.toDate?.()?.toLocaleDateString() ||
+                    "Unknown"}
                 </Text>
-
                 {/* Admin Notes */}
                 {application.adminNotes && (
                   <View className="bg-muted p-3 rounded">
-                    <Text className="text-sm font-medium text-foreground mb-1">Admin Notes:</Text>
-                    <Text className="text-sm text-muted-foreground">{application.adminNotes}</Text>
+                    <Text className="text-sm font-medium text-foreground mb-1">
+                      Admin Notes:
+                    </Text>
+                    <Text className="text-sm text-muted-foreground">
+                      {application.adminNotes}
+                    </Text>
                   </View>
-                )}                {/* Action Buttons */}
-                {application.status === 'pending' && (
+                )}
+                {/* Action Buttons */}
+                {application.status === "pending" && (
                   <View className="flex-row space-x-2 pt-2">
                     <Button
                       onPress={() => handleApprove(application.uid)}
@@ -326,7 +386,9 @@ export default function AdminRequests() {  const [applications, setApplications]
                       disabled={processingIds.has(application.uid)}
                     >
                       <Text className="text-white">
-                        {processingIds.has(application.uid) ? 'Approving...' : 'Approve'}
+                        {processingIds.has(application.uid)
+                          ? "Approving..."
+                          : "Approve"}
                       </Text>
                     </Button>
                     <Button
@@ -336,7 +398,9 @@ export default function AdminRequests() {  const [applications, setApplications]
                       disabled={processingIds.has(application.uid)}
                     >
                       <Text className="text-white">
-                        {processingIds.has(application.uid) ? 'Rejecting...' : 'Reject'}
+                        {processingIds.has(application.uid)
+                          ? "Rejecting..."
+                          : "Reject"}
                       </Text>
                     </Button>
                   </View>

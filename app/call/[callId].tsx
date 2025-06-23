@@ -8,7 +8,7 @@ import {
   RingingCallContent,
   StreamCall,
   useCallStateHooks,
-  useStreamVideoClient
+  useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -25,7 +25,7 @@ export default function CallScreen() {
     callType?: string;
     isVideo?: string;
   }>();
-  
+
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +75,7 @@ export default function CallScreen() {
         call.leave().catch(console.error);
       }
     };
-  }, [client, callId, callType, user?.uid]);  // Handle call events and state changes
+  }, [client, callId, callType, user?.uid]); // Handle call events and state changes
   useEffect(() => {
     if (!call) return;
 
@@ -127,10 +127,16 @@ export default function CallScreen() {
 
     // Subscribe to all relevant call lifecycle events
     const unsubscribeEnded = call.on("call.ended", handleCallEnded);
-    const unsubscribeSessionEnded = call.on("call.session_ended", handleCallSessionEnded);
+    const unsubscribeSessionEnded = call.on(
+      "call.session_ended",
+      handleCallSessionEnded,
+    );
     const unsubscribeRejected = call.on("call.rejected", handleCallRejected);
     const unsubscribeMissed = call.on("call.missed", handleCallMissed);
-    const unsubscribeParticipantLeft = call.on("call.session_participant_left", handleParticipantLeft);
+    const unsubscribeParticipantLeft = call.on(
+      "call.session_participant_left",
+      handleParticipantLeft,
+    );
     const unsubscribeUpdated = call.on("call.updated", handleCallUpdated);
 
     return () => {
@@ -141,7 +147,8 @@ export default function CallScreen() {
       unsubscribeParticipantLeft();
       unsubscribeUpdated();
     };
-  }, [call]);const handleEndCall = async () => {
+  }, [call]);
+  const handleEndCall = async () => {
     try {
       if (call) {
         console.log("Ending call for all participants");
@@ -178,9 +185,7 @@ export default function CallScreen() {
             <Text className="text-white text-xl text-center mb-4">
               Call Error
             </Text>
-            <Text className="text-white/70 text-center mb-6">
-              {error}
-            </Text>
+            <Text className="text-white/70 text-center mb-6">{error}</Text>
             <Button onPress={() => router.back()} className="bg-blue-600">
               <Text className="text-white">Go Back</Text>
             </Button>
@@ -194,9 +199,7 @@ export default function CallScreen() {
         <StatusBar barStyle="light-content" backgroundColor="#000000" />
         <View className="flex-1 justify-center items-center">
           <Text className="text-white text-xl">Setting up call...</Text>
-          <Text className="text-white/70 text-sm mt-2">
-            Call ID: {callId}
-          </Text>
+          <Text className="text-white/70 text-sm mt-2">Call ID: {callId}</Text>
         </View>
       </SafeAreaView>
     );
@@ -213,10 +216,16 @@ export default function CallScreen() {
 }
 
 // Component that renders the appropriate UI based on call state
-function CallUI({ isVideo, onEndCall }: { isVideo: boolean; onEndCall: () => void }) {
+function CallUI({
+  isVideo,
+  onEndCall,
+}: {
+  isVideo: boolean;
+  onEndCall: () => void;
+}) {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-  
+
   console.log("Current calling state:", callingState);
 
   // Handle different call states using Stream.io's built-in components
@@ -224,7 +233,8 @@ function CallUI({ isVideo, onEndCall }: { isVideo: boolean; onEndCall: () => voi
     case CallingState.RINGING:
       // Use Stream.io's built-in RingingCallContent for both incoming and outgoing calls
       // This component automatically detects if it's incoming or outgoing and shows appropriate UI
-      return <RingingCallContent />;    case CallingState.JOINED:      // Use Stream.io's built-in CallContent with custom CallControls for proper safe area handling
+      return <RingingCallContent />;
+    case CallingState.JOINED: // Use Stream.io's built-in CallContent with custom CallControls for proper safe area handling
       return (
         <CallContent
           onHangupCallHandler={onEndCall}
@@ -279,9 +289,7 @@ function CallUI({ isVideo, onEndCall }: { isVideo: boolean; onEndCall: () => voi
           <Text className="text-white text-lg">
             {isVideo ? "Setting up video call..." : "Setting up voice call..."}
           </Text>
-          <Text className="text-white/70 text-sm mt-2">
-            Please wait...
-          </Text>
+          <Text className="text-white/70 text-sm mt-2">Please wait...</Text>
         </View>
       );
   }

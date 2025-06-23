@@ -1,13 +1,17 @@
 # 🔥 Firebase Index Error - FIXED ✅
 
 ## The Problem
+
 You encountered this Firebase error:
+
 ```
 ERROR Error fetching all applications: [FirebaseError: The query requires an index...]
 ```
 
 ## Root Cause
+
 Firebase Firestore requires composite indexes when you use:
+
 - Multiple `where` clauses + `orderBy`
 - Example: `where('role', '==', 'counsellor') + where('verificationStatus', '==', 'pending') + orderBy('createdAt')`
 
@@ -16,17 +20,19 @@ Firebase Firestore requires composite indexes when you use:
 I **updated the AdminService** to use **simpler queries** that don't require custom indexes:
 
 ### Before (Required Index):
+
 ```typescript
 // This required a composite index
 const q = query(
   counsellorsRef,
-  where('role', '==', 'counsellor'),
-  where('verificationStatus', '==', 'pending'),  // ❌ Multiple where + orderBy
-  orderBy('createdAt', 'desc')
+  where("role", "==", "counsellor"),
+  where("verificationStatus", "==", "pending"), // ❌ Multiple where + orderBy
+  orderBy("createdAt", "desc"),
 );
 ```
 
 ### After (No Index Required):
+
 ```typescript
 // Simple query - only filter by role
 const q = query(
@@ -53,7 +59,7 @@ applications.sort((a, b) => {  // ✅ Client-side sorting
 ## Files Updated ✅
 
 1. **`services/adminService.ts`**
-   - ✅ Fixed `getPendingApplications()` 
+   - ✅ Fixed `getPendingApplications()`
    - ✅ Fixed `getAllApplications()`
    - ✅ Added client-side filtering and sorting
 
@@ -77,7 +83,7 @@ applications.sort((a, b) => {  // ✅ Client-side sorting
 ## What You Should Test Now 🧪
 
 1. **Admin Dashboard** - Should load statistics without errors
-2. **Admin Requests** - Should show counsellor applications  
+2. **Admin Requests** - Should show counsellor applications
 3. **Document Upload** - Test counsellor signup with documents
 4. **Approve/Reject** - Test admin approval workflow
 
