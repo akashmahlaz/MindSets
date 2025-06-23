@@ -250,8 +250,8 @@ const pickDocument = async (type: keyof CounsellorSignUpData['documents']) => {
 
   const renderStep1 = () => (
     <CardContent className="space-y-4">
-      <H2 className="mb-2">Personal Information</H2>
-      <P className="mb-4">Let&apos;s start with your basic information.</P>
+      <Text className="mb-2">Personal Information</Text>
+      <Text className="mb-4">Lets start with your basic information.</Text>
       <View className="space-y-2">
         <Label className="font-semibold text-base">First Name</Label>
         <Input
@@ -648,10 +648,10 @@ const renderStep5 = () => (
               >
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-center mb-2">
-                    Sign Up as Counsellor
+                   <Text> Sign Up as Counsellor</Text>
                   </CardTitle>
                   <CardDescription className="text-center mb-2">
-                    Apply to join MindConnect as a professional
+                    <Text>Apply to join MindConnect as a professional</Text>
                   </CardDescription>
                   {/* Step Indicator */}
                   <View className="flex-row justify-center items-center mb-2">
