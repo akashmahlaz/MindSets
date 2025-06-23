@@ -1,44 +1,22 @@
-// Debug script to check and fix counsellor verification status
-// Run this in your app to see current counsellors and fix any issues
+// Debug script to test counsellors fetching
+// You can run this script in the app to test database connectivity
 
 export const debugCounsellors = async () => {
   try {
-    console.log("🔧 Starting counsellor verification debug...");
+    console.log("🔧 Starting debug script...");
 
     // Import the necessary functions
     const {
       getCounsellors,
-      debugCounsellorsVerification,
-      fixTestCounsellors,
+      debugUsersCollection,
     } = require("./services/userService");
 
-    // Step 1: Check current counsellors verification status
-    console.log("1️⃣ Checking current counsellors verification status:");
-    await debugCounsellorsVerification();
+    // Debug the entire users collection
+    console.log("1️⃣ Debugging users collection:");
+    await debugUsersCollection();
 
-    // Step 2: Get counsellors that would show in the app
-    console.log("2️⃣ Getting counsellors that show in app:");
-    const visibleCounsellors = await getCounsellors();
-    console.log(`📱 Counsellors visible in app: ${visibleCounsellors.length}`);
-    visibleCounsellors.forEach(c => {
-      console.log(`✅ Visible: ${c.displayName} (verified: ${c.isApproved && c.verificationStatus === 'verified'})`);
-    });
-
-    // Step 3: Fix auto-approved test counsellors
-    console.log("3️⃣ Fixing auto-approved test counsellors:");
-    await fixTestCounsellors();
-
-    // Step 4: Verify the fix
-    console.log("4️⃣ Verification status after fix:");
-    await debugCounsellorsVerification();
-
-    // Step 5: Check visible counsellors after fix
-    console.log("5️⃣ Counsellors visible in app after fix:");
-    const fixedVisibleCounsellors = await getCounsellors();
-    console.log(`📱 Counsellors visible in app after fix: ${fixedVisibleCounsellors.length}`);
-    fixedVisibleCounsellors.forEach(c => {
-      console.log(`✅ Still visible: ${c.displayName} (verified: ${c.isApproved && c.verificationStatus === 'verified'})`);
-    });
+    // Try to get all counsellors without filters
+    console.log("2️⃣ Getting all counsellors:");
     const allCounsellors = await getCounsellors();
     console.log("All counsellors:", allCounsellors.length);
     allCounsellors.forEach((counsellor, index) => {
