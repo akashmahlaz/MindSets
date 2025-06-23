@@ -66,16 +66,16 @@ export default function TabLayout() {
               <IconSymbol size={28} name="house.fill" color={color} />
             ),
           }}
-        />       
-          <Tabs.Screen
-            name="Counselors"
-            options={{
-              title: "Counselors",
-              tabBarIcon: ({ color }) => (
-                <FontAwesome6 size={28} name="user-doctor" color={color} />
-              ),
-            }}
-          />
+        />
+        <Tabs.Screen
+          name="Counselors"
+          options={{
+            title: "Counselors",
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 size={28} name="user-doctor" color={color} />
+            ),
+          }}
+        />
         <Tabs.Screen
           name="sessions"
           options={{

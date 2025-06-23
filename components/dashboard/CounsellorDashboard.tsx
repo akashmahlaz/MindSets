@@ -166,7 +166,8 @@ export default function CounsellorDashboard() {
                 <View className="flex-1">
                   <View className="flex-row items-center flex-wrap">
                     <Text className="text-2xl font-bold text-gray-900 dark:text-white mr-3">
-                      Dr. {counsellorProfile.firstName} {counsellorProfile.lastName}
+                      Dr. {counsellorProfile.firstName}
+                      {counsellorProfile.lastName}
                     </Text>
                     {counsellorProfile.verificationStatus === "verified" && (
                       <View className="bg-emerald-100 dark:bg-emerald-900 px-3 py-1 rounded-full flex-row items-center">
@@ -177,10 +178,13 @@ export default function CounsellorDashboard() {
                     )}
                   </View>
                   <Text className="text-gray-600 dark:text-gray-400 mt-1">
-                    {counsellorProfile.specializations?.slice(0, 2).join(", ") || "Mental Health Professional"}
+                    {counsellorProfile.specializations
+                      ?.slice(0, 2)
+                      .join(", ") || "Mental Health Professional"}
                   </Text>
                   <Text className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                    {counsellorProfile.yearsExperience} years experience • ${counsellorProfile.hourlyRate}/hour
+                    {counsellorProfile.yearsExperience} years experience • $
+                    {counsellorProfile.hourlyRate}/hour
                   </Text>
                 </View>
               </View>
@@ -197,28 +201,33 @@ export default function CounsellorDashboard() {
               <CardContent className="p-5">
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-amber-100 dark:bg-amber-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-amber-600 dark:text-amber-400 text-lg">⏳</Text>
+                    <Text className="text-amber-600 dark:text-amber-400 text-lg">
+                      ⏳
+                    </Text>
                   </View>
                   <View className="flex-1">
                     <Text className="font-semibold text-amber-800 dark:text-amber-200 text-lg mb-1">
                       Verification In Progress
                     </Text>
                     <Text className="text-amber-700 dark:text-amber-300 text-sm leading-relaxed">
-                      Your credentials are being reviewed by our team. This process typically takes 3-5 business days. 
-                      You'll receive an email notification once the review is complete.
+                      Your credentials are being reviewed by our team. This
+                      process typically takes 3-5 business days. You'll receive
+                      an email notification once the review is complete.
                     </Text>
                   </View>
                 </View>
               </CardContent>
             </Card>
           )}
-          
+
           {counsellorProfile.verificationStatus === "rejected" && (
             <Card className="mb-4 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
               <CardContent className="p-5">
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-red-100 dark:bg-red-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-red-600 dark:text-red-400 text-lg">⚠️</Text>
+                    <Text className="text-red-600 dark:text-red-400 text-lg">
+                      ⚠️
+                    </Text>
                   </View>
                   <View className="flex-1">
                     <Text className="font-semibold text-red-800 dark:text-red-200 text-lg mb-2">
@@ -234,7 +243,9 @@ export default function CounsellorDashboard() {
                       onPress={() => router.push("/profile/edit")}
                       className="self-start border-red-300 dark:border-red-700"
                     >
-                      <Text className="text-red-700 dark:text-red-300">Update Application</Text>
+                      <Text className="text-red-700 dark:text-red-300">
+                        Update Application
+                      </Text>
                     </Button>
                   </View>
                 </View>
@@ -247,14 +258,18 @@ export default function CounsellorDashboard() {
               <CardContent className="p-5">
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">✅</Text>
+                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
+                      ✅
+                    </Text>
                   </View>
                   <View className="flex-1">
                     <Text className="font-semibold text-emerald-800 dark:text-emerald-200 text-lg mb-1">
                       Professional Status Verified
                     </Text>
                     <Text className="text-emerald-700 dark:text-emerald-300 text-sm leading-relaxed">
-                      Your credentials have been verified and approved. You can now accept new clients and start conducting sessions through our platform.
+                      Your credentials have been verified and approved. You can
+                      now accept new clients and start conducting sessions
+                      through our platform.
                     </Text>
                   </View>
                 </View>
@@ -264,72 +279,98 @@ export default function CounsellorDashboard() {
         </View>
         {/* Professional Analytics Dashboard */}
         <View className="px-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">Dashboard Overview</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Dashboard Overview
+          </Text>
           <View className="flex-row flex-wrap -mx-2">
             <View className="w-1/2 px-2 mb-4">
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardContent className="p-4">
                   <View className="flex-row items-center justify-between mb-2">
                     <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center">
-                      <Text className="text-blue-600 dark:text-blue-400 text-lg">📅</Text>
+                      <Text className="text-blue-600 dark:text-blue-400 text-lg">
+                        📅
+                      </Text>
                     </View>
                     <Text className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {stats.upcomingSessions}
                     </Text>
                   </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">Upcoming</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">Sessions</Text>
+                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
+                    Upcoming
+                  </Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    Sessions
+                  </Text>
                 </CardContent>
               </Card>
             </View>
-            
+
             <View className="w-1/2 px-2 mb-4">
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardContent className="p-4">
                   <View className="flex-row items-center justify-between mb-2">
                     <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center">
-                      <Text className="text-emerald-600 dark:text-emerald-400 text-lg">👥</Text>
+                      <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
+                        👥
+                      </Text>
                     </View>
                     <Text className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                       {stats.totalClients}
                     </Text>
                   </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">Active</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">Clients</Text>
+                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
+                    Active
+                  </Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    Clients
+                  </Text>
                 </CardContent>
               </Card>
             </View>
-            
+
             <View className="w-1/2 px-2 mb-4">
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardContent className="p-4">
                   <View className="flex-row items-center justify-between mb-2">
                     <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center">
-                      <Text className="text-purple-600 dark:text-purple-400 text-lg">⏰</Text>
+                      <Text className="text-purple-600 dark:text-purple-400 text-lg">
+                        ⏰
+                      </Text>
                     </View>
                     <Text className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {stats.weeklyHours}h
                     </Text>
                   </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">This Week</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">Hours</Text>
+                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
+                    This Week
+                  </Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    Hours
+                  </Text>
                 </CardContent>
               </Card>
             </View>
-            
+
             <View className="w-1/2 px-2 mb-4">
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardContent className="p-4">
                   <View className="flex-row items-center justify-between mb-2">
                     <View className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-full items-center justify-center">
-                      <Text className="text-amber-600 dark:text-amber-400 text-lg">⭐</Text>
+                      <Text className="text-amber-600 dark:text-amber-400 text-lg">
+                        ⭐
+                      </Text>
                     </View>
                     <Text className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                       {stats.rating > 0 ? stats.rating.toFixed(1) : "--"}
                     </Text>
                   </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">Average</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">Rating</Text>
+                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
+                    Average
+                  </Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    Rating
+                  </Text>
                 </CardContent>
               </Card>
             </View>
@@ -337,7 +378,9 @@ export default function CounsellorDashboard() {
         </View>
         {/* Professional Quick Actions */}
         <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Quick Actions
+          </Text>
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-1">
               <View className="space-y-1">
@@ -346,43 +389,61 @@ export default function CounsellorDashboard() {
                   className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
                 >
                   <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-blue-600 dark:text-blue-400 text-lg">💬</Text>
+                    <Text className="text-blue-600 dark:text-blue-400 text-lg">
+                      💬
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">Messages</Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">View and respond to client messages</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium">
+                      Messages
+                    </Text>
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                      View and respond to client messages
+                    </Text>
                   </View>
                   <Text className="text-gray-400 dark:text-gray-500">›</Text>
                 </TouchableOpacity>
-                
+
                 <View className="h-px bg-gray-200 dark:bg-gray-700 mx-4" />
-                
+
                 <TouchableOpacity
                   onPress={() => router.push("/(main)/sessions")}
                   className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
                 >
                   <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">📅</Text>
+                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
+                      📅
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">Schedule Management</Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">Manage appointments and availability</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium">
+                      Schedule Management
+                    </Text>
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                      Manage appointments and availability
+                    </Text>
                   </View>
                   <Text className="text-gray-400 dark:text-gray-500">›</Text>
                 </TouchableOpacity>
-                
+
                 <View className="h-px bg-gray-200 dark:bg-gray-700 mx-4" />
-                
+
                 <TouchableOpacity
                   onPress={() => router.push("/profile")}
                   className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
                 >
                   <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-purple-600 dark:text-purple-400 text-lg">⚙️</Text>
+                    <Text className="text-purple-600 dark:text-purple-400 text-lg">
+                      ⚙️
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">Profile Settings</Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">Update your professional profile</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium">
+                      Profile Settings
+                    </Text>
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                      Update your professional profile
+                    </Text>
                   </View>
                   <Text className="text-gray-400 dark:text-gray-500">›</Text>
                 </TouchableOpacity>
@@ -392,22 +453,32 @@ export default function CounsellorDashboard() {
         </View>
         {/* Client Management Section */}
         <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">Client Management</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Client Management
+          </Text>
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               {loading ? (
                 <View className="py-12 items-center">
                   <View className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                  <Text className="text-gray-500 dark:text-gray-400">Loading client information...</Text>
+                  <Text className="text-gray-500 dark:text-gray-400">
+                    Loading client information...
+                  </Text>
                 </View>
               ) : clients.length === 0 ? (
                 <View className="py-12 items-center">
                   <View className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full items-center justify-center mb-4">
-                    <Text className="text-gray-400 dark:text-gray-500 text-2xl">👥</Text>
+                    <Text className="text-gray-400 dark:text-gray-500 text-2xl">
+                      👥
+                    </Text>
                   </View>
-                  <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">No Active Clients</Text>
+                  <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">
+                    No Active Clients
+                  </Text>
                   <Text className="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed max-w-xs">
-                    Your client list will appear here once you start conducting sessions. New clients will be automatically added when they book appointments.
+                    Your client list will appear here once you start conducting
+                    sessions. New clients will be automatically added when they
+                    book appointments.
                   </Text>
                 </View>
               ) : (
@@ -420,12 +491,20 @@ export default function CounsellorDashboard() {
                       onPress={() => router.push("/(main)")}
                       className="flex-row items-center"
                     >
-                      <Text className="text-blue-600 dark:text-blue-400 text-sm mr-1">View All</Text>
-                      <Text className="text-blue-600 dark:text-blue-400">›</Text>
+                      <Text className="text-blue-600 dark:text-blue-400 text-sm mr-1">
+                        View All
+                      </Text>
+                      <Text className="text-blue-600 dark:text-blue-400">
+                        ›
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                  
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-2">
+
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    className="-mx-2"
+                  >
                     <View className="flex-row px-2">
                       {clients.map((client, index) => (
                         <TouchableOpacity
@@ -469,22 +548,31 @@ export default function CounsellorDashboard() {
         </View>
         {/* Professional Schedule Overview */}
         <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">Today's Schedule</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Today's Schedule
+          </Text>
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <View className="py-12 items-center">
                 <View className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full items-center justify-center mb-4">
-                  <Text className="text-gray-400 dark:text-gray-500 text-2xl">📅</Text>
+                  <Text className="text-gray-400 dark:text-gray-500 text-2xl">
+                    📅
+                  </Text>
                 </View>
-                <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">No Sessions Today</Text>
+                <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">
+                  No Sessions Today
+                </Text>
                 <Text className="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed max-w-xs">
-                  Your daily schedule will appear here when you have appointments booked.
+                  Your daily schedule will appear here when you have
+                  appointments booked.
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(main)/sessions")}
                   className="mt-4 bg-blue-600 px-4 py-2 rounded-lg"
                 >
-                  <Text className="text-white font-medium">Manage Schedule</Text>
+                  <Text className="text-white font-medium">
+                    Manage Schedule
+                  </Text>
                 </TouchableOpacity>
               </View>
             </CardContent>
@@ -492,59 +580,78 @@ export default function CounsellorDashboard() {
         </View>
         {/* Professional Profile Summary */}
         <View className="px-6 mt-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">Professional Profile</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Professional Profile
+          </Text>
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <View className="space-y-4">
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-blue-600 dark:text-blue-400 text-sm">🎯</Text>
+                    <Text className="text-blue-600 dark:text-blue-400 text-sm">
+                      🎯
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">Specializations</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
+                      Specializations
+                    </Text>
                     <Text className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      {counsellorProfile.specializations?.join(", ") || "Not specified"}
+                      {counsellorProfile.specializations?.join(", ") ||
+                        "Not specified"}
                     </Text>
                   </View>
                 </View>
-                
+
                 <View className="h-px bg-gray-200 dark:bg-gray-700" />
-                
+
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-sm">📚</Text>
+                    <Text className="text-emerald-600 dark:text-emerald-400 text-sm">
+                      📚
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">Professional Experience</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
+                      Professional Experience
+                    </Text>
                     <Text className="text-gray-600 dark:text-gray-400 text-sm">
                       {counsellorProfile.yearsExperience} years of experience
                     </Text>
                   </View>
                 </View>
-                
+
                 <View className="h-px bg-gray-200 dark:bg-gray-700" />
-                
+
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-purple-600 dark:text-purple-400 text-sm">🏆</Text>
+                    <Text className="text-purple-600 dark:text-purple-400 text-sm">
+                      🏆
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">License Information</Text>
+                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
+                      License Information
+                    </Text>
                     <Text className="text-gray-600 dark:text-gray-400 text-sm">
                       {counsellorProfile.licenseType} • Licensed Professional
                     </Text>
                   </View>
                 </View>
-                
+
                 <View className="h-px bg-gray-200 dark:bg-gray-700" />
-                
+
                 <View className="flex-row items-start">
                   <View className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-amber-600 dark:text-amber-400 text-sm">💰</Text>
+                    <Text className="text-amber-600 dark:text-amber-400 text-sm">
+                      💰
+                    </Text>
                   </View>
                   <View className="flex-1 flex-row justify-between items-center">
                     <View>
-                      <Text className="text-gray-900 dark:text-white font-medium mb-1">Session Rate</Text>
+                      <Text className="text-gray-900 dark:text-white font-medium mb-1">
+                        Session Rate
+                      </Text>
                       <Text className="text-gray-600 dark:text-gray-400 text-sm">
                         Professional consultation fee
                       </Text>
@@ -555,12 +662,14 @@ export default function CounsellorDashboard() {
                   </View>
                 </View>
               </View>
-              
+
               <TouchableOpacity
                 onPress={() => router.push("/profile")}
                 className="mt-6 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex-row items-center justify-center"
               >
-                <Text className="text-gray-700 dark:text-gray-300 font-medium mr-2">Edit Profile</Text>
+                <Text className="text-gray-700 dark:text-gray-300 font-medium mr-2">
+                  Edit Profile
+                </Text>
                 <Text className="text-gray-400 dark:text-gray-500">✏️</Text>
               </TouchableOpacity>
             </CardContent>

@@ -709,7 +709,6 @@ export default function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
 
-
                 {/* Review Button for Counsellors */}
                 {canReview && (
                   <TouchableOpacity

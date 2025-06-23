@@ -84,7 +84,7 @@
 
 ## Production Considerations:
 
-1. ****DEV** Flag**: Currently uses `__DEV__` to show pending counsellors in development
+1. \***\*DEV** Flag\*\*: Currently uses `__DEV__` to show pending counsellors in development
 2. **Environment**: Ensure production only shows verified counsellors
 3. **Notifications**: Push notification service is integrated and working
 4. **Documents**: Document upload/viewing system is in place
