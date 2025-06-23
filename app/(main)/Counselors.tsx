@@ -110,7 +110,7 @@ export default function CounselorsScreen() {
             {counsellor.verificationStatus === "verified" && (
               <View className="absolute top-2 right-2">
                 <View className="bg-green-500 px-2 py-1 rounded-full">
-                  <Text className="text-white text-xs font-semibold">✓</Text>
+                  <Text className="text-white text-xs font-semibold">Verified</Text>
                 </View>
               </View>
             )}

@@ -700,32 +700,15 @@ export default function ProfileScreen() {
                   </View>
                   <View className="flex-1">
                     <Text className="text-foreground font-semibold">
-                      Voice Call
+                      Contact
                     </Text>
                     <Text className="text-muted-foreground text-sm">
-                      Start a voice call
+                      Start a call
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={handleStartVideoCall}
-                  className="flex-row items-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800"
-                >
-                  <View className="w-12 h-12 bg-purple-500 rounded-full items-center justify-center mr-4">
-                    <Ionicons name="videocam" size={24} color="white" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-foreground font-semibold">
-                      Video Call
-                    </Text>
-                    <Text className="text-muted-foreground text-sm">
-                      Start a video call
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
 
                 {/* Review Button for Counsellors */}
                 {canReview && (

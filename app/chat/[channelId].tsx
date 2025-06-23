@@ -193,9 +193,6 @@ export default function ChatScreen() {
             <Text className="text-sm text-muted-foreground">Offline</Text>
           </View>
         )}
-        <TouchableOpacity className="w-10 h-10 rounded-full bg-secondary justify-center items-center">
-          <Ionicons name="call" size={18} color="#3b82f6" />
-        </TouchableOpacity>
       </View>
       {/* Chat Area with proper theming and keyboard handling */}
       <KeyboardAvoidingView
