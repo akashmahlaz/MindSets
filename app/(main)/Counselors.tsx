@@ -1,5 +1,4 @@
 import "@/app/global.css";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -105,13 +104,12 @@ export default function CounselorsScreen() {
               <View className="w-full h-full items-center justify-center bg-gray-200 dark:bg-gray-700">
                 <Text className="text-5xl">👨‍⚕️</Text>
               </View>
-            )}
-            {/* Verification Badge */}
+            )}            {/* Verification Badge */}
             {counsellor.verificationStatus === "verified" && (
               <View className="absolute top-2 right-2">
-                <Badge variant="default" className="bg-green-500">
+                <View className="bg-green-500 px-2 py-1 rounded-full">
                   <Text className="text-white text-xs font-semibold">✓</Text>
-                </Badge>
+                </View>
               </View>
             )}
           </View>

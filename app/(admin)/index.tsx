@@ -58,7 +58,7 @@ export default function AdminIndex() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={{ padding: 16 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -81,33 +81,33 @@ export default function AdminIndex() {
           <View className="mb-6">
             <Text className="text-lg font-semibold text-foreground mb-3">Overview</Text>
             <View className="flex-row mb-3">
-              <StatCard 
-                title="Total Users" 
-                value={stats.totalUsers} 
-                color="bg-blue-500" 
+              <StatCard
+                title="Total Users"
+                value={stats.totalUsers}
+                color="bg-blue-500"
               />
-              <StatCard 
-                title="Total Counsellors" 
-                value={stats.totalCounsellors} 
-                color="bg-green-500" 
+              <StatCard
+                title="Total Counsellors"
+                value={stats.totalCounsellors}
+                color="bg-green-500"
               />
             </View>
             <View className="flex-row">
-              <StatCard 
-                title="Pending Applications" 
-                value={stats.pendingApplications} 
+              <StatCard
+                title="Pending Applications"
+                value={stats.pendingApplications}
                 color="bg-yellow-500"
                 onPress={() => router.push("/(admin)/requests")}
               />
-              <StatCard 
-                title="Approved" 
-                value={stats.approvedCounsellors} 
-                color="bg-emerald-500" 
+              <StatCard
+                title="Approved"
+                value={stats.approvedCounsellors}
+                color="bg-emerald-500"
               />
-              <StatCard 
-                title="Rejected" 
-                value={stats.rejectedApplications} 
-                color="bg-red-500" 
+              <StatCard
+                title="Rejected"
+                value={stats.rejectedApplications}
+                color="bg-red-500"
               />
             </View>
           </View>
@@ -116,35 +116,35 @@ export default function AdminIndex() {
         {/* Quick Actions */}
         <View className="mb-6">
           <Text className="text-lg font-semibold text-foreground mb-3">Quick Actions</Text>
-          
-          <Card className="mb-3">
-            <CardHeader>
-              <CardTitle><Text>Counsellor Management</Text></CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                onPress={() => router.push("/(admin)/requests")}
-                className="w-full"
-              >
-                <Text className="text-primary-foreground">
-                  Review Applications ({stats?.pendingApplications || 0} pending)
-                </Text>
-              </Button>              <Button 
-                variant="outline"
-                onPress={() => router.push("/(admin)/requests")}
-                className="w-full"
-              >
+
+          <Card className="mb-3">          
+              <CardHeader>
+            <CardTitle>Counsellor Management</CardTitle>
+          </CardHeader>
+            <CardContent className="space-y-3">            
+                <Button
+              onPress={() => router.push("/(admin)/requests")}
+              className="w-full"
+            >
+              <Text className="text-primary-foreground">
+                Review Applications ({stats?.pendingApplications || 0} pending)
+              </Text>
+            </Button>             
+             <Button
+              variant="outline"
+              onPress={() => router.push("/(admin)/requests")}
+              className="w-full"
+            >
                 <Text className="text-foreground">Manage All Counsellors</Text>
               </Button>
             </CardContent>
           </Card>
-          
           <Card className="mb-3">
             <CardHeader>
-              <CardTitle><Text>User Management</Text></CardTitle>
+              <CardTitle>User Management</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
+              <Button
                 variant="outline"
                 onPress={() => router.push("/(admin)/users")}
                 className="w-full"
@@ -153,10 +153,9 @@ export default function AdminIndex() {
               </Button>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
-              <CardTitle><Text>Reports & Analytics</Text></CardTitle>
+              <CardTitle>Reports & Analytics</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Text className="text-muted-foreground text-center">
@@ -168,7 +167,7 @@ export default function AdminIndex() {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle><Text>Recent Activity</Text></CardTitle>
+            <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <Text className="text-muted-foreground text-center">

@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import React from 'react';
 import { Text, View } from 'react-native';
 
@@ -24,11 +23,9 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
     md: 'px-2 py-1 text-sm',
     lg: 'px-3 py-1.5 text-base'
   };
-
   return (
-    <Badge 
-      className={`bg-blue-500 text-white ${sizeClasses[size]} ${className}`}
-      variant="secondary"
+    <View 
+      className={`bg-blue-500 text-white ${sizeClasses[size]} ${className} rounded-full flex-row items-center justify-center`}
     >
       {showText ? (
         <View className="flex-row items-center space-x-1">
@@ -38,7 +35,7 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
       ) : (
         <Text className="text-white">✓</Text>
       )}
-    </Badge>
+    </View>
   );
 };
 
@@ -72,14 +69,13 @@ export const CounsellorVerificationStatus: React.FC<{
     md: 'px-2 py-1 text-sm',
     lg: 'px-3 py-1.5 text-base'
   };
-
   return (
-    <Badge className={`${config.color} text-white ${sizeClasses[size]}`}>
+    <View className={`${config.color} text-white ${sizeClasses[size]} rounded-full flex-row items-center justify-center px-3 py-1`}>
       <View className="flex-row items-center space-x-1">
         <Text className="text-white">{config.icon}</Text>
         <Text className="text-white">{config.text}</Text>
       </View>
-    </Badge>
+    </View>
   );
 };
 

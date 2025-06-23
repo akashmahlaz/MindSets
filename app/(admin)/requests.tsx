@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
@@ -236,12 +235,13 @@ export default function AdminRequests() {  const [applications, setApplications]
                     </CardTitle>
                     <Text className="text-muted-foreground">
                       {application.profileData.email}
-                    </Text>
-                  </View>                  <Badge className={`${getStatusColor(application.status)} border-0`}>
+                    </Text>                  </View>
+                  
+                  <View className={`px-3 py-1 rounded-full ${getStatusColor(application.status)} border-0`}>
                     <Text className="text-white text-xs">
                       {(application.status || 'unknown').toUpperCase()}
                     </Text>
-                  </Badge>
+                  </View>
                 </View>
               </CardHeader>
               
@@ -265,19 +265,18 @@ export default function AdminRequests() {  const [applications, setApplications]
                   </View>
                 </View>
 
-                {/* Specializations */}
-                <View>
+                {/* Specializations */}                <View>
                   <Text className="font-semibold text-foreground mb-2">Specializations</Text>
                   <View className="flex-row flex-wrap gap-1">
                     {application.profileData.specializations.slice(0, 3).map((spec) => (
-                      <Badge key={spec} variant="outline">
-                        <Text className="text-xs">{spec}</Text>
-                      </Badge>
+                      <View key={spec} className="px-3 py-1 border border-gray-300 rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-600">
+                        <Text className="text-xs text-gray-700 dark:text-gray-300">{spec}</Text>
+                      </View>
                     ))}
                     {application.profileData.specializations.length > 3 && (
-                      <Badge variant="outline">
-                        <Text className="text-xs">+{application.profileData.specializations.length - 3} more</Text>
-                      </Badge>
+                      <View className="px-3 py-1 border border-gray-300 rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-600">
+                        <Text className="text-xs text-gray-700 dark:text-gray-300">+{application.profileData.specializations.length - 3} more</Text>
+                      </View>
                     )}
                   </View>
                 </View>

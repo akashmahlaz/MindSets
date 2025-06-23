@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
@@ -318,18 +317,17 @@ export default function AdminUsers() {
                       <Text className="text-muted-foreground">
                         {user.email}
                       </Text>
-                    </View>
-                    <View className="flex-row space-x-2">
-                      <Badge className={`${getRoleColor(user.role)} border-0`}>
+                    </View>                    <View className="flex-row space-x-2">
+                      <View className={`${getRoleColor(user.role)} border-0 px-2 py-1 rounded-full`}>
                         <Text className="text-white text-xs">
                           {(user.role || 'unknown').toUpperCase()}
                         </Text>
-                      </Badge>
-                      <Badge className={`${getStatusColor(user.isActive)} border-0`}>
+                      </View>
+                      <View className={`${getStatusColor(user.isActive)} border-0 px-2 py-1 rounded-full`}>
                         <Text className="text-white text-xs">
                           {user.isActive !== false ? 'ACTIVE' : 'INACTIVE'}
                         </Text>
-                      </Badge>
+                      </View>
                     </View>
                   </View>
                 </CardHeader>
