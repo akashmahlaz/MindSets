@@ -1,14 +1,14 @@
 import {
-  CallingState,
-  DeepPartial,
-  RingingCallContent,
-  StreamCall,
-  StreamVideo,
-  StreamVideoClient,
-  Theme,
-  useCall,
-  useCalls,
-  useCallStateHooks,
+    CallingState,
+    DeepPartial,
+    RingingCallContent,
+    StreamCall,
+    StreamVideo,
+    StreamVideoClient,
+    Theme,
+    useCall,
+    useCalls,
+    useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";

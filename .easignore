@@ -1,0 +1,82 @@
+
+# Dependencies
+node_modules
+
+
+# Build outputs
+.expo
+dist
+build
+/android
+/ios 
+android/build
+ios/build
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Environment files
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Documentation and design assets
+documentation
+screenshots
+design-assets
+*.psd
+*.sketch
+*.fig
+*.ai
+
+# Archive files
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# Testing
+coverage
+.nyc_output
+
+# Firebase emulator
+firebase-debug.log
+firestore-debug.log
+
+# Git
+.git
+.gitignore
+
+# Large media files (keep only necessary ones)
+*.mov
+*.mp4
+*.avi
+*.mkv
+# Keep small images for app assets
+# *.png
+# *.jpg
+# *.jpeg

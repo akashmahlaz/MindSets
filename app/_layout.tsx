@@ -43,8 +43,8 @@ console.warn = (...args) => {
 };
 
 // Import the necessary components from stream-chat-react-native
-import { OverlayProvider } from "stream-chat-react-native";
 import React from "react";
+import { OverlayProvider } from "stream-chat-react-native";
 
 function StreamChatWrapper({ children }: { children: React.ReactNode }) {
   const { isDarkColorScheme } = useColorScheme();
