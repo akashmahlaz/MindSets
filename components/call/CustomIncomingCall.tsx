@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
-  CallingState,
-  useCall,
-  useCallStateHooks,
+    CallingState,
+    useCall,
+    useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
@@ -62,7 +62,7 @@ export const CustomIncomingCall = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBar barStyle="light-content" backgroundColor="#141820" />
       <View className="flex-1 justify-center items-center px-8">
         {/* Caller info */}
         <View className="items-center mb-16">

@@ -86,7 +86,8 @@ MindConnect Mental Health Platform
     if (session.status !== "confirmed") {
       Alert.alert(
         "Session Not Available",
-        "This session is not confirmed yet.",
+        "This session is not confirmed yet. Please wait for confirmation before joining.",
+        [{ text: "OK" }],
       );
       return;
     }
@@ -106,28 +107,99 @@ MindConnect Mental Health Platform
     }
 
     if (minutesUntilSession < -session.duration) {
-      Alert.alert("Session Ended", "This session has already ended.");
+      Alert.alert(
+        "Session Ended",
+        "This session has already ended. Please check your session history for completed sessions.",
+        [{ text: "OK" }],
+      );
+      return;
+    }
+
+    // Determine the other participant
+    const otherParticipantId = 
+      userProfile?.role === "counsellor" 
+        ? session.clientId 
+        : session.counselorId;
+
+    if (!otherParticipantId) {
+      Alert.alert(
+        "Unable to Join",
+        "We couldn't identify the other participant. Please try again or contact support.",
+        [{ text: "OK" }],
+      );
       return;
     }
 
     // Navigate to video call or show join options
-    Alert.alert("Join Session", "Choose how you want to join your session:", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Video Call",
-        onPress: () => {
-          // TODO: Navigate to video call
-          console.log("Starting video call for session:", session.id);
+    Alert.alert(
+      "Join Session",
+      "Choose how you want to join your session:",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Video Call",
+          onPress: async () => {
+            try {
+              const callId = `session-${session.id}-${Date.now()}`;
+              const call = await createCall(callId, [otherParticipantId], true);
+              if (call) {
+                router.push({
+                  pathname: "/call/[callId]",
+                  params: {
+                    callId: call.id,
+                    callType: call.type,
+                    isVideo: "true",
+                  },
+                });
+              } else {
+                Alert.alert(
+                  "Connection Error",
+                  "We couldn't start the video call. Please check your connection and try again.",
+                  [{ text: "OK" }],
+                );
+              }
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Failed to start video call. Please try again.",
+                [{ text: "OK" }],
+              );
+            }
+          },
         },
-      },
-      {
-        text: "Voice Call",
-        onPress: () => {
-          // TODO: Navigate to voice call
-          console.log("Starting voice call for session:", session.id);
+        {
+          text: "Voice Call",
+          onPress: async () => {
+            try {
+              const callId = `session-${session.id}-${Date.now()}`;
+              const call = await createCall(callId, [otherParticipantId], false);
+              if (call) {
+                router.push({
+                  pathname: "/call/[callId]",
+                  params: {
+                    callId: call.id,
+                    callType: call.type,
+                    isVideo: "false",
+                  },
+                });
+              } else {
+                Alert.alert(
+                  "Connection Error",
+                  "We couldn't start the voice call. Please check your connection and try again.",
+                  [{ text: "OK" }],
+                );
+              }
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Failed to start voice call. Please try again.",
+                [{ text: "OK" }],
+              );
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const createNewSession = () => {
@@ -187,12 +259,12 @@ MindConnect Mental Health Platform
       <SafeAreaView className="flex-1 bg-background">
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
+          backgroundColor={isDarkColorScheme ? "hsl(220, 13%, 8%)" : "#ffffff"}
         />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator
             size="large"
-            color={isDarkColorScheme ? "#ffffff" : "#000000"}
+            className="text-foreground"
           />
           <Text className="text-foreground text-lg mt-4">
             Loading sessions...
@@ -206,7 +278,7 @@ MindConnect Mental Health Platform
     <SafeAreaView className="flex-1 bg-background">
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
+        backgroundColor={isDarkColorScheme ? "hsl(220, 13%, 8%)" : "#ffffff"}
       />
       <ScrollView
         className="flex-1 px-4"
@@ -261,13 +333,13 @@ MindConnect Mental Health Platform
 
         {/* Upcoming Sessions */}
         {upcomingSessions.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-xl font-semibold text-foreground mb-4">
+          <View className="mb-8">
+            <Text className="text-xl font-semibold text-foreground mb-5">
               Upcoming Sessions
             </Text>
             {upcomingSessions.map((session) => (
-              <Card key={session.id} className="mb-4 shadow-sm">
-                <CardContent className="p-4">
+              <Card key={session.id} variant="outlined" className="mb-4">
+                <CardContent className="p-5">
                   <View className="flex-row items-start justify-between mb-3">
                     <View className="flex-1">
                       <View className="flex-row items-center mb-2">
@@ -316,10 +388,13 @@ MindConnect Mental Health Platform
                   </View>
 
                   {session.notes && (
-                    <View className="bg-muted/50 p-3 rounded-lg mb-3">
-                      <Text className="text-sm text-muted-foreground">
-                        📝 {session.notes}
-                      </Text>
+                    <View className="bg-muted/30 border-l-4 border-primary pl-4 py-3 rounded-r-lg mb-4">
+                      <View className="flex-row items-start">
+                        <Ionicons name="document-text" size={16} className="text-muted-foreground mr-2 mt-0.5" />
+                        <Text className="text-sm text-muted-foreground leading-relaxed flex-1">
+                          {session.notes}
+                        </Text>
+                      </View>
                     </View>
                   )}
 
@@ -352,7 +427,7 @@ MindConnect Mental Health Platform
                         <Ionicons
                           name="share"
                           size={16}
-                          color={isDarkColorScheme ? "#ffffff" : "#000000"}
+                          className="text-foreground"
                           style={{ marginRight: 4 }}
                         />
                         <Text className="text-foreground text-sm font-medium">

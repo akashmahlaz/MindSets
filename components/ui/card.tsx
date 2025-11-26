@@ -12,7 +12,7 @@ function Card({
   return (
     <View
       className={cn(
-        "rounded-lg border border-border bg-card shadow-sm shadow-foreground/10",
+        "rounded-lg bg-card shadow-sm",
         className,
       )}
       {...props}
@@ -28,7 +28,7 @@ function CardHeader({
 }) {
   return (
     <View
-      className={cn("flex flex-col space-y-1.5 p-6", className)}
+      className={cn("flex flex-col space-y-1.5 p-8", className)}
       {...props}
     />
   );
@@ -75,7 +75,7 @@ function CardContent({
 }) {
   return (
     <TextClassContext.Provider value="text-card-foreground">
-      <View className={cn("p-6 pt-0", className)} {...props} />
+      <View className={cn("p-8 pt-0", className)} {...props} />
     </TextClassContext.Provider>
   );
 }
@@ -88,7 +88,7 @@ function CardFooter({
 }) {
   return (
     <View
-      className={cn("flex flex-row items-center p-6 pt-0", className)}
+      className={cn("flex flex-row items-center p-8 pt-0", className)}
       {...props}
     />
   );
@@ -100,5 +100,6 @@ export {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 };
+

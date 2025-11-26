@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { View, Text, Image, Alert, StatusBar } from "react-native";
 import { Button } from "@/components/ui/button";
-import { useCallStateHooks, useCall } from "@stream-io/video-react-native-sdk";
+import { useCall, useCallStateHooks } from "@stream-io/video-react-native-sdk";
 import { router } from "expo-router";
+import React, { useState } from "react";
+import { Image, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const CustomOutgoingCall = () => {
@@ -60,7 +60,7 @@ export const CustomOutgoingCall = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBar barStyle="light-content" backgroundColor="#141820" />
       <View className="flex-1 justify-center items-center px-8">
         {/* Recipient info */}
         <View className="items-center mb-16">

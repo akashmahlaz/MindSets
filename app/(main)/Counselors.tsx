@@ -89,12 +89,11 @@ export default function CounselorsScreen() {
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
-        className="mr-4 active:opacity-95"
-        style={{ width: 150 }}
+        className="active:opacity-95"
       >
-        <View>
-          {/* Profile Image - Rounded Rectangle */}
-          <View className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3 relative">
+        <View className="bg-card rounded-lg p-6 shadow-sm">
+          {/* Profile Image */}
+          <View className="w-full h-48 rounded-lg overflow-hidden bg-muted mb-4 relative">
             {counsellor.photoURL ? (
               <Image
                 source={{ uri: counsellor.photoURL }}
@@ -103,17 +102,7 @@ export default function CounselorsScreen() {
               />
             ) : (
               <View className="w-full h-full items-center justify-center bg-gray-200 dark:bg-gray-700">
-                <Text className="text-5xl">👨‍⚕️</Text>
-              </View>
-            )}
-            {/* Verification Badge */}
-            {counsellor.verificationStatus === "verified" && (
-              <View className="absolute top-2 right-2">
-                <View className="bg-green-500 px-2 py-1 rounded-full">
-                  <Text className="text-white text-xs font-semibold">
-                    Verified
-                  </Text>
-                </View>
+                <Ionicons name="medical" size={48} color="#9CA3AF" />
               </View>
             )}
           </View>
@@ -126,9 +115,6 @@ export default function CounselorsScreen() {
               >
                 Dr. {counsellor.displayName}
               </Text>
-              {counsellor.verificationStatus === "verified" && (
-                <Text className="text-green-500 text-xs ml-1">✓</Text>
-              )}
             </View>
             <Text
               className="text-sm text-gray-600 dark:text-gray-400"
@@ -169,12 +155,9 @@ export default function CounselorsScreen() {
       />
 
       {/* Header */}
-      <View className="px-6 py-4 border-b border-border">
-        <Text className="text-2xl font-bold text-foreground">
+      <View className="px-6 pt-8 pb-6">
+        <Text className="text-3xl font-semibold text-foreground mb-2">
           Browse Counselors
-        </Text>
-        <Text className="text-muted-foreground">
-          Find the right mental health professional
         </Text>
       </View>
 
@@ -187,52 +170,16 @@ export default function CounselorsScreen() {
       >
         <View className="px-6">
           {/* Search */}
-          <View className="py-4">
+          <View className="mb-8">
             <Input
-              placeholder="Search counselors by name or specialization..."
+              placeholder="Search counselors..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              className="bg-card"
             />
           </View>
 
-          {/* Filter Info */}
-          {userProfileData?.primaryConcerns?.length > 0 && (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Recommended based on your concerns:
-              </Text>
-              <View className="flex-row flex-wrap gap-2">
-                {userProfileData.primaryConcerns.slice(0, 3).map((concern) => (
-                  <View
-                    key={concern}
-                    className="px-2 py-1 bg-primary/10 rounded-full"
-                  >
-                    <Text className="text-primary text-xs">
-                      {concern
-                        .replace("-", " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
           {/* Counsellors Section */}
-          <View className="mb-4">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-foreground">
-                Browse Counselors
-              </Text>
-              {filteredCounsellors.length > 0 && (
-                <Pressable>
-                  <Text className="text-primary text-sm font-medium">
-                    See All ({filteredCounsellors.length})
-                  </Text>
-                </Pressable>
-              )}
-            </View>
+          <View className="mb-16">
 
             {loading ? (
               /* Loading Skeleton */
@@ -245,7 +192,7 @@ export default function CounselorsScreen() {
                   {[...Array(3)].map((_, index) => (
                     <View key={index} className="mr-4" style={{ width: 180 }}>
                       {/* Skeleton Image */}
-                      <View className="w-full h-48 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse mb-3" />
+                      <View className="w-full h-48 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse mb-3" />
 
                       {/* Skeleton Content */}
                       <View>

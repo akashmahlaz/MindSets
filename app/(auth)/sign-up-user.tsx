@@ -14,7 +14,8 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { MENTAL_HEALTH_CONCERNS, UserProfileData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Animated } from "react-native";
 import {
   ActivityIndicator,
   Alert,
@@ -66,6 +67,23 @@ export default function UserSignUpScreen() {
   const { isDarkColorScheme } = useColorScheme();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(20))[0];
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentStep]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState<UserSignUpData>({
@@ -95,10 +113,10 @@ export default function UserSignUpScreen() {
     formData.email.includes("@") &&
     formData.password.length >= 6;
 
+  // Simplified: Combine step 2 and 3 into one step
   const isStep2Valid =
-    formData.primaryConcerns.length > 0 && formData.severityLevel;
-
-  const isStep3Valid =
+    formData.primaryConcerns.length > 0 &&
+    formData.severityLevel &&
     formData.emergencyContactName &&
     formData.emergencyContactPhone &&
     formData.emergencyContactRelation;
@@ -113,7 +131,10 @@ export default function UserSignUpScreen() {
   };
   const handleNext = () => {
     setError(""); // Clear any errors when moving to next step
-    if (currentStep < 3) {
+    if (currentStep < 2) {
+      // Reset animations for next step
+      fadeAnim.setValue(0);
+      slideAnim.setValue(20);
       setCurrentStep(currentStep + 1);
     }
   };
@@ -204,7 +225,7 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Enter your first name"
           editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
           placeholderTextColor="#9CA3AF"
         />
       </View>
@@ -218,7 +239,7 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Enter your last name"
           editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
           placeholderTextColor="#9CA3AF"
         />
       </View>
@@ -232,7 +253,7 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Enter your email"
           editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
           placeholderTextColor="#9CA3AF"
           keyboardType="email-address"
           autoCapitalize="none"
@@ -248,7 +269,7 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Create a password"
           editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
           placeholderTextColor="#9CA3AF"
           secureTextEntry
         />
@@ -263,7 +284,7 @@ export default function UserSignUpScreen() {
           }}
           placeholder="Re-enter your password"
           editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
+          className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
           placeholderTextColor="#9CA3AF"
           secureTextEntry
         />
@@ -304,9 +325,15 @@ export default function UserSignUpScreen() {
     </CardContent>
   );
   const renderStep2 = () => (
-    <CardContent className="space-y-4">
-      <H2 className="mb-2">Mental Health Assessment</H2>
-      <P className="mb-4">Help us understand how we can best support you.</P>
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+      }}
+    >
+      <CardContent className="space-y-4">
+        <H2 className="mb-2">Mental Health & Safety</H2>
+        <P className="mb-4">Help us understand how we can best support you.</P>
       <View className="space-y-2">
         <Label className="font-semibold text-base">
           What are your primary mental health concerns? (Select all that apply)
@@ -322,7 +349,7 @@ export default function UserSignUpScreen() {
                 }
               }}
               disabled={loading}
-              className={`px-3 py-2 rounded-full border ${
+              className={`px-3 py-2 rounded-md border ${
                 formData.primaryConcerns.includes(concern)
                   ? "bg-primary border-primary"
                   : "bg-background border-border"
@@ -372,7 +399,7 @@ export default function UserSignUpScreen() {
                 }
               }}
               disabled={loading}
-              className={`p-3 rounded-lg border ${
+              className={`p-3 rounded-md border ${
                 formData.severityLevel === option.value
                   ? "bg-primary/10 border-primary"
                   : "bg-background border-border"
@@ -418,117 +445,113 @@ export default function UserSignUpScreen() {
           ))}
         </View>
       </View>
-    </CardContent>
-  );
-  const renderStep3 = () => (
-    <CardContent className="space-y-4">
-      <H2 className="mb-2">Safety & Preferences</H2>
-      <P className="mb-4">
-        Final details to ensure your safety and match you with the right
-        counsellor.
-      </P>
-      <View className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-        <View className="flex-row items-start">
-          <Ionicons
-            name="information-circle"
-            size={20}
-            color="#f59e0b"
-            style={{ marginRight: 8, marginTop: 2 }}
-          />
-          <Text className="text-yellow-800 dark:text-yellow-200 text-sm flex-1">
-            Emergency contact information helps us reach someone if you're in
-            crisis and need immediate support.
-          </Text>
-        </View>
-      </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Emergency Contact Name
-        </Label>
-        <Input
-          value={formData.emergencyContactName}
-          onChangeText={(text) => {
-            setFormData((prev) => ({ ...prev, emergencyContactName: text }));
-            setError(""); // Clear error when user types
-          }}
-          placeholder="Full name"
-          editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
+        {/* Emergency Contact Section */}
+        <View className="mt-6 pt-6 border-t border-border">
+          <View className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mb-4">
+            <View className="flex-row items-start">
+              <Ionicons
+                name="information-circle"
+                size={20}
+                color="#f59e0b"
+                style={{ marginRight: 8, marginTop: 2 }}
+              />
+              <Text className="text-yellow-800 dark:text-yellow-200 text-sm flex-1">
+                Emergency contact information helps us reach someone if you're in
+                crisis and need immediate support.
+              </Text>
+            </View>
+          </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Emergency Contact Phone
-        </Label>
-        <Input
-          value={formData.emergencyContactPhone}
-          onChangeText={(text) => {
-            setFormData((prev) => ({ ...prev, emergencyContactPhone: text }));
-            setError(""); // Clear error when user types
-          }}
-          placeholder="Phone number"
-          keyboardType="phone-pad"
-          editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
-
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Relationship</Label>
-        <Input
-          value={formData.emergencyContactRelation}
-          onChangeText={(text) => {
-            setFormData((prev) => ({
-              ...prev,
-              emergencyContactRelation: text,
-            }));
-            setError(""); // Clear error when user types
-          }}
-          placeholder="e.g., Parent, Spouse, Friend"
-          editable={!loading}
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
-
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Preferred Counsellor Gender
-        </Label>
-        <View className="space-y-2">
-          {[
-            { value: "no-preference", label: "No preference" },
-            { value: "male", label: "Male" },
-            { value: "female", label: "Female" },
-          ].map((option) => (
-            <Pressable
-              key={option.value}
-              onPress={() => {
-                if (!loading) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    preferredCounsellorGender: option.value as any,
-                  }));
-                  setError(""); // Clear error when user makes a selection
-                }
+          <View className="space-y-2">
+            <Label className="font-semibold text-base">
+              Emergency Contact Name
+            </Label>
+            <Input
+              value={formData.emergencyContactName}
+              onChangeText={(text) => {
+                setFormData((prev) => ({ ...prev, emergencyContactName: text }));
+                setError("");
               }}
-              disabled={loading}
-              className={`p-3 rounded-lg border ${
-                formData.preferredCounsellorGender === option.value
-                  ? "bg-primary/10 border-primary"
-                  : "bg-background border-border"
-              } ${loading ? "opacity-50" : ""}`}
-            >
-              <Text className="text-foreground">{option.label}</Text>
-            </Pressable>
-          ))}
+              placeholder="Full name"
+              editable={!loading}
+              className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View className="space-y-2">
+            <Label className="font-semibold text-base">
+              Emergency Contact Phone
+            </Label>
+            <Input
+              value={formData.emergencyContactPhone}
+              onChangeText={(text) => {
+                setFormData((prev) => ({ ...prev, emergencyContactPhone: text }));
+                setError("");
+              }}
+              placeholder="Phone number"
+              keyboardType="phone-pad"
+              editable={!loading}
+              className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View className="space-y-2">
+            <Label className="font-semibold text-base">Relationship</Label>
+            <Input
+              value={formData.emergencyContactRelation}
+              onChangeText={(text) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  emergencyContactRelation: text,
+                }));
+                setError("");
+              }}
+              placeholder="e.g., Parent, Spouse, Friend"
+              editable={!loading}
+              className="h-12 rounded-md px-4 bg-background border border-input text-base text-foreground"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View className="space-y-2 mt-4">
+            <Label className="font-semibold text-base">
+              Preferred Counsellor Gender
+            </Label>
+            <View className="space-y-2">
+              {[
+                { value: "no-preference", label: "No preference" },
+                { value: "male", label: "Male" },
+                { value: "female", label: "Female" },
+              ].map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => {
+                    if (!loading) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferredCounsellorGender: option.value as any,
+                      }));
+                      setError("");
+                    }
+                  }}
+                  disabled={loading}
+                  className={`p-3 rounded-md border ${
+                    formData.preferredCounsellorGender === option.value
+                      ? "bg-primary/10 border-primary"
+                      : "bg-background border-border"
+                  } ${loading ? "opacity-50" : ""}`}
+                >
+                  <Text className="text-foreground">{option.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </View>
-      </View>
-    </CardContent>
+      </CardContent>
+    </Animated.View>
   );
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -557,7 +580,7 @@ export default function UserSignUpScreen() {
                   shadowColor: "#000",
                   shadowOpacity: 0.08,
                   shadowRadius: 12,
-                  borderRadius: 16,
+                  borderRadius: 12,
                 }}
               >
                 <CardHeader>
@@ -569,10 +592,10 @@ export default function UserSignUpScreen() {
                   </CardDescription>
                   {/* Step Indicator */}
                   <View className="flex-row justify-center items-center mb-2">
-                    {[1, 2, 3].map((step) => (
+                    {[1, 2].map((step) => (
                       <View
                         key={step}
-                        className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-blue-500" : "bg-gray-300"}`}
+                        className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-primary" : "bg-muted"}`}
                       />
                     ))}
                   </View>
@@ -594,7 +617,6 @@ export default function UserSignUpScreen() {
                 {/* Step Content */}
                 {currentStep === 1 && renderStep1()}
                 {currentStep === 2 && renderStep2()}
-                {currentStep === 3 && renderStep3()}
                 {/* Navigation Buttons */}
                 <CardContent>
                   <View className="flex-row justify-between mt-4">
@@ -606,23 +628,21 @@ export default function UserSignUpScreen() {
                     >
                       <Text className="text-foreground">Back</Text>
                     </Button>
-                    {currentStep < 3 ? (
+                    {currentStep < 2 ? (
                       <Button
                         onPress={handleNext}
-                        disabled={
-                          loading ||
-                          (currentStep === 1 && !isStep1Valid) ||
-                          (currentStep === 2 && !isStep2Valid)
-                        }
+                        disabled={loading || (currentStep === 1 && !isStep1Valid)}
                         style={{ flex: 1, marginLeft: 8 }}
+                        className="rounded-md"
                       >
                         <Text className="text-primary-foreground">Next</Text>
                       </Button>
                     ) : (
                       <Button
                         onPress={handleSubmit}
-                        disabled={loading || !isStep3Valid}
+                        disabled={loading || !isStep2Valid}
                         style={{ flex: 1, marginLeft: 8 }}
+                        className="rounded-md"
                       >
                         <Text className="text-primary-foreground">Sign Up</Text>
                       </Button>

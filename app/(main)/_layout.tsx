@@ -15,9 +15,9 @@ export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
   const { userProfile } = useAuth(); // Add this line to get user profile
   // Match colors with CSS design tokens
-  const backgroundColor = isDarkColorScheme ? "#000000" : "#ffffff"; // Pure black/white for consistency
+  const backgroundColor = isDarkColorScheme ? "#141820" : "#F8F9FA"; // Soft dark gray/off-white
   const borderColor = backgroundColor;
-  const statusBarBg = isDarkColorScheme ? "#000000" : "#ffffff"; // Matching the background
+  const statusBarBg = isDarkColorScheme ? "#141820" : "#F8F9FA"; // Matching the background
 
   return (
     <SafeAreaProvider>
@@ -28,7 +28,7 @@ export default function TabLayout() {
       />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: isDarkColorScheme ? "#ffffff" : "#0a7ea4",
+          tabBarActiveTintColor: isDarkColorScheme ? "#ffffff" : "#4A90E2",
           tabBarInactiveTintColor: isDarkColorScheme
             ? "hsl(217, 10%, 65%)"
             : "hsl(220, 9%, 46%)", // --muted-foreground
@@ -82,6 +82,16 @@ export default function TabLayout() {
             title: "Sessions",
             tabBarIcon: ({ color }) => (
               <AntDesign size={28} name="calendar" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: "Chat",
+            href: "/chat",
+            tabBarIcon: ({ color }) => (
+              <AntDesign size={28} name="message1" color={color} />
             ),
           }}
         />

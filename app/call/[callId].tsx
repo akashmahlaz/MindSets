@@ -2,13 +2,13 @@ import { CustomCallControls } from "@/components/call/CustomCallControls";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Call,
-  CallContent,
-  CallingState,
-  RingingCallContent,
-  StreamCall,
-  useCallStateHooks,
-  useStreamVideoClient,
+    Call,
+    CallContent,
+    CallingState,
+    RingingCallContent,
+    StreamCall,
+    useCallStateHooks,
+    useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -180,7 +180,7 @@ export default function CallScreen() {
     if (error) {
       return (
         <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
-          <StatusBar barStyle="light-content" backgroundColor="#000000" />
+          <StatusBar barStyle="light-content" backgroundColor="#141820" />
           <View className="flex-1 justify-center items-center p-6">
             <Text className="text-white text-xl text-center mb-4">
               Call Error

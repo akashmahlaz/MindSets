@@ -1,26 +1,25 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Minimal Color System - Industry Competitive
+ * Uses design tokens from global.css for consistency
  */
 
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
+const primaryColor = "#6366F1"; // Indigo - Material Design 3
 
 export const Colors = {
   light: {
-    text: "#11181C",
-    background: "#fff",
-    tint: tintColorLight,
-    icon: "#687076",
-    tabIconDefault: "#687076",
-    tabIconSelected: tintColorLight,
+    text: "#1F2937",
+    background: "#FFFFFF",
+    tint: primaryColor,
+    icon: "#9CA3AF",
+    tabIconDefault: "#9CA3AF",
+    tabIconSelected: primaryColor,
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
-    tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
-    tabIconSelected: tintColorDark,
+    text: "#F3F4F6",
+    background: "#141820",
+    tint: primaryColor,
+    icon: "#9CA3AF",
+    tabIconDefault: "#9CA3AF",
+    tabIconSelected: primaryColor,
   },
 };

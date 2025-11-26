@@ -12,12 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    RefreshControl,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function ClientList() {
@@ -204,22 +204,28 @@ export default function ClientList() {
             </View>
             <View className="flex-row space-x-2">
               <TouchableOpacity
-                onPress={() => startChat(item)}
-                className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
+                onPress={() => startChat(client)}
+                accessibilityRole="button"
+                accessibilityLabel={`Chat with ${client.displayName}`}
+                className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
-                <Ionicons name="chatbubble" size={16} color="#3B82F6" />
+                <Ionicons name="chatbubble" size={16} className="text-primary" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => startCall(item, false)}
-                className="p-2 rounded-full bg-green-100 dark:bg-green-900"
+                onPress={() => startCall(client, false)}
+                accessibilityRole="button"
+                accessibilityLabel={`Call ${client.displayName}`}
+                className="p-2 rounded-full bg-success/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
-                <Ionicons name="call" size={16} color="#10B981" />
+                <Ionicons name="call" size={16} className="text-success" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => startCall(item, true)}
-                className="p-2 rounded-full bg-purple-100 dark:bg-purple-900"
+                onPress={() => startCall(client, true)}
+                accessibilityRole="button"
+                accessibilityLabel={`Video call ${client.displayName}`}
+                className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
-                <Ionicons name="videocam" size={16} color="#8B5CF6" />
+                <Ionicons name="videocam" size={16} className="text-primary" />
               </TouchableOpacity>
             </View>
           </View>

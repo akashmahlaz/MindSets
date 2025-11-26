@@ -33,65 +33,47 @@ export default function RoleSelectionScreen() {
       />
 
       <ScrollView
-        className="flex-1 px-6 py-8"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        className="flex-1 px-6 py-16"
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", maxWidth: 400, alignSelf: "center", width: "100%" }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
-        <View className="items-center mb-12">
-          <View className="w-20 h-20 bg-blue-500 rounded-3xl items-center justify-center mb-6">
-            <Ionicons name="heart" size={36} color="white" />
-          </View>
-          <Text className="text-3xl font-bold text-foreground text-center mb-4">
-            Welcome to MindConnect
-          </Text>
-          <Text className="text-muted-foreground text-center text-lg leading-relaxed">
-            Your trusted platform for mental health support. Choose how
-            you&apos;d like to join our community.
+        <View className="items-center mb-16">
+          <Text className="text-3xl font-semibold text-foreground text-center mb-8">
+            Choose your role
           </Text>
         </View>
         {/* Role Selection Cards */}
-        <View className="space-y-8 mb-8">
+        <View className="mb-16">
           {/* User/Client Option */}
           <Pressable
             onPress={() => handleRoleSelect("user")}
-            className={`rounded-2xl p-6 border-2 ${
+            className={`rounded-lg p-8 mb-6 bg-card ${
               selectedRole === "user"
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                ? "bg-primary/5 dark:bg-primary/10"
+                : ""
             }`}
           >
-            <View className="flex-row items-center space-x-4">
-              <View
-                className={`w-16 h-16 rounded-2xl items-center justify-center ${
-                  selectedRole === "user"
-                    ? "bg-blue-500"
-                    : "bg-blue-100 dark:bg-blue-900/30"
-                }`}
-              >
-                <Ionicons
-                  name="person"
-                  size={28}
-                  color={selectedRole === "user" ? "white" : "#3B82F6"}
-                />
-              </View>
+            <View className="flex-row items-center">
               <View className="flex-1">
                 <Text
-                  className={`font-bold text-xl mb-2 ${
+                  className={`font-semibold text-xl mb-2 ${
                     selectedRole === "user"
-                      ? "text-blue-700 dark:text-blue-300"
+                      ? "text-primary"
                       : "text-foreground"
                   }`}
                 >
                   I&apos;m seeking support
                 </Text>
-                <Text className="text-muted-foreground text-base">
+                <Text className="text-muted-foreground text-base leading-relaxed">
                   Connect with licensed mental health professionals for therapy
                   and counseling
                 </Text>
               </View>
               {selectedRole === "user" && (
-                <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
+                <View className="ml-4">
+                  <Ionicons name="checkmark-circle" size={24} color="#6366F1" />
+                </View>
               )}
             </View>
           </Pressable>
@@ -99,71 +81,59 @@ export default function RoleSelectionScreen() {
           {/* Counsellor/Professional Option */}
           <Pressable
             onPress={() => handleRoleSelect("counsellor")}
-            className={`rounded-2xl p-6 border-2 ${
+            className={`rounded-lg p-8 bg-card ${
               selectedRole === "counsellor"
-                ? "border-green-500 bg-green-50 dark:bg-green-950/30"
-                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                ? "bg-primary/5 dark:bg-primary/10"
+                : ""
             }`}
           >
-            <View className="flex-row items-center space-x-4">
-              <View
-                className={`w-16 h-16 rounded-2xl items-center justify-center ${
-                  selectedRole === "counsellor"
-                    ? "bg-green-500"
-                    : "bg-green-100 dark:bg-green-900/30"
-                }`}
-              >
-                <Ionicons
-                  name="medical"
-                  size={28}
-                  color={selectedRole === "counsellor" ? "white" : "#10B981"}
-                />
-              </View>
+            <View className="flex-row items-center">
               <View className="flex-1">
                 <Text
-                  className={`font-bold text-xl mb-2 ${
+                  className={`font-semibold text-xl mb-2 ${
                     selectedRole === "counsellor"
-                      ? "text-green-700 dark:text-green-300"
+                      ? "text-primary"
                       : "text-foreground"
                   }`}
                 >
                   I&apos;m a mental health professional
                 </Text>
-                <Text className="text-muted-foreground text-base">
+                <Text className="text-muted-foreground text-base leading-relaxed">
                   Join our platform to provide therapy and support to those in
                   need
                 </Text>
               </View>
               {selectedRole === "counsellor" && (
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                <View className="ml-4">
+                  <Ionicons name="checkmark-circle" size={24} color="#6366F1" />
+                </View>
               )}
             </View>
           </Pressable>
         </View>
         {/* Action Buttons */}
-        <View className="space-y-4">
+        <View className="space-y-6">
           <Button
             onPress={handleContinue}
             disabled={!selectedRole}
-            className={`w-full h-14 rounded-xl ${
-              selectedRole ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-700"
-            }`}
+            variant={selectedRole ? "default" : "outline"}
+            className="w-full"
           >
             <Text
-              className={`font-bold text-lg ${
-                selectedRole ? "text-white" : "text-gray-500 dark:text-gray-400"
+              className={`font-semibold ${
+                selectedRole ? "text-primary-foreground" : "text-foreground"
               }`}
             >
               Continue
             </Text>
           </Button>
 
-          <View className="flex-row justify-center items-center space-x-2 pt-4">
+          <View className="flex-row justify-center items-center pt-8">
             <Text className="text-muted-foreground text-base">
-              Already have an account?
+              Already have an account?{" "}
             </Text>
             <Pressable onPress={() => router.replace("/(auth)/sign-in")}>
-              <Text className="text-blue-500 font-semibold text-base">
+              <Text className="text-primary font-semibold text-base">
                 Sign In
               </Text>
             </Pressable>

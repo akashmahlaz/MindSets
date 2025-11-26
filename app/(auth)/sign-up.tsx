@@ -64,14 +64,14 @@ export default function SignUpScreen() {
       >
         {/* Header */}
         <View className="items-center mb-10">
-          <View className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl items-center justify-center mb-6 shadow-lg">
+          <View className="w-24 h-24 bg-primary rounded-3xl items-center justify-center mb-6 shadow-lg">
             <Ionicons name="heart" size={40} color="white" />
           </View>
           <Text className="text-3xl font-bold text-foreground text-center mb-3">
-            Join MindConnect
+            Join Mind Sets
           </Text>
           <Text className="text-muted-foreground text-center text-lg leading-relaxed max-w-sm">
-            Start your mental health journey with professional support
+            Start your mental wellness journey with professional support
           </Text>
         </View>
 

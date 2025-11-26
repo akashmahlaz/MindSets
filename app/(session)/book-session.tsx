@@ -11,14 +11,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Share,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Share,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -273,16 +273,20 @@ MindConnect Mental Health Platform
     <SafeAreaView className="flex-1 bg-background">
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? "#141820" : "#F8F9FA"}
       />
 
       {/* Header */}
       <View className="px-6 py-4 border-b border-border flex-row items-center">
         <TouchableOpacity
           onPress={() => {
-            if (booking) return; // Prevent navigation during booking
+            if (booking) return;
             step > 1 ? setStep(step - 1) : router.back();
           }}
           disabled={booking}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          accessibilityHint="Returns to previous screen"
           className="mr-4"
           style={{ opacity: booking ? 0.5 : 1 }}
         >

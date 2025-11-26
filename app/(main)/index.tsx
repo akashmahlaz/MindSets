@@ -16,13 +16,13 @@ import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -224,19 +224,28 @@ export default function OverviewScreen() {
             <View className="flex-row space-x-2">
               <TouchableOpacity
                 onPress={() => startChat(item)}
-                className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
+                accessibilityRole="button"
+                accessibilityLabel="Start chat"
+                accessibilityHint="Opens chat conversation"
+                className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
-                <Ionicons name="chatbubble" size={16} color="#3B82F6" />
+                <Ionicons name="chatbubble" size={18} className="text-primary" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => startCall(item, false)}
-                className="p-2 rounded-full bg-green-100 dark:bg-green-900"
+                accessibilityRole="button"
+                accessibilityLabel="Start voice call"
+                accessibilityHint="Opens voice call screen"
+                className="p-2 rounded-full bg-success/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
-                <Ionicons name="call" size={16} color="#10B981" />
+                <Ionicons name="call" size={18} className="text-success" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => startCall(item, true)}
-                className="p-2 rounded-full bg-purple-100 dark:bg-purple-900"
+                accessibilityRole="button"
+                accessibilityLabel="Start video call"
+                accessibilityHint="Opens video call screen"
+                className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
                 <Ionicons name="videocam" size={16} color="#8B5CF6" />
               </TouchableOpacity>
@@ -332,19 +341,6 @@ export default function OverviewScreen() {
               </Text>
             </View>
             <View className="flex-row items-center space-x-2">
-              <TouchableOpacity
-                onPress={() => router.push("/chat")}
-                className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
-              >
-                <Ionicons name="chatbubbles" size={20} color="#3B82F6" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push("/(admin)")}
-                className="p-2 rounded-full bg-blue-100 dark:bg-blue-900"
-              >
-                <AntDesign name="user" size={20} color="#3B82F6" />
-                <Text>admin</Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push("/profile")}
                 className="p-2"

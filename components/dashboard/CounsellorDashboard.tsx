@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import {
-  getUpcomingSessions,
-  getUserSessions,
+    getUpcomingSessions,
+    getUserSessions,
 } from "@/services/sessionService";
 import { getAllUsers } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
@@ -151,7 +151,7 @@ export default function CounsellorDashboard() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900" style={{ backgroundColor: isDarkColorScheme ? "#141820" : "#F8F9FA" }}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Professional Header */}
         <View className="bg-white dark:bg-gray-800 px-6 py-8 border-b border-gray-200 dark:border-gray-700">

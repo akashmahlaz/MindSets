@@ -17,8 +17,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -98,10 +97,9 @@ export default function UserDashboard() {
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
-        className="mr-4 active:opacity-95"
-        style={{ width: 280 }}
+        className="active:opacity-95"
       >
-        <View className="bg-card border border-border rounded-xl p-4 shadow-sm">
+        <View className="bg-card rounded-lg p-6 shadow-sm">
           {/* Profile Section */}
           <View className="flex-row items-center mb-3">
             <View className="w-14 h-14 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
@@ -113,7 +111,7 @@ export default function UserDashboard() {
                 />
               ) : (
                 <View className="w-full h-full items-center justify-center bg-primary/10">
-                  <Text className="text-xl">👨‍⚕️</Text>
+                  <Ionicons name="medical" size={24} color="#6B7280" />
                 </View>
               )}
             </View>
@@ -126,19 +124,6 @@ export default function UserDashboard() {
                 >
                   Dr. {counsellor.displayName}
                 </Text>
-                {/* Verification Badge */}
-                <View className="ml-1 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-full">
-                  <View className="flex-row items-center">
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={10}
-                      color="#3B82F6"
-                    />
-                    <Text className="text-blue-600 dark:text-blue-400 text-xs ml-0.5 font-medium">
-                      Verified
-                    </Text>
-                  </View>
-                </View>
               </View>
               
               <View className="flex-row items-center justify-between">
@@ -229,199 +214,103 @@ export default function UserDashboard() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View className="px-6">
+        <View className="px-6 pt-8">
           {/* Header */}
-          <View className="py-4 border-b border-border">
-            <Text className="text-2xl font-bold text-foreground">
-              Hi,
-              {userProfileData?.firstName ||
+          <View className="mb-16">
+            <Text className="text-3xl font-semibold text-foreground mb-2">
+              Hi, {userProfileData?.firstName ||
                 userProfileData?.displayName ||
                 "there"}
-              ! 👋
-            </Text>
-            <Text className="text-muted-foreground">
-              Connect with the right mental health professional
             </Text>
           </View>
           {/* Search */}
-          <View className="py-4">
+          <View className="mb-16">
             <Input
-              placeholder="Search counselors by name or specialization..."
+              placeholder="Search counselors..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              className="bg-card"
             />
           </View>
-          {/* Recommended based on concerns */}
-          {userProfileData?.primaryConcerns?.length > 0 && (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Recommended based on your concerns:
-              </Text>
-              <View className="flex-row flex-wrap gap-2">
-                {userProfileData.primaryConcerns.slice(0, 3).map((concern) => (
-                  <View
-                    key={concern}
-                    className="px-2 py-1 bg-primary/10 rounded-full"
-                  >
-                    <Text className="text-primary text-xs">
-                      {concern
-                        .replace("-", " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </Text>
+          {/* Counsellors Section */}
+          <View className="mb-16">
+            <Text className="text-2xl font-semibold text-foreground mb-8">
+              Available Counselors
+            </Text>
+            {loading ? (
+              /* Loading Skeleton */
+              <View className="flex-row flex-wrap gap-4">
+                {[...Array(4)].map((_, index) => (
+                  <View key={index} className="flex-1 min-w-[160px]">
+                    <View className="w-full h-48 rounded-lg bg-muted animate-pulse mb-3" />
+                    <View className="w-32 h-6 bg-muted rounded animate-pulse mb-2" />
+                    <View className="w-28 h-4 bg-muted rounded animate-pulse" />
                   </View>
                 ))}
               </View>
-            </View>
-          )}
-          {/* Counsellors Section */}
-          <View className="mb-4">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-foreground">
-                Available Counselors
-              </Text>
-              {filteredCounsellors.length > 0 && (
-                <Pressable>
-                  <Text className="text-primary text-sm font-medium">
-                    See All ({filteredCounsellors.length})
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-            {loading ? (
-              /* Loading Skeleton */
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 4 }}
-              >
-                <View className="flex-row">
-                  {[...Array(3)].map((_, index) => (
-                    <View key={index} className="mr-4" style={{ width: 180 }}>
-                      {/* Skeleton Image */}
-                      <View className="w-full h-48 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse mb-3" />
-
-                      {/* Skeleton Content */}
-                      <View>
-                        <View className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
-                        <View className="w-28 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
             ) : filteredCounsellors.length === 0 ? (
-              <View className="py-12 items-center">
-                <Ionicons name="people-outline" size={64} color="#9CA3AF" />
-                <Text className="text-muted-foreground mt-4 text-center text-lg">
+              <View className="py-16 items-center">
+                <Text className="text-muted-foreground text-center text-lg font-semibold mb-2">
                   No counselors found
                 </Text>
-                <Text className="text-sm text-muted-foreground text-center mt-1">
-                  Try adjusting your search or pull to refresh
+                <Text className="text-sm text-muted-foreground text-center leading-relaxed">
+                  Try adjusting your search
                 </Text>
               </View>
             ) : (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 4 }}
-              >
-                <View className="flex-row">
-                  {filteredCounsellors.map((counsellor) =>
-                    renderCounsellorCard(counsellor as CounsellorProfileData),
-                  )}
-                </View>
-              </ScrollView>
+              <View className="flex-row flex-wrap gap-4">
+                {filteredCounsellors.map((counsellor) => (
+                  <View key={counsellor.uid} className="flex-1 min-w-[160px]">
+                    {renderCounsellorCard(counsellor as CounsellorProfileData)}
+                  </View>
+                ))}
+              </View>
             )}
-            <Text className="text-muted-foreground text-center text-sm mb-4">
-              Swipe left or right to navigate through counselors
-            </Text>
           </View>
           {/* Quick Actions */}
-          <View className="px-6 py-6 border-t border-border mt-6">
-            <Text className="text-xl font-bold text-foreground mb-4">
+          <View className="mb-16">
+            <Text className="text-2xl font-semibold text-foreground mb-6">
               Quick Actions
             </Text>
-            <View className="flex-row flex-wrap gap-3">
-              <TouchableOpacity
-                className="flex-1 min-w-[140px] bg-primary/10 border border-primary/20 rounded-xl p-4 flex-row items-center"
+            <View className="space-y-4">
+              <Pressable
                 onPress={() => router.push("/(main)/sessions")}
+                className="py-4"
               >
-                <View className="w-10 h-10 bg-primary/20 rounded-full items-center justify-center mr-3">
-                  <Ionicons name="calendar-outline" size={20} color="#8B5CF6" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-foreground font-semibold text-sm">
-                    Schedule
-                  </Text>
-                  <Text className="text-muted-foreground text-xs">
-                    Book session
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-1 min-w-[140px] bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex-row items-center"
+                <Text className="text-foreground font-semibold text-base">
+                  Schedule Session
+                </Text>
+              </Pressable>
+              <Pressable
                 onPress={() => router.push("/chat")}
+                className="py-4"
               >
-                <View className="w-10 h-10 bg-green-100 dark:bg-green-800/30 rounded-full items-center justify-center mr-3">
-                  <Ionicons
-                    name="chatbubbles-outline"
-                    size={20}
-                    color="#22C55E"
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-foreground font-semibold text-sm">
-                    Messages
-                  </Text>
-                  <Text className="text-muted-foreground text-xs">
-                    View chats
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Articles Section */}
-          <View className="px-6 py-6 border-t border-border">
-            <TouchableOpacity>
-              
-            </TouchableOpacity>
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-foreground">
-                Featured Articles
-              </Text>
-              <Pressable onPress={() => router.push("/articles" as any)}>
-                <Text className="text-black dark:text-blue-400 text-sm font-medium">
-                  See All
+                <Text className="text-foreground font-semibold text-base">
+                  Messages
                 </Text>
               </Pressable>
             </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 4 }}
-            >
-              <View className="flex-row">
-                {articlesLoading ? (
-                  // Loading state
-                  Array.from({ length: 2 }).map((_, index) => (
-                    <View key={index} className="mr-4" style={{ width: 280 }}>
-                      <View className="bg-card border border-border rounded-xl overflow-hidden">
-                        <View className="w-full h-32 bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                        <View className="p-4">
-                          <View className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse" />
-                          <View className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-1 animate-pulse" />
-                          <View className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
-                        </View>
-                      </View>
+          </View>
+          {/* Articles Section */}
+          <View className="mb-16">
+            <Text className="text-2xl font-semibold text-foreground mb-8">
+              Featured Articles
+            </Text>
+            <View className="space-y-6">
+              {articlesLoading ? (
+                // Loading state
+                Array.from({ length: 2 }).map((_, index) => (
+                  <View key={index}>
+                    <View className="bg-card rounded-lg p-6 shadow-sm">
+                      <View className="h-4 bg-muted rounded mb-2 animate-pulse" />
+                      <View className="h-3 bg-muted rounded mb-1 animate-pulse" />
+                      <View className="h-3 bg-muted rounded w-3/4 animate-pulse" />
                     </View>
-                  ))
-                ) : featuredArticles.length > 0 ? (
-                  featuredArticles.map((article, index) => (
+                  </View>
+                ))
+              ) : featuredArticles.length > 0 ? (
+                  featuredArticles.map((article) => (
                     <Pressable
                       key={article.id}
-                      className="mr-4"
-                      style={{ width: 280 }}
                       onPress={() =>
                         router.push({
                           pathname: "/articles/[articleId]" as any,
@@ -429,122 +318,39 @@ export default function UserDashboard() {
                         })
                       }
                     >
-                      <View className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-                        {/* Article Content - Horizontal Layout */}
-                        <View className="flex-row p-4">
-                          {/* Left side - Text content */}
-                          <View className="flex-1 pr-3">
-                            <Text
-                              className="text-sm font-semibold text-foreground mb-2"
-                              numberOfLines={2}
-                            >
-                              {article.title}
-                            </Text>
-                            <Text
-                              className="text-xs text-muted-foreground mb-3"
-                              numberOfLines={2}
-                            >
-                              {article.description ||
-                                article.content?.substring(0, 80) + "..."}
-                            </Text>
-                            <View className="flex-row items-center justify-between">
-                              <Text className="text-xs text-muted-foreground">
-                                {article.readTime || 5} min read
-                              </Text>
-                              <Text className="text-xs text-primary font-medium">
-                                {article.category || "Health"}
-                              </Text>
-                            </View>
-                          </View>
-                          
-                          {/* Right side - Image */}
-                          <View className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                            {article.imageUrl ? (
-                              <Image
-                                source={{ uri: article.imageUrl }}
-                                className="w-full h-full"
-                                resizeMode="cover"
-                              />
-                            ) : (
-                              <View
-                                className={`w-full h-full ${index % 2 === 0 ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"} items-center justify-center`}
-                              >
-                                <Ionicons
-                                  name={
-                                    index % 2 === 0
-                                      ? "library-outline"
-                                      : "heart-outline"
-                                  }
-                                  size={20}
-                                  color={index % 2 === 0 ? "#3B82F6" : "#22C55E"}
-                                />
-                              </View>
-                            )}
-                          </View>
+                      <View className="bg-card rounded-lg p-6 shadow-sm">
+                        <Text
+                          className="text-base font-semibold text-foreground mb-2"
+                          numberOfLines={2}
+                        >
+                          {article.title}
+                        </Text>
+                        <Text
+                          className="text-sm text-muted-foreground mb-4"
+                          numberOfLines={2}
+                        >
+                          {article.description ||
+                            article.content?.substring(0, 100) + "..."}
+                        </Text>
+                        <View className="flex-row items-center justify-between">
+                          <Text className="text-xs text-muted-foreground">
+                            {article.readTime || 5} min read
+                          </Text>
+                          <Text className="text-xs text-primary font-medium">
+                            {article.category || "Health"}
+                          </Text>
                         </View>
                       </View>
                     </Pressable>
                   ))
                 ) : (
                   // Empty state
-                  <View className="flex-1 items-center justify-center py-8">
-                    <Ionicons
-                      name="document-text-outline"
-                      size={48}
-                      color="#9CA3AF"
-                    />
-                    <Text className="text-muted-foreground text-center mt-2">
-                      No articles available at the moment
+                  <View className="py-8 items-center">
+                    <Text className="text-muted-foreground text-center">
+                      No articles available
                     </Text>
                   </View>
                 )}
-              </View>
-            </ScrollView>
-          </View>
-          {/* Resources Section */}
-          <View className="px-6 py-6 border-t border-border">
-            <Text className="text-xl font-bold text-foreground mb-4">
-              Resources
-            </Text>
-            <View className="space-y-3">
-              <TouchableOpacity
-                onPress={() => router.push("/(main)")}
-                className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex-row items-center"
-              >
-                <View className="w-10 h-10 bg-blue-100 dark:bg-blue-800/30 rounded-full items-center justify-center mr-3">
-                  <Ionicons name="book-outline" size={20} color="#3B82F6" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-foreground font-semibold">
-                    Mental Health Resources
-                  </Text>
-                  <Text className="text-muted-foreground text-sm">
-                    Guides, tips, and educational content
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push("/(main)")}
-                className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex-row items-center"
-              >
-                <View className="w-10 h-10 bg-green-100 dark:bg-green-800/30 rounded-full items-center justify-center mr-3">
-                  <Ionicons
-                    name="help-circle-outline"
-                    size={20}
-                    color="#22C55E"
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-foreground font-semibold">
-                    Frequently Asked Questions
-                  </Text>
-                  <Text className="text-muted-foreground text-sm">
-                    Quick answers to common questions
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
             </View>
           </View>
         </View>

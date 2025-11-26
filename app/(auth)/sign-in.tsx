@@ -2,9 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { H1, H2, P } from "@/components/ui/typography";
+import { H1, H2 } from "@/components/ui/typography";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Ionicons } from "@expo/vector-icons";
 import * as Apple from "expo-apple-authentication";
 import * as Google from "expo-auth-session/providers/google";
 import { useRouter } from "expo-router";
@@ -15,17 +14,16 @@ import {
   signInWithCredential,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Keyboard,
+  ActivityIndicator, Animated, Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
   Text,
   TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { app } from "../../firebaseConfig";
@@ -41,33 +39,102 @@ export default function SignInScreen() {
   const router = useRouter();
   const auth = getAuth(app);
   const { isDarkColorScheme } = useColorScheme();
+  
+  // Animation for hero icon
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const scaleAnim = useState(new Animated.Value(0.8))[0];
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   // Google
-  const [_, __, promptAsync] = Google.useAuthRequest({
+  const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:
       "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
+    iosClientId:
+      "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
+    androidClientId:
+      "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
   });
+
+  // Handle Google sign-in response
+  useEffect(() => {
+    if (response?.type === "success") {
+      handleGoogleSignInResponse(response);
+    }
+  }, [response]);
+
+  const handleGoogleSignInResponse = async (result: any) => {
+    try {
+      setIsLoading(true);
+      setLoadingType("google");
+      setError("");
+
+      if (result?.authentication?.idToken) {
+        const credential = GoogleAuthProvider.credential(
+          result.authentication.idToken,
+          result.authentication.accessToken,
+        );
+        const userCredential = await signInWithCredential(auth, credential);
+        console.log("Google sign-in successful:", userCredential.user.uid);
+        // Navigation will happen automatically via onAuthStateChanged
+      } else {
+        setError("Google sign-in failed. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      if (error.code === "auth/account-exists-with-different-credential") {
+        setError("An account already exists with this email. Please sign in with your password.");
+      } else if (error.code === "auth/popup-closed-by-user") {
+        // User closed popup, don't show error
+      } else {
+        setError("Failed to sign in with Google. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+      setLoadingType(null);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       setLoadingType("google");
       setError("");
 
-      const result = await promptAsync();
-      if (result?.type === "success" && result.authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(
-          result.authentication.idToken,
-        );
-        await signInWithCredential(auth, credential);
-      } else if (result?.type === "cancel") {
-        // User cancelled, don't show error
-      } else {
-        setError("Google sign-in failed. Please try again.");
+      if (!request) {
+        setError("Google sign-in is not available. Please try again later.");
+        setIsLoading(false);
+        setLoadingType(null);
+        return;
       }
+
+      const result = await promptAsync();
+      if (result?.type === "cancel") {
+        // User cancelled, don't show error
+        setIsLoading(false);
+        setLoadingType(null);
+      } else if (result?.type === "dismiss") {
+        setIsLoading(false);
+        setLoadingType(null);
+      }
+      // If success, the useEffect will handle it
     } catch (error: any) {
-      console.error("Google sign-in error:", error);
-      setError("Failed to sign in with Google. Please try again.");
-    } finally {
+      console.error("Google sign-in prompt error:", error);
+      setError("Failed to start Google sign-in. Please try again.");
       setIsLoading(false);
       setLoadingType(null);
     }
@@ -169,95 +236,50 @@ export default function SignInScreen() {
               flexGrow: 1,
               justifyContent: "center",
               padding: 24,
+              paddingTop: 64,
             }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={{ maxWidth: 480, width: "100%", alignSelf: "center" }}>
-              {/* Hero Section */}
-              <View className="items-center mb-8">
-                <View className="w-20 h-20 bg-primary/10 rounded-full items-center justify-center mb-6">
-                  <Ionicons
-                    name="heart"
-                    size={40}
-                    color={isDarkColorScheme ? "#3b82f6" : "#1d4ed8"}
-                  />
-                </View>
-                <H1 className="mb-2 text-center">Welcome Back</H1>
-                <P className="mb-2 text-center">
-                  Sign in to continue your mental health journey with
-                  <Text className="text-primary font-semibold">
-                    MindConnect
-                  </Text>
-                </P>
+            <View style={{ maxWidth: 400, width: "100%", alignSelf: "center" }}>
+              {/* Header Section */}
+              <View className="items-center mb-16">
+                <H1 className="mb-8 text-center">Sign In</H1>
               </View>
               {/* Form Section */}
-              <Card
-                style={{
-                  elevation: 4,
-                  shadowColor: "#000",
-                  shadowOpacity: 0.08,
-                  shadowRadius: 12,
-                  borderRadius: 16,
-                }}
-              >
-                <CardHeader className="pb-6">
-                  <H2 className="text-center">Sign In</H2>
-                  <P className="text-center">
-                    Enter your credentials to access your account
-                  </P>
+              <Card>
+                <CardHeader className="pb-8">
+                  <H2 className="text-center">Welcome back</H2>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Email Input */}
                   <View className="space-y-2">
                     <Label className="font-semibold text-base">Email</Label>
-                    <View className="relative">
-                      <Input
-                        placeholder="Enter your email address"
-                        value={email}
-                        onChangeText={(text) => {
-                          setEmail(text);
-                          setError("");
-                        }}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        editable={!isLoading}
-                        className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground pl-12"
-                        placeholderTextColor="#9CA3AF"
-                      />
-                      <View className="absolute left-3 top-3">
-                        <Ionicons
-                          name="mail-outline"
-                          size={20}
-                          color={isDarkColorScheme ? "#9ca3af" : "#6b7280"}
-                        />
-                      </View>
-                    </View>
+                    <Input
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChangeText={(text) => {
+                        setEmail(text);
+                        setError("");
+                      }}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      editable={!isLoading}
+                    />
                   </View>
                   {/* Password Input */}
                   <View className="space-y-2">
                     <Label className="font-semibold text-base">Password</Label>
-                    <View className="relative">
-                      <Input
-                        placeholder="Enter your password"
-                        value={password}
-                        onChangeText={(text) => {
-                          setPassword(text);
-                          setError("");
-                        }}
-                        secureTextEntry
-                        editable={!isLoading}
-                        className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground pl-12"
-                        placeholderTextColor="#9CA3AF"
-                      />
-                      <View className="absolute left-3 top-3">
-                        <Ionicons
-                          name="lock-closed-outline"
-                          size={20}
-                          color={isDarkColorScheme ? "#9ca3af" : "#6b7280"}
-                        />
-                      </View>
-                    </View>
+                    <Input
+                      placeholder="Enter your password"
+                      value={password}
+                      onChangeText={(text) => {
+                        setPassword(text);
+                        setError("");
+                      }}
+                      secureTextEntry
+                      editable={!isLoading}
+                    />
                   </View>
                   {/* Error Message */}
                   {error ? (
@@ -277,10 +299,10 @@ export default function SignInScreen() {
                   <Button
                     onPress={handleEmailSignIn}
                     disabled={isLoading}
-                    className="w-full h-12 mt-2"
+                    className="w-full mt-2"
                   >
-                    <Text className="text-primary-foreground font-semibold text-base">
-                      Sign In
+                    <Text className="text-primary-foreground font-semibold">
+                      {isLoading && loadingType === "email" ? "Signing in..." : "Sign In"}
                     </Text>
                   </Button>
                   {/* Social Sign In Buttons */}
@@ -299,8 +321,8 @@ export default function SignInScreen() {
                     <Button
                       variant="outline"
                       onPress={handleGoogleSignIn}
-                      disabled={isLoading}
-                      className="w-full h-12 border-border"
+                      disabled={isLoading || !request}
+                      className="w-full"
                     >
                       {isLoading && loadingType === "google" ? (
                         <View className="flex-row items-center">
@@ -309,22 +331,14 @@ export default function SignInScreen() {
                             color={isDarkColorScheme ? "#ffffff" : "#000000"}
                             style={{ marginRight: 8 }}
                           />
-                          <Text className="text-foreground font-medium">
+                          <Text className="text-foreground font-semibold">
                             Connecting...
                           </Text>
                         </View>
                       ) : (
-                        <View className="flex-row items-center">
-                          <Ionicons
-                            name="logo-google"
-                            size={20}
-                            color="#EA4335"
-                            style={{ marginRight: 8 }}
-                          />
-                          <Text className="text-foreground font-medium text-base">
-                            Continue with Google
-                          </Text>
-                        </View>
+                        <Text className="text-foreground font-semibold">
+                          Continue with Google
+                        </Text>
                       )}
                     </Button>
 
@@ -335,7 +349,7 @@ export default function SignInScreen() {
                           <Button
                             variant="outline"
                             disabled
-                            className="w-full h-12"
+                            className="w-full"
                           >
                             <View className="flex-row items-center">
                               <ActivityIndicator
@@ -345,7 +359,7 @@ export default function SignInScreen() {
                                 }
                                 style={{ marginRight: 8 }}
                               />
-                              <Text className="text-foreground font-medium">
+                              <Text className="text-foreground font-semibold">
                                 Connecting...
                               </Text>
                             </View>
@@ -360,8 +374,8 @@ export default function SignInScreen() {
                                 ? Apple.AppleAuthenticationButtonStyle.WHITE
                                 : Apple.AppleAuthenticationButtonStyle.BLACK
                             }
-                            cornerRadius={8}
-                            style={{ width: "100%", height: 48 }}
+                            cornerRadius={12}
+                            style={{ width: "100%", height: 56 }}
                             onPress={handleAppleSignIn}
                           />
                         )}

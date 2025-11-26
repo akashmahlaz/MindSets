@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Mindfull",
-    "slug": "mindfull",
+    "name": "Mind Sets",
+    "slug": "mind-sets",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
-    "scheme": "mindfull",
+    "scheme": "mindsets",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
