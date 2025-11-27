@@ -69,11 +69,15 @@ export default function ProfileScreen() {
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
     primary: "#6366F1",
+    primaryLight: "#818CF8",
     primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
     secondary: "#10B981",
     secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    accent: "#8B5CF6",
+    accentContainer: isDarkColorScheme ? "rgba(139, 92, 246, 0.15)" : "rgba(139, 92, 246, 0.08)",
     purple: "#8B5CF6",
     warning: "#F59E0B",
+    warningContainer: isDarkColorScheme ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)",
     error: "#EF4444",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
   };
@@ -1097,5 +1101,6 @@ export default function ProfileScreen() {
         </Modal>
       </ScrollView>
     </SafeAreaView>
+    </Animated.View>
   );
 }

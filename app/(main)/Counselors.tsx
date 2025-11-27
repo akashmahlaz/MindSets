@@ -16,14 +16,13 @@ import {
     Dimensions,
     FlatList,
     Image,
-    Pressable,
     RefreshControl,
     ScrollView,
     StatusBar,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 

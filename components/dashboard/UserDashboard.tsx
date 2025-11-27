@@ -55,6 +55,7 @@ export default function UserDashboard() {
     accent: "#8B5CF6",
     accentContainer: isDarkColorScheme ? "rgba(139, 92, 246, 0.15)" : "rgba(139, 92, 246, 0.08)",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    card: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
     cardAlt: isDarkColorScheme ? "#1E2632" : "#F8FAFC",
   };
 

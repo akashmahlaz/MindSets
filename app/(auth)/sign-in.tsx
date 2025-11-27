@@ -155,7 +155,7 @@ export default function SignInScreen() {
         setIsLoading(false);
         setLoadingType(null);
       }
-    } catch (error) {
+    } catch {
       setError("Failed to start Google sign-in.");
       setIsLoading(false);
       setLoadingType(null);
