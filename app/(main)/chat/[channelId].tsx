@@ -1,0 +1,292 @@
+import "@/app/global.css";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Channel as StreamChannel } from "stream-chat";
+import {
+  Channel,
+  MessageInput,
+  MessageList,
+} from "stream-chat-expo";
+
+export default function ChatScreen() {
+  const { channelId } = useLocalSearchParams();
+  const { chatClient, isChatConnected } = useChat();
+  const { user } = useAuth();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { isDarkColorScheme } = useColorScheme();
+  const [channel, setChannel] = useState<StreamChannel | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Premium colors
+  const colors = {
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    primary: "#6366F1",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    online: "#10B981",
+  };
+
+  useEffect(() => {
+    const fetchChannel = async () => {
+      if (!chatClient || !isChatConnected || !user || !channelId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        let members: string[] = [user.uid];
+        let channelIdStr: string = Array.isArray(channelId)
+          ? channelId[0]
+          : channelId;
+        if (
+          typeof channelIdStr === "string" &&
+          channelIdStr.startsWith("dm-")
+        ) {
+          const ids = channelIdStr.split("-").slice(1);
+          ids.forEach((id) => {
+            if (!members.includes(id)) members.push(id);
+          });
+        }
+        const channelObj = chatClient.channel("messaging", channelIdStr, {
+          members,
+        });
+        await channelObj.watch();
+        setChannel(channelObj);
+      } catch (error) {
+        Alert.alert("Error", "Failed to load chat channel.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChannel();
+  }, [chatClient, isChatConnected, user, channelId]);
+
+  // Handle back navigation - go back to chat list
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Fallback to chat tab if no history
+      router.replace("/(main)/chat");
+    }
+  };
+
+  if (loading || !channel) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <StatusBar
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 20,
+            backgroundColor: colors.surfaceVariant,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.textSecondary, fontSize: 16, fontWeight: '500' }}>
+            Loading chat...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Helper to get other member's user object
+  const getOtherMember = () => {
+    if (!channel || !channel.state?.members) return null;
+    const members = Object.values(channel.state.members);
+    return members.find((m: any) => m.user?.id !== user?.uid)?.user || null;
+  };
+  
+  const otherUser = getOtherMember();
+  
+  const getOnlineStatus = () => {
+    if (!otherUser) return false;
+    return otherUser.online === true;
+  };
+  
+  const getAvatarUrl = () => {
+    return otherUser?.image || undefined;
+  };
+
+  const getHeaderTitle = () => {
+    if (!channel) return "Chat";
+    if ((channel.id as string).startsWith("dm-") && channel.state?.members) {
+      const members = Object.values(channel.state.members);
+      const otherMember = members.find((m: any) => m.user?.id !== user?.uid);
+      if (otherMember?.user) {
+        return otherMember.user.name || otherMember.user.id || "Chat";
+      }
+    }
+    return (channel.data as any)?.name || "Chat";
+  };
+
+  const isOnline = getOnlineStatus();
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom"]}>
+      <StatusBar
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
+      
+      {/* Premium Header */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+      }}>
+        <Pressable
+          onPress={handleBack}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: colors.surfaceVariant,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 12,
+          }}
+        >
+          <Ionicons name="chevron-back" size={22} color={colors.text} />
+        </Pressable>
+        
+        {/* Avatar */}
+        <View style={{ position: 'relative', marginRight: 12 }}>
+          <View style={{
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            overflow: 'hidden',
+            backgroundColor: colors.surfaceVariant,
+          }}>
+            {getAvatarUrl() ? (
+              <Image
+                source={{ uri: getAvatarUrl() }}
+                style={{ width: 44, height: 44 }}
+              />
+            ) : (
+              <View style={{
+                width: 44,
+                height: 44,
+                backgroundColor: colors.primary + '20',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <Ionicons name="person" size={22} color={colors.primary} />
+              </View>
+            )}
+          </View>
+          {/* Online indicator */}
+          {isOnline && (
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: 14,
+              height: 14,
+              borderRadius: 7,
+              backgroundColor: colors.online,
+              borderWidth: 2,
+              borderColor: colors.surface,
+            }} />
+          )}
+        </View>
+        
+        {/* Name & Status */}
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>
+            {otherUser?.name || getHeaderTitle()}
+          </Text>
+          <Text style={{ 
+            fontSize: 13, 
+            color: isOnline ? colors.online : colors.textSecondary,
+            marginTop: 2,
+          }}>
+            {isOnline ? "Online" : "Offline"}
+          </Text>
+        </View>
+        
+        {/* Call buttons */}
+        <Pressable
+          onPress={() => {/* TODO: Voice call */}}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: colors.surfaceVariant,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 8,
+          }}
+        >
+          <Ionicons name="call-outline" size={20} color={colors.primary} />
+        </Pressable>
+        <Pressable
+          onPress={() => {/* TODO: Video call */}}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: colors.surfaceVariant,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Ionicons name="videocam-outline" size={20} color={colors.primary} />
+        </Pressable>
+      </View>
+
+      {/* Chat Area */}
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={0}
+      >
+        <Channel
+          channel={channel}
+          disableKeyboardCompatibleView={true}
+          keyboardVerticalOffset={0}
+        >
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <MessageList />
+          </View>
+          <MessageInput />
+        </Channel>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
