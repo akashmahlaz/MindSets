@@ -13,21 +13,22 @@ export default function TabLayout() {
   const { userProfile } = useAuth();
   const insets = useSafeAreaInsets();
   
-  // Google Material Design 3 color scheme
+  // Premium Material Design 3 color scheme - Enhanced for visibility
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceContainer: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
+    surfaceContainer: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
     primary: "#6366F1", // Indigo - consistent brand color
     onSurface: isDarkColorScheme ? "#F1F5F9" : "#1E293B",
-    onSurfaceVariant: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    outline: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    // Active state uses primary with pill indicator
-    activeIndicator: isDarkColorScheme ? "rgba(99, 102, 241, 0.12)" : "rgba(99, 102, 241, 0.12)",
+    // FIXED: Much better visibility for inactive tabs in dark mode
+    onSurfaceVariant: isDarkColorScheme ? "#CBD5E1" : "#64748B",
+    outline: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    // FIXED: More visible active indicator
+    activeIndicator: isDarkColorScheme ? "rgba(99, 102, 241, 0.25)" : "rgba(99, 102, 241, 0.15)",
   };
 
   // Calculate tab bar height with safe area
-  const tabBarHeight = Platform.OS === "ios" ? 88 : 60 + insets.bottom;
+  const tabBarHeight = Platform.OS === "ios" ? 88 : 64 + insets.bottom;
 
   return (
     <SafeAreaProvider>
@@ -43,14 +44,14 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: "500",
+            fontSize: 11,
+            fontWeight: "600",
             marginTop: 2,
             marginBottom: Platform.OS === "ios" ? 0 : Math.max(insets.bottom, 8),
-            letterSpacing: 0.2,
+            letterSpacing: 0.3,
           },
           tabBarIconStyle: {
-            marginTop: Platform.OS === "ios" ? 4 : 8,
+            marginTop: Platform.OS === "ios" ? 6 : 8,
           },
           tabBarStyle: {
             backgroundColor: colors.surfaceContainer,
@@ -62,12 +63,12 @@ export default function TabLayout() {
             ...Platform.select({
               ios: {
                 shadowColor: "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: isDarkColorScheme ? 0.25 : 0.04,
-                shadowRadius: 8,
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: isDarkColorScheme ? 0.3 : 0.06,
+                shadowRadius: 12,
               },
               android: {
-                elevation: 8,
+                elevation: 12,
               },
             }),
           },

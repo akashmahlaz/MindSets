@@ -2,13 +2,10 @@ import "@/app/global.css";
 import ReviewDisplay from "@/components/profile/ReviewDisplay";
 import ReviewSubmission from "@/components/profile/ReviewSubmission";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
-import { useColorScheme } from "@/lib/useColorScheme";
 import { useVideo } from "@/context/VideoContext";
+import { useColorScheme } from "@/lib/useColorScheme";
 import { getUserProfile } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,18 +13,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  Animated,
-  Modal,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Modal,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
