@@ -1,29 +1,35 @@
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
+import { useColorScheme } from "@/lib/useColorScheme";
 import { Article, getFeaturedArticles } from "@/services/articleService";
 import { getCounsellors } from "@/services/userService";
 import {
-  CounsellorProfileData,
-  UserProfile,
-  UserProfileData,
+    CounsellorProfileData,
+    UserProfile,
+    UserProfileData,
 } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  View
+    Dimensions,
+    Image,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = SCREEN_WIDTH * 0.75;
 
 export default function UserDashboard() {
   const { userProfile } = useAuth();
   const router = useRouter();
+  const { isDarkColorScheme } = useColorScheme();
   const [counsellors, setCounsellors] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,6 +38,19 @@ export default function UserDashboard() {
   const [articlesLoading, setArticlesLoading] = useState(false);
 
   const userProfileData = userProfile as UserProfileData;
+
+  // Colors based on theme
+  const colors = {
+    background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
+    card: isDarkColorScheme ? "#171D26" : "#FFFFFF",
+    cardAlt: isDarkColorScheme ? "#1E2632" : "#F8FAFC",
+    text: isDarkColorScheme ? "#F0F2F5" : "#1E2530",
+    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
+    primary: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
+    secondary: isDarkColorScheme ? "#4CC38A" : "#3FA57A",
+    accent: isDarkColorScheme ? "#B79CFC" : "#A78BFA",
+    border: isDarkColorScheme ? "#323A48" : "#E2E5E9",
+  };
 
   const loadCounsellors = async () => {
     try {
@@ -50,6 +69,7 @@ export default function UserDashboard() {
       setRefreshing(false);
     }
   };
+
   useEffect(() => {
     loadCounsellors();
     loadFeaturedArticles();
@@ -58,9 +78,7 @@ export default function UserDashboard() {
   const loadFeaturedArticles = async () => {
     try {
       setArticlesLoading(true);
-      console.log("Loading featured articles...");
       const articles = await getFeaturedArticles();
-      console.log("Loaded articles:", articles.length, articles);
       setFeaturedArticles(articles);
     } catch (error) {
       console.error("Failed to load featured articles:", error);
@@ -72,7 +90,7 @@ export default function UserDashboard() {
   const onRefresh = () => {
     setRefreshing(true);
     loadCounsellors();
-    loadFeaturedArticles(); // Also refresh articles
+    loadFeaturedArticles();
   };
 
   const handleCounsellorPress = (counsellor: CounsellorProfileData) => {
@@ -92,99 +110,132 @@ export default function UserDashboard() {
           spec.toLowerCase().includes(searchQuery.toLowerCase()),
         )),
   );
-  const renderCounsellorCard = (counsellor: CounsellorProfileData) => {
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const getSpecializationLabel = (spec: string | undefined) => {
+    const labels: Record<string, string> = {
+      anxiety: "Anxiety & Stress",
+      depression: "Depression",
+      relationship: "Relationships",
+      trauma: "Trauma & PTSD",
+      "stress-management": "Stress Management",
+    };
+    return spec ? labels[spec] || spec.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase()) : "General Counseling";
+  };
+
+  const renderCounsellorCard = (counsellor: CounsellorProfileData, index: number) => {
     return (
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
-        className="active:opacity-95"
+        style={{
+          width: CARD_WIDTH,
+          marginRight: 16,
+          marginLeft: index === 0 ? 0 : 0,
+        }}
       >
-        <View className="bg-card rounded-lg p-6 shadow-sm">
-          {/* Profile Section */}
-          <View className="flex-row items-center mb-3">
-            <View className="w-14 h-14 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
-              {counsellor.photoURL ? (
-                <Image
-                  source={{ uri: counsellor.photoURL }}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-full h-full items-center justify-center bg-primary/10">
-                  <Ionicons name="medical" size={24} color="#6B7280" />
-                </View>
-              )}
-            </View>
-
-            <View className="flex-1">
-              <View className="flex-row items-center mb-1">
-                <Text
-                  className="text-sm font-semibold text-foreground flex-1"
-                  numberOfLines={1}
+        <View 
+          style={{
+            backgroundColor: colors.card,
+            borderRadius: 20,
+            overflow: "hidden",
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          {/* Profile Image with Gradient Overlay */}
+          <View style={{ height: 180, position: "relative" }}>
+            {counsellor.photoURL ? (
+              <Image
+                source={{ uri: counsellor.photoURL }}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View 
+                style={{ 
+                  width: "100%", 
+                  height: "100%", 
+                  backgroundColor: colors.cardAlt,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <View 
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 40,
+                    backgroundColor: isDarkColorScheme ? "#2A3544" : "#E8ECF0",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  Dr. {counsellor.displayName}
-                </Text>
-              </View>
-              
-              <View className="flex-row items-center justify-between">
-                <Text className="text-xs text-muted-foreground">
-                  {counsellor.yearsExperience || "5+"} years exp.
-                </Text>
-                <View className="flex-row items-center">
-                  <Ionicons name="star" size={10} color="#F59E0B" />
-                  <Text className="text-xs text-muted-foreground ml-1">
-                    4.8 (120)
-                  </Text>
+                  <Ionicons name="person" size={40} color={colors.textSecondary} />
                 </View>
               </View>
+            )}
+            {/* Availability Badge */}
+            <View 
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                backgroundColor: "rgba(63, 165, 122, 0.9)",
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 20,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFF", marginRight: 5 }} />
+              <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "600" }}>Available</Text>
             </View>
           </View>
           
-          {/* Specialization */}
-          <View className="mb-3">
-            <Text className="text-sm text-foreground font-medium mb-1">
-              {counsellor.specializations?.[0] === "anxiety" &&
-                "Anxiety Specialist"}
-              {counsellor.specializations?.[0] === "depression" &&
-                "Depression Therapy"}
-              {counsellor.specializations?.[0] === "relationship" &&
-                "Relationship Counseling"}
-              {counsellor.specializations?.[0] === "trauma" && "Trauma Therapy"}
-              {counsellor.specializations?.[0] === "stress-management" &&
-                "Stress Management"}
-              {!counsellor.specializations?.[0] && "General Counseling"}
-              {counsellor.specializations?.[0] &&
-                ![
-                  "anxiety",
-                  "depression",
-                  "relationship",
-                  "trauma",
-                  "stress-management",
-                ].includes(counsellor.specializations[0]) &&
-                counsellor.specializations[0]
-                  .replace("-", " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </Text>
-
-            {counsellor.specializations &&
-              counsellor.specializations.length > 1 && (
-                <Text className="text-xs text-muted-foreground">
-                  +{counsellor.specializations.length - 1} more specializations
-                </Text>
-              )}
-          </View>
-          
-          {/* Rate and Status */}
-          <View className="flex-row justify-between items-center pt-2 border-t border-border">
-            <View>
-              <Text className="text-sm font-semibold text-primary">
-                ${counsellor.hourlyRate || "80"}/session
+          {/* Content */}
+          <View style={{ padding: 16 }}>
+            {/* Name & Rating */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <Text 
+                style={{ 
+                  fontSize: 17, 
+                  fontWeight: "700", 
+                  color: colors.text,
+                  flex: 1,
+                }}
+                numberOfLines={1}
+              >
+                Dr. {counsellor.displayName}
               </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="star" size={14} color="#F59E0B" />
+                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text, marginLeft: 4 }}>4.9</Text>
+              </View>
             </View>
-            <View className="flex-row items-center">
-              <View className="w-2 h-2 bg-green-500 rounded-full mr-1" />
-              <Text className="text-xs text-muted-foreground">
-                Available
+            
+            {/* Specialization */}
+            <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 12 }}>
+              {getSpecializationLabel(counsellor.specializations?.[0])}
+            </Text>
+            
+            {/* Experience & Rate */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="briefcase-outline" size={14} color={colors.textSecondary} />
+                <Text style={{ fontSize: 13, color: colors.textSecondary, marginLeft: 6 }}>
+                  {counsellor.yearsExperience || "5+"}yrs exp
+                </Text>
+              </View>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary }}>
+                ${counsellor.hourlyRate || "80"}<Text style={{ fontSize: 12, fontWeight: "500" }}>/session</Text>
               </Text>
             </View>
           </View>
@@ -195,164 +246,371 @@ export default function UserDashboard() {
 
   if (!userProfileData || userProfileData.role !== "user") {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-foreground">Loading dashboard...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+          <View 
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: colors.primary + "20",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons name="hourglass-outline" size={32} color={colors.primary} />
+          </View>
+          <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>Loading dashboard...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar 
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
+        backgroundColor={colors.background} 
+      />
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View className="px-6 pt-8">
-          {/* Header */}
-          <View className="mb-16">
-            <Text className="text-3xl font-semibold text-foreground mb-2">
-              Hi, {userProfileData?.firstName ||
-                userProfileData?.displayName ||
-                "there"}
-            </Text>
+        {/* Header Section */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 4 }}>
+                {getGreeting()} 👋
+              </Text>
+              <Text style={{ fontSize: 26, fontWeight: "700", color: colors.text }}>
+                {userProfileData?.firstName || userProfileData?.displayName?.split(" ")[0] || "there"}
+              </Text>
+            </View>
+            
+            <Pressable 
+              onPress={() => router.push("/profile")}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: colors.card,
+                borderWidth: 2,
+                borderColor: colors.primary + "30",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="person" size={22} color={colors.primary} />
+            </Pressable>
           </View>
-          {/* Search */}
-          <View className="mb-16">
+          
+          {/* Mood Check Card */}
+          <Pressable>
+            <View 
+              style={{
+                backgroundColor: isDarkColorScheme ? "#1E2B4A" : "#EEF4FF",
+                borderRadius: 16,
+                padding: 20,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View 
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: colors.primary + "20",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 16,
+                }}
+              >
+                <Text style={{ fontSize: 24 }}>🌤️</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 2 }}>
+                  How are you feeling today?
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                  Track your daily mood & wellness
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </View>
+          </Pressable>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 16 }}>
+            Quick Actions
+          </Text>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            {[
+              { icon: "calendar-outline", label: "Book Session", color: colors.primary, route: "/(main)/sessions" },
+              { icon: "chatbubbles-outline", label: "Messages", color: colors.secondary, route: "/chat" },
+              { icon: "journal-outline", label: "Journal", color: colors.accent, route: "/(resources)/journal" },
+            ].map((action, index) => (
+              <Pressable
+                key={index}
+                onPress={() => router.push(action.route as any)}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.card,
+                  borderRadius: 16,
+                  padding: 16,
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <View 
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: action.color + "15",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Ionicons name={action.icon as any} size={22} color={action.color} />
+                </View>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text, textAlign: "center" }}>
+                  {action.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Search Section */}
+        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <View 
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 14,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Ionicons name="search" size={20} color={colors.textSecondary} />
             <Input
-              placeholder="Search counselors..."
+              placeholder="Search counselors by name or specialty..."
+              placeholderTextColor={colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              style={{
+                flex: 1,
+                paddingVertical: 14,
+                paddingHorizontal: 12,
+                fontSize: 15,
+                color: colors.text,
+                backgroundColor: "transparent",
+                borderWidth: 0,
+              }}
             />
           </View>
-          {/* Counsellors Section */}
-          <View className="mb-16">
-            <Text className="text-2xl font-semibold text-foreground mb-8">
-              Available Counselors
+        </View>
+
+        {/* Recommended Counselors */}
+        <View style={{ marginBottom: 28 }}>
+          <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+              Recommended for You
             </Text>
-            {loading ? (
-              /* Loading Skeleton */
-              <View className="flex-row flex-wrap gap-4">
-                {[...Array(4)].map((_, index) => (
-                  <View key={index} className="flex-1 min-w-[160px]">
-                    <View className="w-full h-48 rounded-lg bg-muted animate-pulse mb-3" />
-                    <View className="w-32 h-6 bg-muted rounded animate-pulse mb-2" />
-                    <View className="w-28 h-4 bg-muted rounded animate-pulse" />
-                  </View>
-                ))}
-              </View>
-            ) : filteredCounsellors.length === 0 ? (
-              <View className="py-16 items-center">
-                <Text className="text-muted-foreground text-center text-lg font-semibold mb-2">
-                  No counselors found
-                </Text>
-                <Text className="text-sm text-muted-foreground text-center leading-relaxed">
-                  Try adjusting your search
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-row flex-wrap gap-4">
-                {filteredCounsellors.map((counsellor) => (
-                  <View key={counsellor.uid} className="flex-1 min-w-[160px]">
-                    {renderCounsellorCard(counsellor as CounsellorProfileData)}
-                  </View>
-                ))}
-              </View>
-            )}
+            <Pressable onPress={() => router.push("/(main)/Counselors")}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
+            </Pressable>
           </View>
-          {/* Quick Actions */}
-          <View className="mb-16">
-            <Text className="text-2xl font-semibold text-foreground mb-6">
-              Quick Actions
-            </Text>
-            <View className="space-y-4">
-              <Pressable
-                onPress={() => router.push("/(main)/sessions")}
-                className="py-4"
+          
+          {loading ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 24 }}
+            >
+              {[1, 2, 3].map((_, index) => (
+                <View 
+                  key={index}
+                  style={{
+                    width: CARD_WIDTH,
+                    marginRight: 16,
+                    backgroundColor: colors.card,
+                    borderRadius: 20,
+                    overflow: "hidden",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <View style={{ height: 180, backgroundColor: colors.cardAlt }} />
+                  <View style={{ padding: 16 }}>
+                    <View style={{ height: 20, backgroundColor: colors.cardAlt, borderRadius: 6, marginBottom: 8 }} />
+                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, width: "60%", marginBottom: 12 }} />
+                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, width: "40%" }} />
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          ) : filteredCounsellors.length === 0 ? (
+            <View style={{ paddingHorizontal: 24, paddingVertical: 40, alignItems: "center" }}>
+              <View 
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: colors.cardAlt,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
               >
-                <Text className="text-foreground font-semibold text-base">
-                  Schedule Session
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => router.push("/chat")}
-                className="py-4"
-              >
-                <Text className="text-foreground font-semibold text-base">
-                  Messages
-                </Text>
-              </Pressable>
+                <Ionicons name="people-outline" size={36} color={colors.textSecondary} />
+              </View>
+              <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
+                No counselors found
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center" }}>
+                Try adjusting your search criteria
+              </Text>
             </View>
-          </View>
-          {/* Articles Section */}
-          <View className="mb-16">
-            <Text className="text-2xl font-semibold text-foreground mb-8">
-              Featured Articles
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 24 }}
+              decelerationRate="fast"
+              snapToInterval={CARD_WIDTH + 16}
+            >
+              {filteredCounsellors.slice(0, 5).map((counsellor, index) =>
+                renderCounsellorCard(counsellor as CounsellorProfileData, index)
+              )}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Featured Articles */}
+        <View style={{ paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+              Wellness Resources
             </Text>
-            <View className="space-y-6">
-              {articlesLoading ? (
-                // Loading state
-                Array.from({ length: 2 }).map((_, index) => (
-                  <View key={index}>
-                    <View className="bg-card rounded-lg p-6 shadow-sm">
-                      <View className="h-4 bg-muted rounded mb-2 animate-pulse" />
-                      <View className="h-3 bg-muted rounded mb-1 animate-pulse" />
-                      <View className="h-3 bg-muted rounded w-3/4 animate-pulse" />
-                    </View>
+            <Pressable>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
+            </Pressable>
+          </View>
+          
+          {articlesLoading ? (
+            <View style={{ gap: 12 }}>
+              {[1, 2].map((_, index) => (
+                <View 
+                  key={index}
+                  style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 16,
+                    padding: 16,
+                    flexDirection: "row",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <View style={{ width: 80, height: 80, borderRadius: 12, backgroundColor: colors.cardAlt, marginRight: 16 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, marginBottom: 8 }} />
+                    <View style={{ height: 14, backgroundColor: colors.cardAlt, borderRadius: 6, width: "80%", marginBottom: 8 }} />
+                    <View style={{ height: 12, backgroundColor: colors.cardAlt, borderRadius: 6, width: "40%" }} />
                   </View>
-                ))
-              ) : featuredArticles.length > 0 ? (
-                  featuredArticles.map((article) => (
-                    <Pressable
-                      key={article.id}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/articles/[articleId]" as any,
-                          params: { articleId: article.id },
-                        })
-                      }
+                </View>
+              ))}
+            </View>
+          ) : featuredArticles.length > 0 ? (
+            <View style={{ gap: 12 }}>
+              {featuredArticles.slice(0, 3).map((article) => (
+                <Pressable
+                  key={article.id}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/articles/[articleId]" as any,
+                      params: { articleId: article.id },
+                    })
+                  }
+                >
+                  <View 
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 16,
+                      padding: 16,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <View 
+                      style={{
+                        width: 72,
+                        height: 72,
+                        borderRadius: 12,
+                        backgroundColor: colors.primary + "15",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 16,
+                      }}
                     >
-                      <View className="bg-card rounded-lg p-6 shadow-sm">
-                        <Text
-                          className="text-base font-semibold text-foreground mb-2"
-                          numberOfLines={2}
-                        >
-                          {article.title}
+                      <Ionicons name="document-text" size={28} color={colors.primary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text 
+                        style={{ fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 }}
+                        numberOfLines={2}
+                      >
+                        {article.title}
+                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                        <Text style={{ fontSize: 12, color: colors.textSecondary, marginLeft: 4 }}>
+                          {article.readTime || 5} min read
                         </Text>
-                        <Text
-                          className="text-sm text-muted-foreground mb-4"
-                          numberOfLines={2}
-                        >
-                          {article.description ||
-                            article.content?.substring(0, 100) + "..."}
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSecondary, marginHorizontal: 8 }} />
+                        <Text style={{ fontSize: 12, color: colors.primary, fontWeight: "500" }}>
+                          {article.category || "Health"}
                         </Text>
-                        <View className="flex-row items-center justify-between">
-                          <Text className="text-xs text-muted-foreground">
-                            {article.readTime || 5} min read
-                          </Text>
-                          <Text className="text-xs text-primary font-medium">
-                            {article.category || "Health"}
-                          </Text>
-                        </View>
                       </View>
-                    </Pressable>
-                  ))
-                ) : (
-                  // Empty state
-                  <View className="py-8 items-center">
-                    <Text className="text-muted-foreground text-center">
-                      No articles available
-                    </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                   </View>
-                )}
+                </Pressable>
+              ))}
             </View>
-          </View>
+          ) : (
+            <View 
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 16,
+                padding: 32,
+                alignItems: "center",
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Ionicons name="newspaper-outline" size={40} color={colors.textSecondary} />
+              <Text style={{ fontSize: 15, color: colors.textSecondary, marginTop: 12 }}>
+                No articles available
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

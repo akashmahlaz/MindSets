@@ -1,8 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth, initializeAuth } from "firebase/auth";
+import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -21,31 +22,15 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Conditionally initialize Analytics
-// let analytics;
-// if (typeof window !== 'undefined') { // Check if in a browser-like environment for analytics
-//   getAnalytics(app).isSupported().then(supported => {
-//     if (supported) {
-//       analytics = getAnalytics(app);
-//       console.log("Firebase Analytics initialized.");
-//     } else {
-//       console.log("Firebase Analytics is not supported in this environment.");
-//     }
-//   }).catch(err => {
-//     console.error("Error checking Firebase Analytics support:", err);
-//   });
-// } else {
-//   console.log("Firebase Analytics skipped in non-browser environment.");
-// }
-
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Initialize Auth with AsyncStorage persistence  
+// Initialize Auth with AsyncStorage persistence for React Native
 let auth;
 try {
-  // Try to use initializeAuth first for better control
-  auth = initializeAuth(app);
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
 } catch (error) {
   // If initializeAuth fails (e.g., already initialized), get the existing auth instance
   console.log("Auth already initialized, using existing instance");

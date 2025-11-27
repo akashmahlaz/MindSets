@@ -1,6 +1,4 @@
 import "@/app/global.css";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getUserSessions, SessionBooking } from "@/services/sessionService";
@@ -8,14 +6,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  ScrollView,
-  Share,
-  StatusBar,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Share,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -26,6 +25,23 @@ export default function SessionsScreen() {
   const [sessions, setSessions] = useState<SessionBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
+
+  // Premium colors
+  const colors = {
+    background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
+    card: isDarkColorScheme ? "#171D26" : "#FFFFFF",
+    cardAlt: isDarkColorScheme ? "#1E2632" : "#F8FAFC",
+    text: isDarkColorScheme ? "#F0F2F5" : "#1E2530",
+    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
+    primary: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
+    secondary: isDarkColorScheme ? "#4CC38A" : "#3FA57A",
+    accent: isDarkColorScheme ? "#B79CFC" : "#A78BFA",
+    warning: "#F59E0B",
+    success: isDarkColorScheme ? "#4CC38A" : "#26A269",
+    error: "#EF4444",
+    border: isDarkColorScheme ? "#323A48" : "#E2E5E9",
+  };
 
   useEffect(() => {
     loadSessions();
@@ -36,13 +52,11 @@ export default function SessionsScreen() {
 
     setLoading(true);
     try {
-      const userRole =
-        userProfile.role === "counsellor" ? "counselor" : "client";
+      const userRole = userProfile.role === "counsellor" ? "counselor" : "client";
       const userSessions = await getUserSessions(userProfile.uid, userRole);
       setSessions(userSessions);
     } catch (error) {
       console.error("Error loading sessions:", error);
-      Alert.alert("Error", "Failed to load sessions");
     } finally {
       setLoading(false);
     }
@@ -55,189 +69,68 @@ export default function SessionsScreen() {
   };
 
   const shareSessionDetails = async (session: SessionBooking) => {
-    const sessionTitle =
-      userProfile?.role === "counsellor"
-        ? `${session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session - ${session.clientName}`
-        : `${session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session with ${session.counselorName}`;
-
-    const sessionDetails = `
-📅 Session Details
-
-${sessionTitle}
-📅 Date: ${session.date.toLocaleDateString()}
-⏰ Time: ${session.date.toLocaleTimeString()}
-⏱️ Duration: ${session.duration} minutes
-${session.notes ? `📝 Notes: ${session.notes}` : ""}
-
-MindConnect Mental Health Platform
-    `.trim();
+    const sessionTitle = userProfile?.role === "counsellor"
+      ? `Session with ${session.clientName}`
+      : `Session with ${session.counselorName}`;
 
     try {
       await Share.share({
-        message: sessionDetails,
+        message: `📅 ${sessionTitle}\n📆 ${session.date.toLocaleDateString()}\n⏰ ${session.date.toLocaleTimeString()}\n⏱️ ${session.duration} minutes`,
         title: "Session Details",
       });
     } catch (error) {
-      console.error("Error sharing session:", error);
+      console.error("Error sharing:", error);
     }
   };
 
-  const joinSession = async (session: SessionBooking) => {
+  const joinSession = (session: SessionBooking) => {
     if (session.status !== "confirmed") {
-      Alert.alert(
-        "Session Not Available",
-        "This session is not confirmed yet. Please wait for confirmation before joining.",
-        [{ text: "OK" }],
-      );
+      Alert.alert("Session Not Available", "This session is not confirmed yet.");
       return;
     }
-
-    const now = new Date();
-    const sessionTime = new Date(session.date);
-    const timeDiff = sessionTime.getTime() - now.getTime();
-    const minutesUntilSession = Math.floor(timeDiff / (1000 * 60));
-
-    if (minutesUntilSession > 15) {
-      Alert.alert(
-        "Session Not Started",
-        `Your session starts in ${minutesUntilSession} minutes. You can join 15 minutes before the scheduled time.`,
-        [{ text: "OK" }],
-      );
-      return;
-    }
-
-    if (minutesUntilSession < -session.duration) {
-      Alert.alert(
-        "Session Ended",
-        "This session has already ended. Please check your session history for completed sessions.",
-        [{ text: "OK" }],
-      );
-      return;
-    }
-
-    // Determine the other participant
-    const otherParticipantId = 
-      userProfile?.role === "counsellor" 
-        ? session.clientId 
-        : session.counselorId;
-
-    if (!otherParticipantId) {
-      Alert.alert(
-        "Unable to Join",
-        "We couldn't identify the other participant. Please try again or contact support.",
-        [{ text: "OK" }],
-      );
-      return;
-    }
-
-    // Navigate to video call or show join options
-    Alert.alert(
-      "Join Session",
-      "Choose how you want to join your session:",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Video Call",
-          onPress: async () => {
-            try {
-              const callId = `session-${session.id}-${Date.now()}`;
-              const call = await createCall(callId, [otherParticipantId], true);
-              if (call) {
-                router.push({
-                  pathname: "/call/[callId]",
-                  params: {
-                    callId: call.id,
-                    callType: call.type,
-                    isVideo: "true",
-                  },
-                });
-              } else {
-                Alert.alert(
-                  "Connection Error",
-                  "We couldn't start the video call. Please check your connection and try again.",
-                  [{ text: "OK" }],
-                );
-              }
-            } catch (error) {
-              Alert.alert(
-                "Error",
-                "Failed to start video call. Please try again.",
-                [{ text: "OK" }],
-              );
-            }
-          },
-        },
-        {
-          text: "Voice Call",
-          onPress: async () => {
-            try {
-              const callId = `session-${session.id}-${Date.now()}`;
-              const call = await createCall(callId, [otherParticipantId], false);
-              if (call) {
-                router.push({
-                  pathname: "/call/[callId]",
-                  params: {
-                    callId: call.id,
-                    callType: call.type,
-                    isVideo: "false",
-                  },
-                });
-              } else {
-                Alert.alert(
-                  "Connection Error",
-                  "We couldn't start the voice call. Please check your connection and try again.",
-                  [{ text: "OK" }],
-                );
-              }
-            } catch (error) {
-              Alert.alert(
-                "Error",
-                "Failed to start voice call. Please try again.",
-                [{ text: "OK" }],
-              );
-            }
-          },
-        },
-      ],
-    );
+    
+    Alert.alert("Join Session", "Choose how to join:", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Video Call", onPress: () => console.log("Video call") },
+      { text: "Voice Call", onPress: () => console.log("Voice call") },
+    ]);
   };
 
   const createNewSession = () => {
-    console.log("Navigating to book session...");
     router.push("/(session)/book-session");
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "#F59E0B"; // Amber
-      case "confirmed":
-        return "#059669"; // Emerald
-      case "completed":
-        return "#10B981"; // Green
-      case "cancelled":
-        return "#EF4444"; // Red
-      default:
-        return "#6B7280"; // Gray
-    }
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { color: string; bg: string; label: string; icon: string }> = {
+      pending: { color: colors.warning, bg: colors.warning + "15", label: "Pending", icon: "time-outline" },
+      confirmed: { color: colors.success, bg: colors.success + "15", label: "Confirmed", icon: "checkmark-circle-outline" },
+      completed: { color: colors.primary, bg: colors.primary + "15", label: "Completed", icon: "checkmark-done-outline" },
+      cancelled: { color: colors.error, bg: colors.error + "15", label: "Cancelled", icon: "close-circle-outline" },
+    };
+    return configs[status] || configs.pending;
   };
 
   const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "therapy":
-        return "medical";
-      case "consultation":
-        return "people";
-      case "follow-up":
-        return "checkmark-circle";
-      case "crisis-support":
-        return "warning";
-      default:
-        return "calendar";
-    }
+    const icons: Record<string, string> = {
+      therapy: "medical-outline",
+      consultation: "people-outline",
+      "follow-up": "refresh-outline",
+      "crisis-support": "alert-circle-outline",
+    };
+    return icons[type] || "calendar-outline";
   };
 
   const formatDate = (date: Date) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return `Today, ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    }
+    if (date.toDateString() === tomorrow.toDateString()) {
+      return `Tomorrow, ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    }
     return date.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
@@ -248,286 +141,300 @@ MindConnect Mental Health Platform
   };
 
   const upcomingSessions = sessions.filter(
-    (s) =>
-      (s.status === "pending" || s.status === "confirmed") &&
-      s.date > new Date(),
+    (s) => (s.status === "pending" || s.status === "confirmed") && s.date > new Date()
   );
   const completedSessions = sessions.filter((s) => s.status === "completed");
+  const currentSessions = activeTab === "upcoming" ? upcomingSessions : completedSessions;
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <StatusBar
-          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? "hsl(220, 13%, 8%)" : "#ffffff"}
-        />
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator
-            size="large"
-            className="text-foreground"
-          />
-          <Text className="text-foreground text-lg mt-4">
-            Loading sessions...
-          </Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.textSecondary, marginTop: 16, fontSize: 16 }}>Loading sessions...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <StatusBar
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "hsl(220, 13%, 8%)" : "#ffffff"}
-      />
-      <ScrollView
-        className="flex-1 px-4"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refreshSessions} />
-        }
-      >
-        {/* Header */}
-        <View className="py-6">
-          <Text className="text-2xl font-bold text-foreground mb-2">
-            My Sessions
-          </Text>
-          <Text className="text-muted-foreground">
-            {userProfile?.role === "counsellor"
-              ? "Manage your client sessions"
-              : "Track your therapy sessions"}
-          </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+      
+      {/* Header */}
+      <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <View>
+            <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>
+              Sessions
+            </Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, marginTop: 4 }}>
+              {userProfile?.role === "counsellor" ? "Manage your appointments" : "Track your therapy sessions"}
+            </Text>
+          </View>
+          
+          <Pressable
+            onPress={createNewSession}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="add" size={24} color="#FFFFFF" />
+          </Pressable>
         </View>
 
-        {/* New Session Button */}
-        <Card className="mb-6 shadow-sm">
-          <CardContent className="p-6">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1 mr-4">
-                <Text className="text-lg font-semibold text-foreground mb-1">
-                  {userProfile?.role === "counsellor"
-                    ? "Schedule New Session"
-                    : "Book New Session"}
-                </Text>
-                <Text className="text-muted-foreground">
-                  {userProfile?.role === "counsellor"
-                    ? "Add a session with your clients"
-                    : "Connect with a mental health professional"}
-                </Text>
-              </View>
-              <Button onPress={createNewSession} className="px-6">
-                <View className="flex-row items-center">
-                  <Ionicons
-                    name="add"
-                    size={20}
-                    color="white"
-                    style={{ marginRight: 4 }}
-                  />
-                  <Text className="text-primary-foreground font-medium">
-                    {userProfile?.role === "counsellor" ? "Schedule" : "Book"}
+        {/* Tabs */}
+        <View 
+          style={{
+            flexDirection: "row",
+            backgroundColor: colors.cardAlt,
+            borderRadius: 12,
+            padding: 4,
+          }}
+        >
+          {[
+            { id: "upcoming", label: "Upcoming", count: upcomingSessions.length },
+            { id: "completed", label: "History", count: completedSessions.length },
+          ].map((tab) => (
+            <Pressable
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id as "upcoming" | "completed")}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                borderRadius: 10,
+                backgroundColor: activeTab === tab.id ? colors.card : "transparent",
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <Text 
+                style={{ 
+                  fontSize: 14, 
+                  fontWeight: "600",
+                  color: activeTab === tab.id ? colors.text : colors.textSecondary,
+                }}
+              >
+                {tab.label}
+              </Text>
+              {tab.count > 0 && (
+                <View 
+                  style={{
+                    backgroundColor: activeTab === tab.id ? colors.primary : colors.border,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 10,
+                    marginLeft: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: "600", color: activeTab === tab.id ? "#FFFFFF" : colors.textSecondary }}>
+                    {tab.count}
                   </Text>
                 </View>
-              </Button>
+              )}
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refreshSessions} tintColor={colors.primary} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {currentSessions.length === 0 ? (
+          <View style={{ alignItems: "center", paddingTop: 60, paddingBottom: 40 }}>
+            <View 
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: colors.cardAlt,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Ionicons name="calendar-outline" size={36} color={colors.textSecondary} />
             </View>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Sessions */}
-        {upcomingSessions.length > 0 && (
-          <View className="mb-8">
-            <Text className="text-xl font-semibold text-foreground mb-5">
-              Upcoming Sessions
+            <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
+              No {activeTab === "upcoming" ? "upcoming" : "past"} sessions
             </Text>
-            {upcomingSessions.map((session) => (
-              <Card key={session.id} variant="outlined" className="mb-4">
-                <CardContent className="p-5">
-                  <View className="flex-row items-start justify-between mb-3">
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-2">
-                        <Ionicons
-                          name={getTypeIcon(session.type)}
-                          size={18}
-                          color={getStatusColor(session.status)}
-                          style={{ marginRight: 8 }}
-                        />
-                        <Text className="text-lg font-semibold text-foreground">
-                          {session.type.charAt(0).toUpperCase() +
-                            session.type.slice(1)}
-                          Session
-                        </Text>
+            <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", lineHeight: 20, maxWidth: 280 }}>
+              {activeTab === "upcoming" 
+                ? "Book a session to start your mental health journey"
+                : "Your completed sessions will appear here"}
+            </Text>
+            {activeTab === "upcoming" && (
+              <Pressable
+                onPress={createNewSession}
+                style={{
+                  backgroundColor: colors.primary,
+                  paddingHorizontal: 24,
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  marginTop: 24,
+                }}
+              >
+                <Text style={{ fontSize: 15, fontWeight: "600", color: "#FFFFFF" }}>
+                  Book Session
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        ) : (
+          <View style={{ gap: 12 }}>
+            {currentSessions.map((session) => {
+              const statusConfig = getStatusConfig(session.status);
+              
+              return (
+                <Pressable key={session.id}>
+                  <View 
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    {/* Header Row */}
+                    <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                        <View 
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            backgroundColor: colors.primary + "15",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                          }}
+                        >
+                          <Ionicons name={getTypeIcon(session.type) as any} size={22} color={colors.primary} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text }}>
+                            {session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session
+                          </Text>
+                          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
+                            {userProfile?.role === "counsellor" ? `With ${session.clientName}` : `With ${session.counselorName}`}
+                          </Text>
+                        </View>
                       </View>
-
-                      <Text className="text-foreground font-medium mb-1">
-                        {userProfile?.role === "counsellor"
-                          ? `With ${session.clientName}`
-                          : `With ${session.counselorName}`}
-                      </Text>
-
-                      <Text className="text-muted-foreground text-sm">
-                        📅 {formatDate(session.date)}
-                      </Text>
-                      <Text className="text-muted-foreground text-sm">
-                        ⏱️ {session.duration} minutes
-                      </Text>
-                    </View>
-
-                    <View className="items-center">
-                      <View
-                        className="px-3 py-1 rounded-full mb-3"
+                      
+                      <View 
                         style={{
-                          backgroundColor: `${getStatusColor(session.status)}20`,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          backgroundColor: statusConfig.bg,
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          borderRadius: 20,
                         }}
                       >
-                        <Text
-                          className="text-xs font-medium"
-                          style={{ color: getStatusColor(session.status) }}
-                        >
-                          {session.status.toUpperCase()}
+                        <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+                        <Text style={{ fontSize: 12, fontWeight: "600", color: statusConfig.color, marginLeft: 4 }}>
+                          {statusConfig.label}
                         </Text>
                       </View>
                     </View>
-                  </View>
 
-                  {session.notes && (
-                    <View className="bg-muted/30 border-l-4 border-primary pl-4 py-3 rounded-r-lg mb-4">
-                      <View className="flex-row items-start">
-                        <Ionicons name="document-text" size={16} className="text-muted-foreground mr-2 mt-0.5" />
-                        <Text className="text-sm text-muted-foreground leading-relaxed flex-1">
+                    {/* Time Info */}
+                    <View 
+                      style={{
+                        backgroundColor: colors.cardAlt,
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+                          <Text style={{ fontSize: 14, color: colors.text, fontWeight: "500", marginLeft: 8 }}>
+                            {formatDate(session.date)}
+                          </Text>
+                        </View>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
+                          <Text style={{ fontSize: 14, color: colors.text, fontWeight: "500", marginLeft: 6 }}>
+                            {session.duration} min
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Notes */}
+                    {session.notes && (
+                      <View 
+                        style={{
+                          borderLeftWidth: 3,
+                          borderLeftColor: colors.primary,
+                          paddingLeft: 12,
+                          paddingVertical: 4,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
                           {session.notes}
                         </Text>
                       </View>
-                    </View>
-                  )}
-
-                  <View className="flex-row space-x-2">
-                    {session.status === "confirmed" && (
-                      <Button
-                        onPress={() => joinSession(session)}
-                        className="flex-1"
-                      >
-                        <View className="flex-row items-center">
-                          <Ionicons
-                            name="videocam"
-                            size={16}
-                            color="white"
-                            style={{ marginRight: 4 }}
-                          />
-                          <Text className="text-primary-foreground text-sm font-medium">
-                            Join
-                          </Text>
-                        </View>
-                      </Button>
                     )}
 
-                    <Button
-                      variant="outline"
-                      onPress={() => shareSessionDetails(session)}
-                      className="flex-1"
-                    >
-                      <View className="flex-row items-center">
-                        <Ionicons
-                          name="share"
-                          size={16}
-                          className="text-foreground"
-                          style={{ marginRight: 4 }}
-                        />
-                        <Text className="text-foreground text-sm font-medium">
-                          Share
-                        </Text>
+                    {/* Actions */}
+                    {session.status === "confirmed" && activeTab === "upcoming" && (
+                      <View style={{ flexDirection: "row", gap: 10 }}>
+                        <Pressable
+                          onPress={() => joinSession(session)}
+                          style={{
+                            flex: 1,
+                            backgroundColor: colors.primary,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            paddingVertical: 12,
+                            borderRadius: 10,
+                          }}
+                        >
+                          <Ionicons name="videocam" size={18} color="#FFFFFF" />
+                          <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
+                            Join Session
+                          </Text>
+                        </Pressable>
+                        
+                        <Pressable
+                          onPress={() => shareSessionDetails(session)}
+                          style={{
+                            paddingHorizontal: 16,
+                            paddingVertical: 12,
+                            borderRadius: 10,
+                            backgroundColor: colors.cardAlt,
+                            borderWidth: 1,
+                            borderColor: colors.border,
+                          }}
+                        >
+                          <Ionicons name="share-outline" size={18} color={colors.text} />
+                        </Pressable>
                       </View>
-                    </Button>
+                    )}
                   </View>
-                </CardContent>
-              </Card>
-            ))}
+                </Pressable>
+              );
+            })}
           </View>
         )}
-
-        {/* Completed Sessions */}
-        {completedSessions.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-xl font-semibold text-foreground mb-4">
-              Recent Sessions
-            </Text>
-            {completedSessions.slice(0, 5).map((session) => (
-              <Card key={session.id} className="mb-4 shadow-sm opacity-80">
-                <CardContent className="p-4">
-                  <View className="flex-row items-start justify-between">
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-2">
-                        <Ionicons
-                          name={getTypeIcon(session.type)}
-                          size={18}
-                          color={getStatusColor(session.status)}
-                          style={{ marginRight: 8 }}
-                        />
-                        <Text className="text-lg font-semibold text-foreground">
-                          {session.type.charAt(0).toUpperCase() +
-                            session.type.slice(1)}
-                          Session
-                        </Text>
-                      </View>
-
-                      <Text className="text-foreground font-medium mb-1">
-                        {userProfile?.role === "counsellor"
-                          ? `With ${session.clientName}`
-                          : `With ${session.counselorName}`}
-                      </Text>
-
-                      <Text className="text-muted-foreground text-sm">
-                        📅 {formatDate(session.date)}
-                      </Text>
-                    </View>
-
-                    <View
-                      className="px-3 py-1 rounded-full"
-                      style={{
-                        backgroundColor: `${getStatusColor(session.status)}20`,
-                      }}
-                    >
-                      <Text
-                        className="text-xs font-medium"
-                        style={{ color: getStatusColor(session.status) }}
-                      >
-                        COMPLETED
-                      </Text>
-                    </View>
-                  </View>
-                </CardContent>
-              </Card>
-            ))}
-          </View>
-        )}
-
-        {/* Empty State */}
-        {sessions.length === 0 && (
-          <Card className="mt-8 shadow-sm">
-            <CardContent className="p-8 items-center">
-              <Ionicons
-                name="calendar-outline"
-                size={64}
-                color="#9CA3AF"
-                style={{ marginBottom: 16 }}
-              />
-              <Text className="text-xl font-semibold text-foreground mb-2 text-center">
-                No Sessions Yet
-              </Text>
-              <Text className="text-muted-foreground text-center mb-6">
-                {userProfile?.role === "counsellor"
-                  ? "Schedule your first session with a client"
-                  : "Book your first session to get started on your mental health journey"}
-              </Text>
-              <Button onPress={createNewSession} className="px-8">
-                <Text className="text-primary-foreground font-medium">
-                  {userProfile?.role === "counsellor"
-                    ? "Schedule Session"
-                    : "Book Session"}
-                </Text>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        <View className="pb-8" />
       </ScrollView>
     </SafeAreaView>
   );

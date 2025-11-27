@@ -4,10 +4,11 @@ import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { setupVideoPushConfig } from "@/lib/videoPushConfig";
-import { Slot, useRouter } from "expo-router";
-import { useEffect } from "react";
-import { ActivityIndicator, AppRegistry, StatusBar, View } from "react-native";
+import { Slot, useRouter, useSegments, useRootNavigationState } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, AppRegistry, StatusBar, View, Text, Image, Animated } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
 
 // Initialize push notifications using the new service
@@ -16,15 +17,22 @@ import { PushNotificationInitializer } from "@/hooks/usePushNotifications";
 // Initialize video push configuration on app start
 setupVideoPushConfig();
 
-// Register headless task for foreground service
-AppRegistry.registerHeadlessTask(
-  "app.notifee.foreground-service-headless-task",
-  () => () => {
-    console.log("Foreground service headless task running");
-    // Keep the task alive
-    return Promise.resolve();
-  },
-);
+// Register headless task for foreground service - only register once
+let isHeadlessTaskRegistered = false;
+if (!isHeadlessTaskRegistered) {
+  try {
+    AppRegistry.registerHeadlessTask(
+      "app.notifee.foreground-service-headless-task",
+      () => () => {
+        console.log("Foreground service headless task running");
+        return Promise.resolve();
+      },
+    );
+    isHeadlessTaskRegistered = true;
+  } catch (e) {
+    // Task already registered
+  }
+}
 
 // Suppress specific warnings from Stream Video SDK
 const originalWarn = console.warn;
@@ -32,17 +40,15 @@ console.warn = (...args) => {
   if (
     args[0] &&
     typeof args[0] === "string" &&
-    (args[0].includes(
-      "Text strings must be rendered within a <Text> component",
-    ) ||
-      args[0].includes("useChannelsContext hook was called outside"))
+    (args[0].includes("Text strings must be rendered within a <Text> component") ||
+      args[0].includes("useChannelsContext hook was called outside") ||
+      args[0].includes("registerHeadlessTask or registerCancellableHeadlessTask called multiple times"))
   ) {
-    return; // Suppress these specific warnings
+    return;
   }
   originalWarn.apply(console, args);
 };
 
-// Import the necessary components from stream-chat-react-native
 import React from "react";
 import { OverlayProvider } from "stream-chat-react-native";
 
@@ -51,8 +57,8 @@ function StreamChatWrapper({ children }: { children: React.ReactNode }) {
 
   const darkTheme = {
     colors: {
-      bg_gradient_end: "#000000",
-      bg_gradient_start: "#000000",
+      bg_gradient_end: "#0A0A0F",
+      bg_gradient_start: "#0A0A0F",
       black: "#000000",
       blue_alice: "#1a1a1a",
       border: "#242424",
@@ -60,12 +66,12 @@ function StreamChatWrapper({ children }: { children: React.ReactNode }) {
       grey_gainsboro: "#2a2a2a",
       grey_whisper: "#1a1a1a",
       icon: "#ffffff",
-      modal: "#000000",
-      overlay: "#000000",
+      modal: "#0A0A0F",
+      overlay: "#0A0A0F",
       shadow_icon: "#000000",
       targetedMessageBackground: "#1a1a1a",
       text: "#ffffff",
-      white: "#000000",
+      white: "#0A0A0F",
       white_smoke: "#1a1a1a",
       white_snow: "#1a1a1a",
     },
@@ -73,8 +79,8 @@ function StreamChatWrapper({ children }: { children: React.ReactNode }) {
 
   const lightTheme = {
     colors: {
-      bg_gradient_end: "#ffffff",
-      bg_gradient_start: "#ffffff",
+      bg_gradient_end: "#FAFBFC",
+      bg_gradient_start: "#FAFBFC",
       black: "#000000",
       blue_alice: "#f0f4f7",
       border: "#e0e0e0",
@@ -102,68 +108,170 @@ function StreamChatWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function RootLayout() {
+// Premium Splash Screen Component
+function SplashScreen() {
+  const { isDarkColorScheme } = useColorScheme();
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const colors = {
+    background: isDarkColorScheme ? "#0A0A0F" : "#FAFBFC",
+    primary: "#6366F1",
+    text: isDarkColorScheme ? "#FFFFFF" : "#1E2530",
+    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
+  };
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <ChatProvider>
-          <StreamChatWrapper>
-            <StreamProvider>
-              <VideoProvider>
-                <PushNotificationInitializer>
-                  <AuthGate>
-                    <Slot />
-                  </AuthGate>
-                </PushNotificationInitializer>
-              </VideoProvider>
-            </StreamProvider>
-          </StreamChatWrapper>
-        </ChatProvider>
-      </AuthProvider>
-    </GestureHandlerRootView>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <StatusBar
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
+      <Animated.View
+        style={{
+          alignItems: "center",
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }}
+      >
+        {/* Logo */}
+        <View
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 28,
+            backgroundColor: colors.primary + "15",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ fontSize: 48 }}>🧠</Text>
+        </View>
+        
+        {/* App Name */}
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: "800",
+            color: colors.text,
+            letterSpacing: -0.5,
+            marginBottom: 8,
+          }}
+        >
+          MindSets
+        </Text>
+        <Text
+          style={{
+            fontSize: 16,
+            color: colors.textSecondary,
+            textAlign: "center",
+            maxWidth: 280,
+          }}
+        >
+          Your journey to mental wellness
+        </Text>
+        
+        {/* Loading Indicator */}
+        <View style={{ marginTop: 48 }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </Animated.View>
+    </View>
   );
 }
 
-function AuthGate({ children }: { children: React.ReactNode }) {
-  // This component checks if the user is authenticated
-  const { user, userProfile, loading } = useAuth();
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthProvider>
+          <ChatProvider>
+            <StreamChatWrapper>
+              <StreamProvider>
+                <VideoProvider>
+                  <PushNotificationInitializer>
+                    <RootNavigator />
+                  </PushNotificationInitializer>
+                </VideoProvider>
+              </StreamProvider>
+            </StreamChatWrapper>
+          </ChatProvider>
+        </AuthProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
+  );
+}
+
+function RootNavigator() {
+  const { user, loading } = useAuth();
+  const segments = useSegments();
   const router = useRouter();
+  const navigationState = useRootNavigationState();
+  const [isReady, setIsReady] = useState(false);
   const { isDarkColorScheme } = useColorScheme();
 
+  // Wait for navigation to be ready
   useEffect(() => {
-    if (loading) return; // Don't navigate while loading
-
-    if (!user) {
-      router.replace("/(auth)/role-selection");
-    } else {
-      // Check if user needs to complete their profile
-      if (userProfile && !userProfile.isProfileComplete) {
-        // Could redirect to profile completion screen here
-        router.replace("/");
-      } else {
-        router.replace("/");
-      }
+    if (navigationState?.key) {
+      // Add a small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 1500); // Show splash for 1.5 seconds
+      return () => clearTimeout(timer);
     }
-  }, [user, userProfile, loading, router]);
+  }, [navigationState?.key]);
 
-  // Show loading spinner while checking auth state
-  if (loading) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar
-          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={isDarkColorScheme ? "#000000" : "#ffffff"}
-        />
-        <StreamProvider>
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <ActivityIndicator size="large" />
-          </View>
-        </StreamProvider>
-      </GestureHandlerRootView>
-    );
+  // Handle navigation based on auth state
+  useEffect(() => {
+    if (!isReady || loading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!user && !inAuthGroup) {
+      // User is not signed in and not on auth screens
+      router.replace("/(auth)/role-selection");
+    } else if (user && inAuthGroup) {
+      // User is signed in but on auth screens
+      router.replace("/(main)");
+    }
+  }, [user, segments, isReady, loading]);
+
+  // Show splash screen while loading
+  if (!isReady || loading) {
+    return <SplashScreen />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <StatusBar
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={isDarkColorScheme ? "#0A0A0F" : "#FAFBFC"}
+      />
+      <Slot />
+    </>
+  );
 }

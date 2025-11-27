@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, StatusBar } from "react-native";
+import { Platform, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -13,11 +13,14 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function TabLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
-  const { userProfile } = useAuth(); // Add this line to get user profile
-  // Match colors with CSS design tokens
-  const backgroundColor = isDarkColorScheme ? "#141820" : "#F8F9FA"; // Soft dark gray/off-white
-  const borderColor = backgroundColor;
-  const statusBarBg = isDarkColorScheme ? "#141820" : "#F8F9FA"; // Matching the background
+  const { userProfile } = useAuth();
+  
+  // Premium color scheme - Soft, calming mental health app
+  const backgroundColor = isDarkColorScheme ? "#0F1419" : "#FAFBFC";
+  const tabBarBg = isDarkColorScheme ? "#171D26" : "#FFFFFF";
+  const activeTint = isDarkColorScheme ? "#6B8CF5" : "#4A6CF4";
+  const inactiveTint = isDarkColorScheme ? "#5A6477" : "#9CA3AF";
+  const statusBarBg = backgroundColor;
 
   return (
     <SafeAreaProvider>
@@ -28,31 +31,34 @@ export default function TabLayout() {
       />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: isDarkColorScheme ? "#ffffff" : "#4A90E2",
-          tabBarInactiveTintColor: isDarkColorScheme
-            ? "hsl(217, 10%, 65%)"
-            : "hsl(220, 9%, 46%)", // --muted-foreground
+          tabBarActiveTintColor: activeTint,
+          tabBarInactiveTintColor: inactiveTint,
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarBackground: TabBarBackground,
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: "600",
+            marginTop: -2,
+            marginBottom: Platform.OS === "ios" ? 0 : 4,
+          },
+          tabBarIconStyle: {
+            marginTop: Platform.OS === "ios" ? 0 : 4,
+          },
           tabBarStyle: {
-            backgroundColor: backgroundColor,
-            borderTopColor: borderColor,
+            backgroundColor: tabBarBg,
             borderTopWidth: 0,
-            // Let Expo Router handle positioning and safe areas automatically
+            height: Platform.OS === "ios" ? 88 : 64,
+            paddingTop: 8,
             ...Platform.select({
               ios: {
-                shadowColor: isDarkColorScheme ? "#000" : "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: isDarkColorScheme ? 0.3 : 0.08,
-                shadowRadius: 8,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: isDarkColorScheme ? 0.3 : 0.06,
+                shadowRadius: 16,
               },
               android: {
-                elevation: 12,
-                shadowColor: isDarkColorScheme ? "#000" : "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: isDarkColorScheme ? 0.4 : 0.1,
-                shadowRadius: 6,
+                elevation: 16,
               },
             }),
           },
@@ -62,8 +68,14 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "Home",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="house.fill" color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center" }}>
+                <IconSymbol 
+                  size={focused ? 26 : 24} 
+                  name="house.fill" 
+                  color={color}
+                />
+              </View>
             ),
           }}
         />
@@ -71,8 +83,14 @@ export default function TabLayout() {
           name="Counselors"
           options={{
             title: "Counselors",
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 size={28} name="user-doctor" color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center" }}>
+                <FontAwesome6 
+                  size={focused ? 24 : 22} 
+                  name="user-doctor" 
+                  color={color}
+                />
+              </View>
             ),
           }}
         />
@@ -80,8 +98,14 @@ export default function TabLayout() {
           name="sessions"
           options={{
             title: "Sessions",
-            tabBarIcon: ({ color }) => (
-              <AntDesign size={28} name="calendar" color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center" }}>
+                <AntDesign 
+                  size={focused ? 26 : 24} 
+                  name="calendar" 
+                  color={color}
+                />
+              </View>
             ),
           }}
         />
@@ -90,8 +114,14 @@ export default function TabLayout() {
           options={{
             title: "Chat",
             href: "/chat",
-            tabBarIcon: ({ color }) => (
-              <AntDesign size={28} name="message1" color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center" }}>
+                <AntDesign 
+                  size={focused ? 26 : 24} 
+                  name="message1" 
+                  color={color}
+                />
+              </View>
             ),
           }}
         />
@@ -99,8 +129,14 @@ export default function TabLayout() {
           name="profile"
           options={{
             title: "Profile",
-            tabBarIcon: ({ color }: { color: string }) => (
-              <AntDesign size={28} name="user" color={color} />
+            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+              <View style={{ alignItems: "center" }}>
+                <AntDesign 
+                  size={focused ? 26 : 24} 
+                  name="user" 
+                  color={color}
+                />
+              </View>
             ),
           }}
         />

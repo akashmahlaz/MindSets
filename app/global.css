@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure full black background for dark mode */
+/* Premium Mental Health App Design System - Inspired by Material Design 3 Expressive */
 html {
-  background-color: #ffffff;
+  background-color: #FAFBFC;
 }
 
 html.dark {
-  background-color: #141820; /* Soft dark gray, not pure black */
+  background-color: #0F1419;
 }
 
 body {
@@ -17,43 +17,193 @@ body {
 
 @layer base {
   :root {
-    /* Industry-Competitive Minimal Color Scheme - Material Design 3 Inspired */
-    --background: 0 0% 100%; /* #FFFFFF - Pure white */
-    --foreground: 224 71% 4%; /* #1F2937 - Dark gray */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 224 71% 4%;
+    /* ========================================
+       PREMIUM MENTAL HEALTH COLOR SYSTEM
+       Designed for calm, trust, and wellness
+       ======================================== */
+    
+    /* Core Backgrounds - Soft, warm undertones */
+    --background: 210 20% 99%; /* #FAFBFC - Warm off-white */
+    --foreground: 220 20% 14%; /* #1E2530 - Soft black */
+    
+    /* Card System - Subtle elevation */
+    --card: 0 0% 100%; /* Pure white for cards */
+    --card-foreground: 220 20% 14%;
+    
+    /* Popover/Modal */
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 239 84% 67%; /* #6366F1 - Indigo (Material Design 3, calming, professional) */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
-    --muted: 220 14% 96%; /* #F3F4F6 */
-    --muted-foreground: 220 9% 46%; /* #9CA3AF - Light gray for secondary text */
-    --accent: 258 90% 66%; /* #8B5CF6 - Digital Lavender (optional highlights) */
+    --popover-foreground: 220 20% 14%;
+    
+    /* Primary - Calm Indigo-Blue (Trust & Serenity) */
+    --primary: 230 70% 55%; /* #4A6CF4 - Calming blue-indigo */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary - Soft Sage Green (Growth & Healing) */
+    --secondary: 158 45% 45%; /* #3FA57A - Sage green */
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Muted - Subtle grays */
+    --muted: 220 16% 96%; /* #F4F5F7 */
+    --muted-foreground: 220 10% 50%; /* #747B8A */
+    
+    /* Accent - Soft Lavender (Mindfulness) */
+    --accent: 270 60% 65%; /* #A78BFA - Lavender */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%; /* #EF4444 - Red (critical actions only) */
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%; /* #E5E7EB - Hairline border */
-    --input: 220 13% 91%;
-    --ring: 239 84% 67%; /* Focus ring - Indigo */
+    
+    /* Status Colors */
+    --success: 158 64% 42%; /* #26A269 - Green */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%; /* #F59E0B - Amber */
+    --warning-foreground: 220 20% 14%;
+    --destructive: 0 72% 51%; /* #DC2626 - Red */
+    --destructive-foreground: 0 0% 100%;
+    --info: 200 90% 48%; /* #0EA5E9 - Sky blue */
+    --info-foreground: 0 0% 100%;
+    
+    /* Borders & Inputs */
+    --border: 220 16% 90%; /* #E2E5E9 */
+    --input: 220 16% 90%;
+    --ring: 230 70% 55%;
+    
+    /* Chart colors for analytics */
+    --chart-1: 230 70% 55%;
+    --chart-2: 158 45% 45%;
+    --chart-3: 270 60% 65%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 72% 51%;
   }
+  
   .dark:root {
-    /* Soft dark mode - easier on eyes, professional */
-    --background: 220 13% 8%; /* #141820 - Soft dark gray, not pure black */
-    --foreground: 210 20% 98%; /* #F3F4F6 */
-    --card: 220 13% 12%; /* #1C2128 */
-    --card-foreground: 210 20% 98%;
-    --popover: 220 13% 12%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 239 84% 67%; /* #6366F1 - Indigo for dark mode */
-    --primary-foreground: 210 20% 98%;
-    --muted: 220 13% 18%; /* #2D3441 */
-    --muted-foreground: 217 10% 65%; /* #9CA3AF */
-    --accent: 258 90% 66%; /* #8B5CF6 - Digital Lavender */
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 76% 60%; /* #EF4444 */
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 18%; /* #2D3441 */
-    --input: 220 13% 18%;
-    --ring: 239 84% 67%;
+    /* ========================================
+       DARK MODE - Soft & Easy on Eyes
+       ======================================== */
+    
+    /* Core Backgrounds */
+    --background: 220 20% 7%; /* #0F1419 - Deep blue-black */
+    --foreground: 220 15% 95%; /* #F0F2F5 */
+    
+    /* Card System - Elevated surfaces */
+    --card: 220 18% 11%; /* #171D26 */
+    --card-foreground: 220 15% 95%;
+    
+    /* Popover/Modal */
+    --popover: 220 18% 13%;
+    --popover-foreground: 220 15% 95%;
+    
+    /* Primary - Brighter for dark mode */
+    --primary: 230 75% 65%; /* #6B8CF5 */
+    --primary-foreground: 220 20% 7%;
+    
+    /* Secondary */
+    --secondary: 158 50% 50%; /* #4CC38A */
+    --secondary-foreground: 220 20% 7%;
+    
+    /* Muted */
+    --muted: 220 15% 18%; /* #272E3A */
+    --muted-foreground: 220 12% 60%; /* #8B95A5 */
+    
+    /* Accent */
+    --accent: 270 65% 70%; /* #B79CFC */
+    --accent-foreground: 220 20% 7%;
+    
+    /* Status Colors - Slightly desaturated for dark */
+    --success: 158 58% 48%;
+    --success-foreground: 220 20% 7%;
+    --warning: 38 88% 55%;
+    --warning-foreground: 220 20% 7%;
+    --destructive: 0 68% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --info: 200 85% 55%;
+    --info-foreground: 220 20% 7%;
+    
+    /* Borders & Inputs */
+    --border: 220 15% 22%; /* #323A48 */
+    --input: 220 15% 22%;
+    --ring: 230 75% 65%;
+    
+    /* Chart colors */
+    --chart-1: 230 75% 65%;
+    --chart-2: 158 50% 50%;
+    --chart-3: 270 65% 70%;
+    --chart-4: 38 88% 55%;
+    --chart-5: 0 68% 55%;
+  }
+}
+
+/* ========================================
+   PREMIUM UTILITY CLASSES
+   ======================================== */
+@layer utilities {
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .dark .glass {
+    background: rgba(23, 29, 38, 0.85);
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  .gradient-calm {
+    background: linear-gradient(135deg, hsl(230, 70%, 55%) 0%, hsl(158, 45%, 45%) 100%);
+  }
+  
+  .gradient-surface {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  }
+  
+  /* Text gradients */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Premium shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  }
+  
+  .shadow-elevated {
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+  }
+  
+  .shadow-glow-primary {
+    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.3);
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
