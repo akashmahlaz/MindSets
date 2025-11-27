@@ -171,13 +171,11 @@ export default function UserDashboard() {
             backgroundColor: colors.surface,
             borderRadius: 24,
             overflow: "hidden",
-            borderWidth: 1,
-            borderColor: colors.border,
             shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: isDarkColorScheme ? 0.3 : 0.08,
-            shadowRadius: 12,
-            elevation: 4,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: isDarkColorScheme ? 0.4 : 0.1,
+            shadowRadius: 16,
+            elevation: 6,
           }}
         >
           {/* Profile Image with Gradient Overlay */}
@@ -410,8 +408,6 @@ export default function UserDashboard() {
                 padding: 20,
                 flexDirection: "row",
                 alignItems: "center",
-                borderWidth: 1,
-                borderColor: colors.primary + "20",
               }}
             >
               <View 
@@ -466,8 +462,11 @@ export default function UserDashboard() {
                   borderRadius: 20,
                   padding: 18,
                   alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: colors.border,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: isDarkColorScheme ? 0.2 : 0.06,
+                  shadowRadius: 8,
+                  elevation: 3,
                 }}
               >
                 <LinearGradient
@@ -502,8 +501,11 @@ export default function UserDashboard() {
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 16,
-              borderWidth: 1,
-              borderColor: colors.border,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
+              shadowRadius: 6,
+              elevation: 2,
             }}
           >
             <Ionicons name="search" size={20} color={colors.textSecondary} />
@@ -551,8 +553,6 @@ export default function UserDashboard() {
                     backgroundColor: colors.card,
                     borderRadius: 20,
                     overflow: "hidden",
-                    borderWidth: 1,
-                    borderColor: colors.border,
                   }}
                 >
                   <View style={{ height: 180, backgroundColor: colors.cardAlt }} />
@@ -622,8 +622,6 @@ export default function UserDashboard() {
                     borderRadius: 16,
                     padding: 16,
                     flexDirection: "row",
-                    borderWidth: 1,
-                    borderColor: colors.border,
                   }}
                 >
                   <View style={{ width: 80, height: 80, borderRadius: 12, backgroundColor: colors.cardAlt, marginRight: 16 }} />
@@ -654,8 +652,11 @@ export default function UserDashboard() {
                       padding: 16,
                       flexDirection: "row",
                       alignItems: "center",
-                      borderWidth: 1,
-                      borderColor: colors.border,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
+                      shadowRadius: 6,
+                      elevation: 2,
                     }}
                   >
                     <View 
@@ -701,8 +702,11 @@ export default function UserDashboard() {
                 borderRadius: 16,
                 padding: 32,
                 alignItems: "center",
-                borderWidth: 1,
-                borderColor: colors.border,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
+                shadowRadius: 6,
+                elevation: 2,
               }}
             >
               <Ionicons name="newspaper-outline" size={40} color={colors.textSecondary} />

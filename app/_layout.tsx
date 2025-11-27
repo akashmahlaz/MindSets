@@ -232,30 +232,52 @@ function RootNavigator() {
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const [isReady, setIsReady] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
   const { isDarkColorScheme } = useColorScheme();
+
+  // Check onboarding status
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+        const seen = await AsyncStorage.getItem("@onboarding_completed");
+        setHasSeenOnboarding(seen === "true");
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+        setHasSeenOnboarding(true); // Default to true if error
+      }
+    };
+    checkOnboarding();
+  }, []);
 
   // Wait for navigation to be ready
   useEffect(() => {
-    if (navigationState?.key) {
+    if (navigationState?.key && hasSeenOnboarding !== null) {
       // Add a small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setIsReady(true);
       }, 1500); // Show splash for 1.5 seconds
       return () => clearTimeout(timer);
     }
-  }, [navigationState?.key]);
+  }, [navigationState?.key, hasSeenOnboarding]);
 
   // Handle navigation based on auth state
   useEffect(() => {
     // Don't navigate if not ready, still loading, or navigation state not available
-    if (!isReady || loading || !navigationState?.key) return;
+    if (!isReady || loading || !navigationState?.key || hasSeenOnboarding === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
     try {
       if (!user && !inAuthGroup) {
         // User is not signed in and not on auth screens
-        router.replace("/(auth)/role-selection");
+        if (!hasSeenOnboarding) {
+          // First time user - show onboarding
+          router.replace("/(auth)/onboarding");
+        } else {
+          // Returning user - show role selection
+          router.replace("/(auth)/role-selection");
+        }
       } else if (user && inAuthGroup) {
         // User is signed in but on auth screens
         router.replace("/(main)");
@@ -264,10 +286,10 @@ function RootNavigator() {
       // Navigation failed - component might not be mounted yet
       console.log("Navigation deferred - layout not ready");
     }
-  }, [user, segments, isReady, loading, navigationState?.key]);
+  }, [user, segments, isReady, loading, navigationState?.key, hasSeenOnboarding]);
 
   // Show splash screen while loading
-  if (!isReady || loading) {
+  if (!isReady || loading || hasSeenOnboarding === null) {
     return <SplashScreen />;
   }
 
