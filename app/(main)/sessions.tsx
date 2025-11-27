@@ -116,10 +116,25 @@ export default function SessionsScreen() {
       return;
     }
     
+    // Generate a unique call ID based on session ID
+    const callId = `session-${session.id}`;
+    
     Alert.alert("Join Session", "Choose how to join:", [
       { text: "Cancel", style: "cancel" },
-      { text: "Video Call", onPress: () => console.log("Video call") },
-      { text: "Voice Call", onPress: () => console.log("Voice call") },
+      { 
+        text: "Video Call", 
+        onPress: () => router.push({
+          pathname: "/call/[callId]",
+          params: { callId, callType: "default", isVideo: "true" }
+        })
+      },
+      { 
+        text: "Voice Call", 
+        onPress: () => router.push({
+          pathname: "/call/[callId]",
+          params: { callId, callType: "default", isVideo: "false" }
+        })
+      },
     ]);
   };
 

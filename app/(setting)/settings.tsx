@@ -295,7 +295,7 @@ export default function SettingsScreen() {
           borderBottomColor: colors.border,
         }}>
           <TouchableOpacity 
-            onPress={() => router.push("/(main)/profile")}
+            onPress={() => router.back()}
             style={{
               width: 40,
               height: 40,

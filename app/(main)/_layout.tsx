@@ -1,30 +1,23 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, StatusBar, View } from "react-native";
+import { Platform, StatusBar } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
-import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   const { isDarkColorScheme } = useColorScheme();
-  const { userProfile } = useAuth();
   const insets = useSafeAreaInsets();
   
-  // Premium Material Design 3 color scheme - Enhanced for visibility
+  // Premium Material Design 3 color scheme
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
     surfaceContainer: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
-    primary: "#6366F1", // Indigo - consistent brand color
-    onSurface: isDarkColorScheme ? "#F1F5F9" : "#1E293B",
-    // FIXED: Much better visibility for inactive tabs in dark mode
+    primary: "#6366F1",
     onSurfaceVariant: isDarkColorScheme ? "#CBD5E1" : "#64748B",
     outline: isDarkColorScheme ? "#374151" : "#E5E7EB",
-    // FIXED: More visible active indicator
-    activeIndicator: isDarkColorScheme ? "rgba(99, 102, 241, 0.25)" : "rgba(99, 102, 241, 0.15)",
   };
 
   // Calculate tab bar height with safe area
@@ -79,22 +72,11 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, focused }) => (
-              <View 
-                style={{ 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  backgroundColor: focused ? colors.activeIndicator : "transparent",
-                  paddingHorizontal: focused ? 20 : 0,
-                  paddingVertical: focused ? 4 : 0,
-                  borderRadius: 16,
-                }}
-              >
-                <Ionicons 
-                  size={24} 
-                  name={focused ? "home" : "home-outline"} 
-                  color={color}
-                />
-              </View>
+              <Ionicons 
+                size={24} 
+                name={focused ? "home" : "home-outline"} 
+                color={color}
+              />
             ),
           }}
         />
@@ -103,22 +85,11 @@ export default function TabLayout() {
           options={{
             title: "Counselors",
             tabBarIcon: ({ color, focused }) => (
-              <View 
-                style={{ 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  backgroundColor: focused ? colors.activeIndicator : "transparent",
-                  paddingHorizontal: focused ? 20 : 0,
-                  paddingVertical: focused ? 4 : 0,
-                  borderRadius: 16,
-                }}
-              >
-                <Ionicons 
-                  size={24} 
-                  name={focused ? "people" : "people-outline"} 
-                  color={color}
-                />
-              </View>
+              <Ionicons 
+                size={24} 
+                name={focused ? "people" : "people-outline"} 
+                color={color}
+              />
             ),
           }}
         />
@@ -127,22 +98,11 @@ export default function TabLayout() {
           options={{
             title: "Sessions",
             tabBarIcon: ({ color, focused }) => (
-              <View 
-                style={{ 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  backgroundColor: focused ? colors.activeIndicator : "transparent",
-                  paddingHorizontal: focused ? 20 : 0,
-                  paddingVertical: focused ? 4 : 0,
-                  borderRadius: 16,
-                }}
-              >
-                <Ionicons 
-                  size={24} 
-                  name={focused ? "calendar" : "calendar-outline"} 
-                  color={color}
-                />
-              </View>
+              <Ionicons 
+                size={24} 
+                name={focused ? "calendar" : "calendar-outline"} 
+                color={color}
+              />
             ),
           }}
         />
@@ -150,24 +110,12 @@ export default function TabLayout() {
           name="chat"
           options={{
             title: "Chat",
-            href: "/chat",
             tabBarIcon: ({ color, focused }) => (
-              <View 
-                style={{ 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  backgroundColor: focused ? colors.activeIndicator : "transparent",
-                  paddingHorizontal: focused ? 20 : 0,
-                  paddingVertical: focused ? 4 : 0,
-                  borderRadius: 16,
-                }}
-              >
-                <Ionicons 
-                  size={24} 
-                  name={focused ? "chatbubbles" : "chatbubbles-outline"} 
-                  color={color}
-                />
-              </View>
+              <Ionicons 
+                size={24} 
+                name={focused ? "chatbubbles" : "chatbubbles-outline"} 
+                color={color}
+              />
             ),
           }}
         />
@@ -175,23 +123,12 @@ export default function TabLayout() {
           name="profile"
           options={{
             title: "Profile",
-            tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <View 
-                style={{ 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  backgroundColor: focused ? colors.activeIndicator : "transparent",
-                  paddingHorizontal: focused ? 20 : 0,
-                  paddingVertical: focused ? 4 : 0,
-                  borderRadius: 16,
-                }}
-              >
-                <Ionicons 
-                  size={24} 
-                  name={focused ? "person" : "person-outline"} 
-                  color={color}
-                />
-              </View>
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons 
+                size={24} 
+                name={focused ? "person" : "person-outline"} 
+                color={color}
+              />
             ),
           }}
         />

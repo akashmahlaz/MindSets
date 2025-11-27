@@ -398,7 +398,7 @@ export default function UserDashboard() {
           </View>
           
           {/* Premium Mood Check Card */}
-          <Pressable>
+          <Pressable onPress={() => router.push("/(resources)/journal" as any)}>
             <LinearGradient
               colors={isDarkColorScheme ? ["#1E293B", "#334155"] : ["#EEF2FF", "#E0E7FF"]}
               start={{ x: 0, y: 0 }}
@@ -607,7 +607,7 @@ export default function UserDashboard() {
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
               Wellness Resources
             </Text>
-            <Pressable>
+            <Pressable onPress={() => router.push("/(resources)/articles" as any)}>
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
             </Pressable>
           </View>

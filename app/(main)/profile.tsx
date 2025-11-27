@@ -1,26 +1,64 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { UserProfileData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Image,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
   const { userProfile, logout } = useAuth();
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
+
+  // Animation
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  // Premium Material Design 3 colors
+  const colors = {
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    primary: "#6366F1",
+    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+    secondary: "#10B981",
+    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    accent: "#8B5CF6",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    error: "#EF4444",
+    errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
+  };
 
   const userProfileData = userProfile as UserProfileData;
 
@@ -43,207 +81,282 @@ export default function UserProfileScreen() {
 
   if (!userProfile) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" />
-          <Text className="text-foreground mt-2">Loading profile...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 20,
+            backgroundColor: colors.primaryContainer,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.textSecondary, fontSize: 16 }}>Loading profile...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
+  const menuItems = [
+    { icon: "chatbubbles-outline", label: "My Conversations", route: "/chat", color: "#6366F1" },
+    { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#8B5CF6" },
+    { icon: "heart-outline", label: "Saved Counselors", route: "/(main)/Counselors", color: "#EC4899" },
+    { icon: "document-text-outline", label: "Resources", route: "/(resources)/articles", color: "#10B981" },
+  ];
+
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
-      <StatusBar
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={isDarkColorScheme ? "#0f172a" : "#ffffff"}
-      />
-      {/* Header */}
-      <View className="flex-row justify-between items-center px-6 py-4 border-b border-border">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={isDarkColorScheme ? "#fff" : "#000"}
-          />
-        </TouchableOpacity>
-        <Text className="text-xl font-semibold text-foreground">Profile</Text>
-        <TouchableOpacity onPress={() => router.push("/(setting)/settings")}>
-          <Ionicons
-            name="settings-outline"
-            size={24}
-            color={isDarkColorScheme ? "#fff" : "#000"}
-          />
-        </TouchableOpacity>
-      </View>
+    <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <StatusBar
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
+        
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+        }}>
+          <Text style={{ fontSize: 28, fontWeight: '700', color: colors.text, letterSpacing: -0.5 }}>
+            Profile
+          </Text>
+          <Pressable 
+            onPress={() => router.push("/(setting)/settings")}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: colors.surfaceVariant,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Ionicons name="settings-outline" size={22} color={colors.text} />
+          </Pressable>
+        </View>
 
-      <ScrollView className="flex-1 px-6 py-4">
-        {/* Profile Photo Section */}
-        <Card className="mb-6">
-          <CardContent className="p-6 items-center">
-            <Avatar
-              alt={userProfile.displayName || "User"}
-              className="w-24 h-24 mb-4"
-            >
-              {userProfile.photoURL ? (
-                <AvatarImage source={{ uri: userProfile.photoURL }} />
-              ) : (
-                <AvatarFallback className="bg-primary/10">
-                  <Text className="text-primary text-2xl font-bold">
-                    {userProfile.displayName?.charAt(0)?.toUpperCase() || "U"}
-                  </Text>
-                </AvatarFallback>
-              )}
-            </Avatar>
+        <ScrollView 
+          style={{ flex: 1 }} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        >
+          {/* Profile Card */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 24,
+              padding: 24,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: isDarkColorScheme ? 0.3 : 0.08,
+              shadowRadius: 12,
+              elevation: 4,
+            }}>
+              {/* Avatar with gradient border */}
+              <View style={{ marginBottom: 16 }}>
+                <LinearGradient
+                  colors={['#6366F1', '#8B5CF6', '#EC4899']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    width: 108,
+                    height: 108,
+                    borderRadius: 54,
+                    padding: 3,
+                  }}
+                >
+                  <View style={{
+                    flex: 1,
+                    borderRadius: 52,
+                    backgroundColor: colors.surface,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                  }}>
+                    {userProfile.photoURL ? (
+                      <Image
+                        source={{ uri: userProfile.photoURL }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <LinearGradient
+                        colors={['#6366F1', '#8B5CF6']}
+                        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+                      >
+                        <Text style={{ fontSize: 36, fontWeight: '700', color: '#FFFFFF' }}>
+                          {userProfile.displayName?.charAt(0)?.toUpperCase() || "U"}
+                        </Text>
+                      </LinearGradient>
+                    )}
+                  </View>
+                </LinearGradient>
+              </View>
 
-            <Text className="text-xl font-semibold text-foreground mb-1">
-              {userProfile.displayName}
-            </Text>
-            <Text className="text-muted-foreground mb-4">
-              {userProfile.email}
-            </Text>
-          </CardContent>
-        </Card>
-        {/* Personal Information */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">Name</Text>
-              <Text className="text-foreground font-medium">
-                {userProfileData?.firstName} {userProfileData?.lastName}
+              <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: 4 }}>
+                {userProfile.displayName}
               </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">Email</Text>
-              <Text className="text-foreground font-medium">
+              <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 16 }}>
                 {userProfile.email}
               </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">Member since</Text>
-              <Text className="text-foreground font-medium">
-                {userProfile.createdAt?.toDate?.()?.toLocaleDateString() ||
-                  "N/A"}
-              </Text>
-            </View>
-          </CardContent>
-        </Card>
-        {/* Mental Health Preferences */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Mental Health Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <View>
-              <Text className="text-muted-foreground mb-2">
-                Primary Concerns
-              </Text>
-              <View className="flex-row flex-wrap gap-2">
-                {userProfileData?.primaryConcerns?.map((concern) => (
-                  <View
-                    key={concern}
-                    className="px-3 py-1 bg-primary/10 rounded-full"
-                  >
-                    <Text className="text-primary text-sm">
-                      {concern
-                        .replace("-", " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </Text>
-                  </View>
-                )) || (
-                  <Text className="text-muted-foreground">Not specified</Text>
-                )}
+
+              {/* Stats Row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 22, fontWeight: '700', color: colors.primary }}>
+                    {userProfileData?.primaryConcerns?.length || 0}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>Concerns</Text>
+                </View>
+                <View style={{ width: 1, height: 30, backgroundColor: colors.border }} />
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 22, fontWeight: '700', color: colors.secondary }}>
+                    {userProfile.createdAt?.toDate?.()?.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) || "N/A"}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>Joined</Text>
+                </View>
               </View>
             </View>
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">
-                Preferred Counsellor
-              </Text>
-              <Text className="text-foreground font-medium capitalize">
-                {userProfileData?.preferredCounsellorGender?.replace(
-                  "-",
-                  " ",
-                ) || "Not specified"}
-              </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">Session Type</Text>
-              <Text className="text-foreground font-medium capitalize">
-                {userProfileData?.preferredSessionType || "Any"}
-              </Text>
-            </View>
-          </CardContent>
-        </Card>
-        {/* Emergency Contact */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Emergency Contact</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {userProfileData?.emergencyContact ? (
-              <>
-                <View className="flex-row justify-between">
-                  <Text className="text-muted-foreground">Name</Text>
-                  <Text className="text-foreground font-medium">
-                    {userProfileData.emergencyContact.name}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-muted-foreground">Relationship</Text>
-                  <Text className="text-foreground font-medium">
-                    {userProfileData.emergencyContact.relationship}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-muted-foreground">Phone</Text>
-                  <Text className="text-foreground font-medium">
-                    {userProfileData.emergencyContact.phone}
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <Text className="text-muted-foreground text-center py-4">
-                No emergency contact information provided
-              </Text>
-            )}
-          </CardContent>
-        </Card>
-        {/* Quick Actions */}
-        <View className="space-y-3 mb-6">
-          <Button
-            variant="outline"
-            onPress={() => router.push("/chat")}
-            className="w-full flex-row items-center justify-center gap-2"
-          >
-            <Ionicons
-              name="chatbubbles-outline"
-              size={20}
-              color={isDarkColorScheme ? "#fff" : "#000"}
-            />
-            <Text className="text-foreground">See All Chats</Text>
-          </Button>
+          </View>
 
-          <Button
-            variant="outline"
-            onPress={() => router.push("/(main)/sessions")}
-            className="w-full flex-row items-center justify-center gap-2"
-          >
-            <Ionicons
-              name="calendar-outline"
-              size={20}
-              color={isDarkColorScheme ? "#fff" : "#000"}
-            />
-            <Text className="text-foreground">My Sessions</Text>
-          </Button>
+          {/* Primary Concerns */}
+          {userProfileData?.primaryConcerns && userProfileData.primaryConcerns.length > 0 && (
+            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+              <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text, marginBottom: 12 }}>
+                Focus Areas
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {userProfileData.primaryConcerns.map((concern, index) => (
+                  <View
+                    key={concern}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      backgroundColor: index % 3 === 0 ? colors.primaryContainer : index % 3 === 1 ? colors.secondaryContainer : 'rgba(139, 92, 246, 0.1)',
+                    }}
+                  >
+                    <Text style={{ 
+                      fontSize: 14, 
+                      fontWeight: '500',
+                      color: index % 3 === 0 ? colors.primary : index % 3 === 1 ? colors.secondary : colors.accent,
+                    }}>
+                      {concern.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
-          <Button variant="outline" onPress={handleLogout} className="w-full">
-            <Text className="text-destructive">Sign Out</Text>
-          </Button>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Menu Items */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text, marginBottom: 12 }}>
+              Quick Access
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              overflow: 'hidden',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkColorScheme ? 0.2 : 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              {menuItems.map((item, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => router.push(item.route as any)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 18,
+                    paddingVertical: 16,
+                    borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    backgroundColor: `${item.color}15`,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 14,
+                  }}>
+                    <Ionicons name={item.icon as any} size={20} color={item.color} />
+                  </View>
+                  <Text style={{ flex: 1, fontSize: 16, fontWeight: '500', color: colors.text }}>
+                    {item.label}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          {/* Preferences Summary */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text, marginBottom: 12 }}>
+              Preferences
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 18,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkColorScheme ? 0.2 : 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <Text style={{ fontSize: 15, color: colors.textSecondary }}>Preferred Counselor</Text>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, textTransform: 'capitalize' }}>
+                  {userProfileData?.preferredCounsellorGender?.replace("-", " ") || "No preference"}
+                </Text>
+              </View>
+              <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 14 }} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 15, color: colors.textSecondary }}>Session Type</Text>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, textTransform: 'capitalize' }}>
+                  {userProfileData?.preferredSessionType || "Any"}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Sign Out Button */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <Pressable
+              onPress={handleLogout}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 16,
+                borderRadius: 16,
+                backgroundColor: colors.errorContainer,
+              }}
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.error} />
+              <Text style={{ color: colors.error, marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
+                Sign Out
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Animated.View>
   );
 }
+

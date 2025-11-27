@@ -1,11 +1,11 @@
 "use client";
 
-import Dashboard from "@/components/Dashboard";
+import CounsellorApprovals from "@/components/CounsellorApprovals";
 import LoginForm from "@/components/LoginForm";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/context/AuthContext";
 
-export default function Home() {
+export default function ApprovalsPage() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -30,10 +30,10 @@ export default function Home() {
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user.displayName || "Admin"}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Counsellor Approvals</h1>
+            <p className="text-gray-600">Review and approve counsellor applications</p>
           </div>
-          <Dashboard />
+          <CounsellorApprovals />
         </div>
       </main>
     </div>

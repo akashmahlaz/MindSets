@@ -1,11 +1,12 @@
 "use client";
 
-import Dashboard from "@/components/Dashboard";
 import LoginForm from "@/components/LoginForm";
 import Sidebar from "@/components/Sidebar";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import { Settings } from "lucide-react";
 
-export default function Home() {
+export default function SettingsPage() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -30,10 +31,17 @@ export default function Home() {
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user.displayName || "Admin"}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-600">Configure admin panel settings</p>
           </div>
-          <Dashboard />
+          
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-12 text-center">
+              <Settings className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+              <h2 className="text-xl font-semibold text-gray-700 mb-2">Coming Soon</h2>
+              <p className="text-gray-500">Settings configuration is under development</p>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
