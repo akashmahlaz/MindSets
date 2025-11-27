@@ -36,7 +36,7 @@ export const VideoCallTester = () => {
           params: {
             callId: call.id,
             callType: call.type,
-            isVideo: "true",
+            isVideo: true,
           },
         });
       } else {
@@ -75,7 +75,7 @@ export const VideoCallTester = () => {
           params: {
             callId: call.id,
             callType: call.type,
-            isVideo: "false",
+            isVideo: false,
           },
         });
       } else {

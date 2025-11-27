@@ -39,13 +39,14 @@ export const CustomOutgoingCall = () => {
 
       // Navigate to call screen - let the call screen handle joining
       const isVideo =
-        call.state.custom?.isVideo || call.state.custom?.callType === "video";
+        Boolean(call.state.custom?.isVideo) ||
+        call.state.custom?.callType === "video";
       router.push({
         pathname: "/call/[callId]",
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: isVideo ? "true" : "false",
+          isVideo,
         },
       });
     };

@@ -219,11 +219,11 @@ export default function ProfileScreen() {
       // Navigate to call screen
       router.push({
         pathname: "/call/[callId]",
-        params: {
-          callId: call.id,
-          callType: call.type,
-          isVideo: "false",
-        },
+      params: {
+        callId: call.id,
+        callType: call.type,
+        isVideo: false,
+      },
       });
     } catch (error) {
       console.error("Error starting voice call:", error);
@@ -258,11 +258,11 @@ export default function ProfileScreen() {
       // Navigate to call screen
       router.push({
         pathname: "/call/[callId]",
-        params: {
-          callId: call.id,
-          callType: call.type,
-          isVideo: "true",
-        },
+      params: {
+        callId: call.id,
+        callType: call.type,
+        isVideo: true,
+      },
       });
     } catch (error) {
       console.error("Error starting video call:", error);

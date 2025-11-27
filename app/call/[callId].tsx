@@ -15,16 +15,27 @@ import React, { useEffect, useState } from "react";
 import { Alert, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const parseIsVideoParam = (value?: string | boolean): boolean => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    return value.toLowerCase() === "true";
+  }
+  return true;
+};
+
 export default function CallScreen() {
   const {
     callId,
     callType = "default",
-    isVideo = "true",
+    isVideo: rawIsVideo,
   } = useLocalSearchParams<{
     callId: string;
     callType?: string;
-    isVideo?: string;
+    isVideo?: string | boolean;
   }>();
+  const isVideo = parseIsVideoParam(rawIsVideo);
 
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -209,7 +220,7 @@ export default function CallScreen() {
     <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <StreamCall call={call}>
-        <CallUI isVideo={isVideo === "true"} onEndCall={handleEndCall} />
+        <CallUI isVideo={isVideo} onEndCall={handleEndCall} />
       </StreamCall>
     </SafeAreaView>
   );

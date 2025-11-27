@@ -37,7 +37,7 @@ export const CallTester = () => {
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: "false",
+          isVideo: false,
         },
       });
     } catch (error) {
@@ -69,7 +69,7 @@ export const CallTester = () => {
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: "true",
+          isVideo: true,
         },
       });
     } catch (error) {

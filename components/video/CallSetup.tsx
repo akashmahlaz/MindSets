@@ -57,7 +57,7 @@ export const CallSetup: React.FC<CallSetupProps> = ({
           params: {
             callId: call.id,
             callType: call.type,
-            isVideo: isVideo.toString(),
+            isVideo,
           },
         });
 
