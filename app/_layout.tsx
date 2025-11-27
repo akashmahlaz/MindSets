@@ -4,9 +4,9 @@ import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { setupVideoPushConfig } from "@/lib/videoPushConfig";
-import { Slot, useRouter, useSegments, useRootNavigationState } from "expo-router";
+import { Slot, useRootNavigationState, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, AppRegistry, StatusBar, View, Text, Image, Animated } from "react-native";
+import { ActivityIndicator, Animated, AppRegistry, StatusBar, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
@@ -247,18 +247,24 @@ function RootNavigator() {
 
   // Handle navigation based on auth state
   useEffect(() => {
-    if (!isReady || loading) return;
+    // Don't navigate if not ready, still loading, or navigation state not available
+    if (!isReady || loading || !navigationState?.key) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
-    if (!user && !inAuthGroup) {
-      // User is not signed in and not on auth screens
-      router.replace("/(auth)/role-selection");
-    } else if (user && inAuthGroup) {
-      // User is signed in but on auth screens
-      router.replace("/(main)");
+    try {
+      if (!user && !inAuthGroup) {
+        // User is not signed in and not on auth screens
+        router.replace("/(auth)/role-selection");
+      } else if (user && inAuthGroup) {
+        // User is signed in but on auth screens
+        router.replace("/(main)");
+      }
+    } catch (e) {
+      // Navigation failed - component might not be mounted yet
+      console.log("Navigation deferred - layout not ready");
     }
-  }, [user, segments, isReady, loading]);
+  }, [user, segments, isReady, loading, navigationState?.key]);
 
   // Show splash screen while loading
   if (!isReady || loading) {

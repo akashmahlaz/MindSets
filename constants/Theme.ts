@@ -2,12 +2,15 @@ export const Theme = {
   colors: {
     // Industry-Competitive Minimal Palette - Material Design 3 Inspired
     primary: "#6366F1", // Indigo - Calming, professional (Material Design 3)
+    secondary: "#10B981", // Emerald - For counselors/therapists
     background: "#FFFFFF", // Pure white
     surface: "#FFFFFF", // Pure white for cards
     text: "#1F2937", // Dark Gray
     textSecondary: "#9CA3AF", // Light gray for secondary text
     accent: "#8B5CF6", // Digital Lavender (optional highlights)
     error: "#EF4444", // Red (critical actions only)
+    success: "#10B981", // Green for success states
+    warning: "#F59E0B", // Amber for warnings
     // Dark mode colors (soft, not harsh)
     darkBackground: "#141820", // Soft dark gray (not pure black)
     darkSurface: "#1C2128", // Slightly lighter for cards

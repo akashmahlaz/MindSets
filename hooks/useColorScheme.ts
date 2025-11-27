@@ -1,1 +1,2 @@
-export { useColorScheme } from "react-native";
+// Re-export from lib for consistency
+export { useColorScheme } from "@/lib/useColorScheme";

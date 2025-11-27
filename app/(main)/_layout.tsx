@@ -1,64 +1,73 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StatusBar, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { FontAwesome6 } from "@expo/vector-icons";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
-  const { colorScheme, isDarkColorScheme } = useColorScheme();
+  const { isDarkColorScheme } = useColorScheme();
   const { userProfile } = useAuth();
+  const insets = useSafeAreaInsets();
   
-  // Premium color scheme - Soft, calming mental health app
-  const backgroundColor = isDarkColorScheme ? "#0F1419" : "#FAFBFC";
-  const tabBarBg = isDarkColorScheme ? "#171D26" : "#FFFFFF";
-  const activeTint = isDarkColorScheme ? "#6B8CF5" : "#4A6CF4";
-  const inactiveTint = isDarkColorScheme ? "#5A6477" : "#9CA3AF";
-  const statusBarBg = backgroundColor;
+  // Google Material Design 3 color scheme
+  const colors = {
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceContainer: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    primary: "#6366F1", // Indigo - consistent brand color
+    onSurface: isDarkColorScheme ? "#F1F5F9" : "#1E293B",
+    onSurfaceVariant: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    outline: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    // Active state uses primary with pill indicator
+    activeIndicator: isDarkColorScheme ? "rgba(99, 102, 241, 0.12)" : "rgba(99, 102, 241, 0.12)",
+  };
+
+  // Calculate tab bar height with safe area
+  const tabBarHeight = Platform.OS === "ios" ? 88 : 60 + insets.bottom;
 
   return (
     <SafeAreaProvider>
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={statusBarBg}
+        backgroundColor={colors.background}
         translucent={false}
       />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: activeTint,
-          tabBarInactiveTintColor: inactiveTint,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.onSurfaceVariant,
           headerShown: false,
           tabBarButton: HapticTab,
-          tabBarBackground: TabBarBackground,
           tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: "600",
-            marginTop: -2,
-            marginBottom: Platform.OS === "ios" ? 0 : 4,
+            fontSize: 12,
+            fontWeight: "500",
+            marginTop: 2,
+            marginBottom: Platform.OS === "ios" ? 0 : Math.max(insets.bottom, 8),
+            letterSpacing: 0.2,
           },
           tabBarIconStyle: {
-            marginTop: Platform.OS === "ios" ? 0 : 4,
+            marginTop: Platform.OS === "ios" ? 4 : 8,
           },
           tabBarStyle: {
-            backgroundColor: tabBarBg,
-            borderTopWidth: 0,
-            height: Platform.OS === "ios" ? 88 : 64,
+            backgroundColor: colors.surfaceContainer,
+            borderTopWidth: 1,
+            borderTopColor: colors.outline,
+            height: tabBarHeight,
             paddingTop: 8,
+            paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
             ...Platform.select({
               ios: {
                 shadowColor: "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: isDarkColorScheme ? 0.3 : 0.06,
-                shadowRadius: 16,
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: isDarkColorScheme ? 0.25 : 0.04,
+                shadowRadius: 8,
               },
               android: {
-                elevation: 16,
+                elevation: 8,
               },
             }),
           },
@@ -69,10 +78,19 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, focused }) => (
-              <View style={{ alignItems: "center" }}>
-                <IconSymbol 
-                  size={focused ? 26 : 24} 
-                  name="house.fill" 
+              <View 
+                style={{ 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  backgroundColor: focused ? colors.activeIndicator : "transparent",
+                  paddingHorizontal: focused ? 20 : 0,
+                  paddingVertical: focused ? 4 : 0,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons 
+                  size={24} 
+                  name={focused ? "home" : "home-outline"} 
                   color={color}
                 />
               </View>
@@ -84,10 +102,19 @@ export default function TabLayout() {
           options={{
             title: "Counselors",
             tabBarIcon: ({ color, focused }) => (
-              <View style={{ alignItems: "center" }}>
-                <FontAwesome6 
-                  size={focused ? 24 : 22} 
-                  name="user-doctor" 
+              <View 
+                style={{ 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  backgroundColor: focused ? colors.activeIndicator : "transparent",
+                  paddingHorizontal: focused ? 20 : 0,
+                  paddingVertical: focused ? 4 : 0,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons 
+                  size={24} 
+                  name={focused ? "people" : "people-outline"} 
                   color={color}
                 />
               </View>
@@ -99,10 +126,19 @@ export default function TabLayout() {
           options={{
             title: "Sessions",
             tabBarIcon: ({ color, focused }) => (
-              <View style={{ alignItems: "center" }}>
-                <AntDesign 
-                  size={focused ? 26 : 24} 
-                  name="calendar" 
+              <View 
+                style={{ 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  backgroundColor: focused ? colors.activeIndicator : "transparent",
+                  paddingHorizontal: focused ? 20 : 0,
+                  paddingVertical: focused ? 4 : 0,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons 
+                  size={24} 
+                  name={focused ? "calendar" : "calendar-outline"} 
                   color={color}
                 />
               </View>
@@ -115,10 +151,19 @@ export default function TabLayout() {
             title: "Chat",
             href: "/chat",
             tabBarIcon: ({ color, focused }) => (
-              <View style={{ alignItems: "center" }}>
-                <AntDesign 
-                  size={focused ? 26 : 24} 
-                  name="message1" 
+              <View 
+                style={{ 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  backgroundColor: focused ? colors.activeIndicator : "transparent",
+                  paddingHorizontal: focused ? 20 : 0,
+                  paddingVertical: focused ? 4 : 0,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons 
+                  size={24} 
+                  name={focused ? "chatbubbles" : "chatbubbles-outline"} 
                   color={color}
                 />
               </View>
@@ -130,10 +175,19 @@ export default function TabLayout() {
           options={{
             title: "Profile",
             tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-              <View style={{ alignItems: "center" }}>
-                <AntDesign 
-                  size={focused ? 26 : 24} 
-                  name="user" 
+              <View 
+                style={{ 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  backgroundColor: focused ? colors.activeIndicator : "transparent",
+                  paddingHorizontal: focused ? 20 : 0,
+                  paddingVertical: focused ? 4 : 0,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons 
+                  size={24} 
+                  name={focused ? "person" : "person-outline"} 
                   color={color}
                 />
               </View>

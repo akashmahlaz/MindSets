@@ -1,9 +1,8 @@
-import { View } from "react-native";
-import { designTokens } from "@/lib/design-tokens";
+import { DimensionValue, View } from "react-native";
 
 interface LoadingSkeletonProps {
   variant?: "text" | "avatar" | "card" | "image" | "button";
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   className?: string;
   lines?: number;
@@ -26,8 +25,8 @@ export function LoadingSkeleton({
             key={i}
             className={`${baseClasses} ${className}`}
             style={{
-              width: width || (i === lines - 1 ? "75%" : "100%"),
-              height: height || 16,
+              width: width ?? (i === lines - 1 ? "75%" : "100%"),
+              height: height ?? 16,
             }}
           />
         ))}
@@ -36,13 +35,14 @@ export function LoadingSkeleton({
   }
 
   if (variant === "avatar") {
+    const size = typeof width === "number" ? width : 48;
     return (
       <View
         className={`${baseClasses} ${className}`}
         style={{
-          width: width || 48,
-          height: height || 48,
-          borderRadius: width ? Number(width) / 2 : 24,
+          width: width ?? 48,
+          height: height ?? 48,
+          borderRadius: size / 2,
         }}
       />
     );
@@ -53,8 +53,8 @@ export function LoadingSkeleton({
       <View
         className={`${baseClasses} ${className}`}
         style={{
-          width: width || "100%",
-          height: height || 120,
+          width: width ?? "100%",
+          height: height ?? 120,
         }}
       />
     );
@@ -65,8 +65,8 @@ export function LoadingSkeleton({
       <View
         className={`${baseClasses} ${className}`}
         style={{
-          width: width || "100%",
-          height: height || 200,
+          width: width ?? "100%",
+          height: height ?? 200,
         }}
       />
     );
@@ -77,8 +77,8 @@ export function LoadingSkeleton({
       <View
         className={`${baseClasses} ${className}`}
         style={{
-          width: width || 120,
-          height: height || 44,
+          width: width ?? 120,
+          height: height ?? 44,
         }}
       />
     );

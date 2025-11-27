@@ -204,25 +204,25 @@ export default function ClientList() {
             </View>
             <View className="flex-row space-x-2">
               <TouchableOpacity
-                onPress={() => startChat(client)}
+                onPress={() => startChat(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Chat with ${client.displayName}`}
+                accessibilityLabel={`Chat with ${item.displayName}`}
                 className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
                 <Ionicons name="chatbubble" size={16} className="text-primary" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => startCall(client, false)}
+                onPress={() => startCall(item, false)}
                 accessibilityRole="button"
-                accessibilityLabel={`Call ${client.displayName}`}
+                accessibilityLabel={`Call ${item.displayName}`}
                 className="p-2 rounded-full bg-success/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
                 <Ionicons name="call" size={16} className="text-success" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => startCall(client, true)}
+                onPress={() => startCall(item, true)}
                 accessibilityRole="button"
-                accessibilityLabel={`Video call ${client.displayName}`}
+                accessibilityLabel={`Video call ${item.displayName}`}
                 className="p-2 rounded-full bg-primary/10 min-w-[40px] min-h-[40px] items-center justify-center"
               >
                 <Ionicons name="videocam" size={16} className="text-primary" />

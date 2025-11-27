@@ -1,20 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import { useColorScheme } from "@/lib/useColorScheme";
 import {
     getUpcomingSessions,
     getUserSessions,
 } from "@/services/sessionService";
 import { getAllUsers } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CounsellorDashboard() {
+  const { isDarkColorScheme } = useColorScheme();
   const { user, userProfile, logout } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [stats, setStats] = useState({
@@ -23,6 +28,44 @@ export default function CounsellorDashboard() {
     weeklyHours: 0,
     rating: 0,
   });
+
+  // Premium animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  // Premium Material Design 3 colors
+  const colors = {
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    primary: "#6366F1",
+    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+    secondary: "#10B981",
+    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    warning: "#F59E0B",
+    warningContainer: isDarkColorScheme ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)",
+    error: "#EF4444",
+    errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
+    purple: "#8B5CF6",
+  };
 
   const counsellorProfile = userProfile as CounsellorProfileData;
   // Load real data on component mount
@@ -140,542 +183,577 @@ export default function CounsellorDashboard() {
 
   if (!counsellorProfile || counsellorProfile.role !== "counsellor") {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-foreground">
-            Loading counsellor dashboard...
-          </Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: colors.primaryContainer,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <Ionicons name="person-outline" size={28} color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.text, fontSize: 16 }}>Loading counsellor dashboard...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900" style={{ backgroundColor: isDarkColorScheme ? "#141820" : "#F8F9FA" }}>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Professional Header */}
-        <View className="bg-white dark:bg-gray-800 px-6 py-8 border-b border-gray-200 dark:border-gray-700">
-          <View className="flex-row justify-between items-start mb-4">
-            <View className="flex-1">
-              <View className="flex-row items-center mb-3">
-                <View className="w-12 h-12 bg-blue-600 rounded-full items-center justify-center mr-4">
-                  <Text className="text-white font-bold text-lg">
+    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <ScrollView 
+          style={{ flex: 1 }} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        >
+          {/* Premium Header */}
+          <View style={{
+            backgroundColor: colors.surface,
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 24,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                <LinearGradient
+                  colors={['#6366F1', '#8B5CF6']}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 16,
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' }}>
                     {counsellorProfile.firstName?.charAt(0)}
                   </Text>
-                </View>
-                <View className="flex-1">
-                  <View className="flex-row items-center flex-wrap">
-                    <Text className="text-2xl font-bold text-gray-900 dark:text-white mr-3">
-                      Dr. {counsellorProfile.firstName}
-                      {counsellorProfile.lastName}
+                </LinearGradient>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginRight: 10 }}>
+                      Dr. {counsellorProfile.firstName} {counsellorProfile.lastName}
                     </Text>
                     {counsellorProfile.verificationStatus === "verified" && (
-                      <View className="bg-emerald-100 dark:bg-emerald-900 px-3 py-1 rounded-full flex-row items-center">
-                        <Text className="text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-                          ✓ Verified Professional
-                        </Text>
+                      <View style={{
+                        backgroundColor: colors.secondaryContainer,
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}>
+                        <Ionicons name="checkmark-circle" size={14} color={colors.secondary} />
+                        <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: '600', marginLeft: 4 }}>Verified</Text>
                       </View>
                     )}
                   </View>
-                  <Text className="text-gray-600 dark:text-gray-400 mt-1">
-                    {counsellorProfile.specializations
-                      ?.slice(0, 2)
-                      .join(", ") || "Mental Health Professional"}
+                  <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 2 }}>
+                    {counsellorProfile.specializations?.slice(0, 2).join(", ") || "Mental Health Professional"}
                   </Text>
-                  <Text className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                    {counsellorProfile.yearsExperience} years experience • $
-                    {counsellorProfile.hourlyRate}/hour
+                  <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                    {counsellorProfile.yearsExperience} yrs exp • ${counsellorProfile.hourlyRate}/hr
                   </Text>
                 </View>
               </View>
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  backgroundColor: colors.surfaceVariant,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Ionicons name="log-out-outline" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
             </View>
-            <Button variant="outline" onPress={handleLogout} className="ml-4">
-              <Text className="text-gray-700 dark:text-gray-300">Sign Out</Text>
-            </Button>
           </View>
-        </View>
         {/* Professional Status Cards */}
-        <View className="px-6 py-4">
-          {counsellorProfile.verificationStatus === "pending" && (
-            <Card className="mb-4 border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
-              <CardContent className="p-5">
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-amber-100 dark:bg-amber-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-amber-600 dark:text-amber-400 text-lg">
-                      ⏳
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-semibold text-amber-800 dark:text-amber-200 text-lg mb-1">
-                      Verification In Progress
-                    </Text>
-                    <Text className="text-amber-700 dark:text-amber-300 text-sm leading-relaxed">
-                      Your credentials are being reviewed by our team. This
-                      process typically takes 3-5 business days. You'll receive
-                      an email notification once the review is complete.
-                    </Text>
-                  </View>
+          <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+            {counsellorProfile.verificationStatus === "pending" && (
+              <View style={{
+                backgroundColor: colors.warningContainer,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 16,
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+              }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 14,
+                }}>
+                  <Ionicons name="time-outline" size={22} color={colors.warning} />
                 </View>
-              </CardContent>
-            </Card>
-          )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: '700', color: colors.warning, fontSize: 16, marginBottom: 4 }}>
+                    Verification In Progress
+                  </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }}>
+                    Your credentials are being reviewed. This typically takes 3-5 business days.
+                  </Text>
+                </View>
+              </View>
+            )}
 
-          {counsellorProfile.verificationStatus === "rejected" && (
-            <Card className="mb-4 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
-              <CardContent className="p-5">
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-red-100 dark:bg-red-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-red-600 dark:text-red-400 text-lg">
-                      ⚠️
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-semibold text-red-800 dark:text-red-200 text-lg mb-2">
-                      Application Requires Updates
-                    </Text>
-                    <Text className="text-red-700 dark:text-red-300 text-sm leading-relaxed mb-4">
-                      {counsellorProfile.verificationNotes ||
-                        "Your application needs some updates to meet our verification requirements. Please review the feedback and resubmit your application."}
-                    </Text>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onPress={() => router.push("/profile/edit")}
-                      className="self-start border-red-300 dark:border-red-700"
-                    >
-                      <Text className="text-red-700 dark:text-red-300">
-                        Update Application
-                      </Text>
-                    </Button>
-                  </View>
+            {counsellorProfile.verificationStatus === "rejected" && (
+              <View style={{
+                backgroundColor: colors.errorContainer,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 16,
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+              }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 14,
+                }}>
+                  <Ionicons name="alert-circle-outline" size={22} color={colors.error} />
                 </View>
-              </CardContent>
-            </Card>
-          )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: '700', color: colors.error, fontSize: 16, marginBottom: 4 }}>
+                    Application Requires Updates
+                  </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
+                    {counsellorProfile.verificationNotes || "Please review the feedback and resubmit your application."}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/profile/edit")}
+                    style={{
+                      alignSelf: 'flex-start',
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 10,
+                      backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    }}
+                  >
+                    <Text style={{ color: colors.error, fontWeight: '600', fontSize: 14 }}>Update Application</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
 
-          {counsellorProfile.verificationStatus === "verified" && (
-            <Card className="mb-4 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800">
-              <CardContent className="p-5">
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full items-center justify-center mr-4">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
-                      ✅
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-semibold text-emerald-800 dark:text-emerald-200 text-lg mb-1">
-                      Professional Status Verified
-                    </Text>
-                    <Text className="text-emerald-700 dark:text-emerald-300 text-sm leading-relaxed">
-                      Your credentials have been verified and approved. You can
-                      now accept new clients and start conducting sessions
-                      through our platform.
-                    </Text>
-                  </View>
+            {counsellorProfile.verificationStatus === "verified" && (
+              <View style={{
+                backgroundColor: colors.secondaryContainer,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 16,
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+              }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 14,
+                }}>
+                  <Ionicons name="shield-checkmark" size={22} color={colors.secondary} />
                 </View>
-              </CardContent>
-            </Card>
-          )}
-        </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: '700', color: colors.secondary, fontSize: 16, marginBottom: 4 }}>
+                    Professional Status Verified
+                  </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }}>
+                    Your credentials are verified. You can now accept clients and conduct sessions.
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
         {/* Professional Analytics Dashboard */}
-        <View className="px-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Dashboard Overview
-          </Text>
-          <View className="flex-row flex-wrap -mx-2">
-            <View className="w-1/2 px-2 mb-4">
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center">
-                      <Text className="text-blue-600 dark:text-blue-400 text-lg">
-                        📅
-                      </Text>
+          <View style={{ paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Dashboard Overview
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 }}>
+              {[
+                { icon: "calendar", label: "Upcoming", sublabel: "Sessions", value: stats.upcomingSessions, color: colors.primary },
+                { icon: "people", label: "Active", sublabel: "Clients", value: stats.totalClients, color: colors.secondary },
+                { icon: "time", label: "This Week", sublabel: "Hours", value: `${stats.weeklyHours}h`, color: colors.purple },
+                { icon: "star", label: "Average", sublabel: "Rating", value: stats.rating > 0 ? stats.rating.toFixed(1) : "--", color: colors.warning },
+              ].map((stat, index) => (
+                <View key={index} style={{ width: '50%', paddingHorizontal: 6, marginBottom: 12 }}>
+                  <View style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: 16,
+                    padding: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 2,
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <View style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 12,
+                        backgroundColor: `${stat.color}15`,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <Ionicons name={stat.icon as any} size={20} color={stat.color} />
+                      </View>
+                      <Text style={{ fontSize: 24, fontWeight: '700', color: stat.color }}>{stat.value}</Text>
                     </View>
-                    <Text className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {stats.upcomingSessions}
-                    </Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{stat.label}</Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary }}>{stat.sublabel}</Text>
                   </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
-                    Upcoming
-                  </Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">
-                    Sessions
-                  </Text>
-                </CardContent>
-              </Card>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center">
-                      <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
-                        👥
-                      </Text>
-                    </View>
-                    <Text className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                      {stats.totalClients}
-                    </Text>
-                  </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
-                    Active
-                  </Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">
-                    Clients
-                  </Text>
-                </CardContent>
-              </Card>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center">
-                      <Text className="text-purple-600 dark:text-purple-400 text-lg">
-                        ⏰
-                      </Text>
-                    </View>
-                    <Text className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                      {stats.weeklyHours}h
-                    </Text>
-                  </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
-                    This Week
-                  </Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">
-                    Hours
-                  </Text>
-                </CardContent>
-              </Card>
-            </View>
-
-            <View className="w-1/2 px-2 mb-4">
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-full items-center justify-center">
-                      <Text className="text-amber-600 dark:text-amber-400 text-lg">
-                        ⭐
-                      </Text>
-                    </View>
-                    <Text className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                      {stats.rating > 0 ? stats.rating.toFixed(1) : "--"}
-                    </Text>
-                  </View>
-                  <Text className="text-sm font-medium text-gray-900 dark:text-white">
-                    Average
-                  </Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">
-                    Rating
-                  </Text>
-                </CardContent>
-              </Card>
+                </View>
+              ))}
             </View>
           </View>
-        </View>
         {/* Professional Quick Actions */}
-        <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Quick Actions
-          </Text>
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-1">
-              <View className="space-y-1">
-                <TouchableOpacity
-                  onPress={() => router.push("/chat")}
-                  className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
-                >
-                  <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-blue-600 dark:text-blue-400 text-lg">
-                      💬
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">
-                      Messages
-                    </Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                      View and respond to client messages
-                    </Text>
-                  </View>
-                  <Text className="text-gray-400 dark:text-gray-500">›</Text>
-                </TouchableOpacity>
-
-                <View className="h-px bg-gray-200 dark:bg-gray-700 mx-4" />
-
-                <TouchableOpacity
-                  onPress={() => router.push("/(main)/sessions")}
-                  className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
-                >
-                  <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-lg">
-                      📅
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">
-                      Schedule Management
-                    </Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                      Manage appointments and availability
-                    </Text>
-                  </View>
-                  <Text className="text-gray-400 dark:text-gray-500">›</Text>
-                </TouchableOpacity>
-
-                <View className="h-px bg-gray-200 dark:bg-gray-700 mx-4" />
-
-                <TouchableOpacity
-                  onPress={() => router.push("/profile")}
-                  className="flex-row items-center p-4 rounded-lg active:bg-gray-50 dark:active:bg-gray-700"
-                >
-                  <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center mr-4">
-                    <Text className="text-purple-600 dark:text-purple-400 text-lg">
-                      ⚙️
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium">
-                      Profile Settings
-                    </Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                      Update your professional profile
-                    </Text>
-                  </View>
-                  <Text className="text-gray-400 dark:text-gray-500">›</Text>
-                </TouchableOpacity>
-              </View>
-            </CardContent>
-          </Card>
-        </View>
+          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Quick Actions
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              overflow: 'hidden',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              {[
+                { icon: "chatbubbles", label: "Messages", desc: "View and respond to client messages", route: "/chat", color: colors.primary },
+                { icon: "calendar", label: "Schedule Management", desc: "Manage appointments and availability", route: "/(main)/sessions", color: colors.secondary },
+                { icon: "settings", label: "Profile Settings", desc: "Update your professional profile", route: "/profile", color: colors.purple },
+              ].map((action, index, arr) => (
+                <View key={index}>
+                  <TouchableOpacity
+                    onPress={() => router.push(action.route as any)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      backgroundColor: `${action.color}15`,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 14,
+                    }}>
+                      <Ionicons name={action.icon as any} size={22} color={action.color} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15, marginBottom: 2 }}>{action.label}</Text>
+                      <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{action.desc}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                  {index < arr.length - 1 && (
+                    <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 74 }} />
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
         {/* Client Management Section */}
-        <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Client Management
-          </Text>
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
+          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Client Management
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
               {loading ? (
-                <View className="py-12 items-center">
-                  <View className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                  <Text className="text-gray-500 dark:text-gray-400">
-                    Loading client information...
-                  </Text>
+                <View style={{ paddingVertical: 48, alignItems: 'center' }}>
+                  <View style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    borderWidth: 3,
+                    borderColor: colors.primaryContainer,
+                    borderTopColor: colors.primary,
+                    marginBottom: 16,
+                  }} />
+                  <Text style={{ color: colors.textSecondary }}>Loading client information...</Text>
                 </View>
               ) : clients.length === 0 ? (
-                <View className="py-12 items-center">
-                  <View className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full items-center justify-center mb-4">
-                    <Text className="text-gray-400 dark:text-gray-500 text-2xl">
-                      👥
-                    </Text>
+                <View style={{ paddingVertical: 48, alignItems: 'center' }}>
+                  <View style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: colors.surfaceVariant,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                  }}>
+                    <Ionicons name="people-outline" size={28} color={colors.textSecondary} />
                   </View>
-                  <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">
+                  <Text style={{ color: colors.text, fontSize: 17, fontWeight: '600', marginBottom: 8 }}>
                     No Active Clients
                   </Text>
-                  <Text className="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed max-w-xs">
-                    Your client list will appear here once you start conducting
-                    sessions. New clients will be automatically added when they
-                    book appointments.
+                  <Text style={{
+                    color: colors.textSecondary,
+                    textAlign: 'center',
+                    fontSize: 14,
+                    lineHeight: 20,
+                    maxWidth: 280,
+                  }}>
+                    Your client list will appear here once you start conducting sessions.
                   </Text>
                 </View>
               ) : (
                 <View>
-                  <View className="flex-row items-center justify-between mb-4">
-                    <Text className="text-gray-900 dark:text-white font-semibold">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>
                       Active Clients ({clients.length})
                     </Text>
                     <TouchableOpacity
                       onPress={() => router.push("/(main)")}
-                      className="flex-row items-center"
+                      style={{ flexDirection: 'row', alignItems: 'center' }}
                     >
-                      <Text className="text-blue-600 dark:text-blue-400 text-sm mr-1">
-                        View All
-                      </Text>
-                      <Text className="text-blue-600 dark:text-blue-400">
-                        ›
-                      </Text>
+                      <Text style={{ color: colors.primary, fontSize: 14, marginRight: 4 }}>View All</Text>
+                      <Ionicons name="chevron-forward" size={16} color={colors.primary} />
                     </TouchableOpacity>
                   </View>
 
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="-mx-2"
-                  >
-                    <View className="flex-row px-2">
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -8 }}>
+                    <View style={{ flexDirection: 'row', paddingHorizontal: 8 }}>
                       {clients.map((client, index) => (
                         <TouchableOpacity
                           key={client.uid}
-                          onPress={() =>
-                            router.push({
-                              pathname: "/profile/[userId]",
-                              params: { userId: client.uid },
-                            })
-                          }
-                          className="w-32 mx-2"
+                          onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: client.uid } })}
+                          style={{ width: 120, marginHorizontal: 6 }}
                         >
-                          <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                            <CardContent className="p-4 items-center">
-                              <View className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full items-center justify-center mb-3">
-                                <Text className="text-white text-lg font-bold">
-                                  {client.displayName?.charAt(0) || "?"}
-                                </Text>
-                              </View>
-                              <Text
-                                className="text-gray-900 dark:text-white text-center text-sm font-medium mb-1"
-                                numberOfLines={2}
-                              >
-                                {client.displayName || "Unknown Client"}
+                          <View style={{
+                            backgroundColor: colors.surfaceVariant,
+                            borderRadius: 16,
+                            padding: 16,
+                            alignItems: 'center',
+                          }}>
+                            <LinearGradient
+                              colors={['#6366F1', '#8B5CF6']}
+                              style={{
+                                width: 52,
+                                height: 52,
+                                borderRadius: 26,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginBottom: 12,
+                              }}
+                            >
+                              <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' }}>
+                                {client.displayName?.charAt(0) || "?"}
                               </Text>
-                              <View className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-full">
-                                <Text className="text-blue-700 dark:text-blue-300 text-xs font-medium">
-                                  {client.role === "user" ? "Client" : "User"}
-                                </Text>
-                              </View>
-                            </CardContent>
-                          </Card>
+                            </LinearGradient>
+                            <Text
+                              style={{ color: colors.text, textAlign: 'center', fontSize: 14, fontWeight: '600', marginBottom: 6 }}
+                              numberOfLines={2}
+                            >
+                              {client.displayName || "Unknown"}
+                            </Text>
+                            <View style={{
+                              backgroundColor: colors.primaryContainer,
+                              paddingHorizontal: 10,
+                              paddingVertical: 4,
+                              borderRadius: 10,
+                            }}>
+                              <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '600' }}>
+                                {client.role === "user" ? "Client" : "User"}
+                              </Text>
+                            </View>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </View>
                   </ScrollView>
                 </View>
               )}
-            </CardContent>
-          </Card>
-        </View>
+            </View>
+          </View>
         {/* Professional Schedule Overview */}
-        <View className="px-6 mt-6">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Today's Schedule
-          </Text>
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <View className="py-12 items-center">
-                <View className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full items-center justify-center mb-4">
-                  <Text className="text-gray-400 dark:text-gray-500 text-2xl">
-                    📅
-                  </Text>
+          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Today&apos;s Schedule
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                <View style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: colors.surfaceVariant,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}>
+                  <Ionicons name="calendar-outline" size={28} color={colors.textSecondary} />
                 </View>
-                <Text className="text-gray-900 dark:text-white text-lg font-semibold mb-2">
+                <Text style={{ color: colors.text, fontSize: 17, fontWeight: '600', marginBottom: 8 }}>
                   No Sessions Today
                 </Text>
-                <Text className="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed max-w-xs">
-                  Your daily schedule will appear here when you have
-                  appointments booked.
+                <Text style={{
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  fontSize: 14,
+                  lineHeight: 20,
+                  maxWidth: 280,
+                  marginBottom: 20,
+                }}>
+                  Your daily schedule will appear here when you have appointments booked.
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(main)/sessions")}
-                  className="mt-4 bg-blue-600 px-4 py-2 rounded-lg"
+                  style={{ overflow: 'hidden', borderRadius: 12 }}
                 >
-                  <Text className="text-white font-medium">
-                    Manage Schedule
-                  </Text>
+                  <LinearGradient
+                    colors={['#6366F1', '#8B5CF6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      paddingHorizontal: 20,
+                      paddingVertical: 12,
+                    }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15 }}>
+                      Manage Schedule
+                    </Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
-            </CardContent>
-          </Card>
-        </View>
+            </View>
+          </View>
         {/* Professional Profile Summary */}
-        <View className="px-6 mt-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Professional Profile
-          </Text>
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <View className="space-y-4">
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-blue-600 dark:text-blue-400 text-sm">
-                      🎯
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
-                      Specializations
-                    </Text>
-                    <Text className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      {counsellorProfile.specializations?.join(", ") ||
-                        "Not specified"}
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="h-px bg-gray-200 dark:bg-gray-700" />
-
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-emerald-600 dark:text-emerald-400 text-sm">
-                      📚
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
-                      Professional Experience
-                    </Text>
-                    <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                      {counsellorProfile.yearsExperience} years of experience
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="h-px bg-gray-200 dark:bg-gray-700" />
-
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-purple-600 dark:text-purple-400 text-sm">
-                      🏆
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 dark:text-white font-medium mb-1">
-                      License Information
-                    </Text>
-                    <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                      {counsellorProfile.licenseType} • Licensed Professional
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="h-px bg-gray-200 dark:bg-gray-700" />
-
-                <View className="flex-row items-start">
-                  <View className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-full items-center justify-center mr-4 mt-1">
-                    <Text className="text-amber-600 dark:text-amber-400 text-sm">
-                      💰
-                    </Text>
-                  </View>
-                  <View className="flex-1 flex-row justify-between items-center">
-                    <View>
-                      <Text className="text-gray-900 dark:text-white font-medium mb-1">
-                        Session Rate
-                      </Text>
-                      <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                        Professional consultation fee
-                      </Text>
+          <View style={{ paddingHorizontal: 20, marginTop: 24, marginBottom: 32 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Professional Profile
+            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              <View style={{ gap: 16 }}>
+                {[
+                  { icon: "ribbon", label: "Specializations", value: counsellorProfile.specializations?.join(", ") || "Not specified", color: colors.primary },
+                  { icon: "school", label: "Professional Experience", value: `${counsellorProfile.yearsExperience} years of experience`, color: colors.secondary },
+                  { icon: "trophy", label: "License Information", value: `${counsellorProfile.licenseType} • Licensed Professional`, color: colors.purple },
+                ].map((item, index, arr) => (
+                  <View key={index}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <View style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        backgroundColor: `${item.color}15`,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 14,
+                        marginTop: 2,
+                      }}>
+                        <Ionicons name={item.icon as any} size={20} color={item.color} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15, marginBottom: 4 }}>{item.label}</Text>
+                        <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }}>{item.value}</Text>
+                      </View>
                     </View>
-                    <Text className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                      ${counsellorProfile.hourlyRate}
-                    </Text>
+                    {index < arr.length - 1 && (
+                      <View style={{ height: 1, backgroundColor: colors.border, marginTop: 16, marginLeft: 58 }} />
+                    )}
                   </View>
+                ))}
+                
+                {/* Session Rate */}
+                <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 58 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: `${colors.warning}15`,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 14,
+                  }}>
+                    <Ionicons name="cash" size={20} color={colors.warning} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15, marginBottom: 2 }}>Session Rate</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 14 }}>Professional consultation fee</Text>
+                  </View>
+                  <Text style={{ fontSize: 26, fontWeight: '700', color: colors.warning }}>
+                    ${counsellorProfile.hourlyRate}
+                  </Text>
                 </View>
               </View>
 
               <TouchableOpacity
                 onPress={() => router.push("/profile")}
-                className="mt-6 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex-row items-center justify-center"
+                style={{
+                  marginTop: 20,
+                  backgroundColor: colors.surfaceVariant,
+                  padding: 16,
+                  borderRadius: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <Text className="text-gray-700 dark:text-gray-300 font-medium mr-2">
-                  Edit Profile
-                </Text>
-                <Text className="text-gray-400 dark:text-gray-500">✏️</Text>
+                <Ionicons name="create-outline" size={18} color={colors.text} style={{ marginRight: 8 }} />
+                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Edit Profile</Text>
               </TouchableOpacity>
-            </CardContent>
-          </Card>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Animated.View>
   );
 }

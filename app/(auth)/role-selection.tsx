@@ -1,30 +1,111 @@
 import { useColorScheme } from "@/lib/useColorScheme";
 import { UserRole } from "@/types/user";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Dimensions, Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function RoleSelectionScreen() {
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  
+  // Premium animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const card1Anim = useRef(new Animated.Value(0)).current;
+  const card2Anim = useRef(new Animated.Value(0)).current;
+  const buttonAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Premium color scheme
+  useEffect(() => {
+    // Elegant staggered entrance
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.exp),
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.stagger(120, [
+        Animated.spring(card1Anim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.spring(card2Anim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.spring(buttonAnim, {
+          toValue: 1,
+          tension: 60,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Subtle pulse for selected state
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.02,
+          duration: 1500,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+      ])
+    ).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Premium 2025 color palette - Inspired by Headspace, Calm, Linear
   const colors = {
-    background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
-    card: isDarkColorScheme ? "#171D26" : "#FFFFFF",
-    text: isDarkColorScheme ? "#F0F2F5" : "#1E2530",
-    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
-    primary: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
-    secondary: isDarkColorScheme ? "#4CC38A" : "#3FA57A",
-    accent: isDarkColorScheme ? "#B79CFC" : "#A78BFA",
-    border: isDarkColorScheme ? "#323A48" : "#E2E5E9",
-    cardSelected: isDarkColorScheme ? "#1E2B4A" : "#EEF4FF",
-    borderSelected: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
+    // Background - Rich, not flat
+    background: isDarkColorScheme 
+      ? "#0C0F17" // Deep space black with blue tint
+      : "#F8FAFF", // Soft blue-white, not harsh
+    
+    // Card surfaces
+    cardBg: isDarkColorScheme 
+      ? "rgba(30, 35, 50, 0.8)" 
+      : "rgba(255, 255, 255, 0.95)",
+    cardBgSelected: isDarkColorScheme
+      ? "rgba(40, 45, 65, 0.9)"
+      : "rgba(255, 255, 255, 1)",
+    
+    // Text
+    textPrimary: isDarkColorScheme ? "#FFFFFF" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
+    
+    // Accent gradients - Vibrant, modern
+    primaryGradient: ["#6366F1", "#8B5CF6"] as const, // Indigo to Purple
+    secondaryGradient: ["#10B981", "#06B6D4"] as const, // Emerald to Cyan
+    
+    // Borders
+    border: isDarkColorScheme ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)",
+    borderSelected: isDarkColorScheme ? "rgba(99, 102, 241, 0.5)" : "rgba(99, 102, 241, 0.3)",
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -32,32 +113,200 @@ export default function RoleSelectionScreen() {
   };
 
   const handleContinue = () => {
-    if (selectedRole) {
-      router.push({
-        pathname: "/(auth)/sign-up",
-        params: { role: selectedRole },
-      });
+    if (selectedRole === "user") {
+      router.push("/(auth)/sign-up-user");
+    } else if (selectedRole === "counsellor") {
+      router.push("/(auth)/sign-up-counsellor");
     }
   };
 
   const roleOptions = [
     {
       id: "user" as UserRole,
-      icon: "heart-outline",
-      title: "I'm seeking support",
-      description: "Connect with licensed mental health professionals for personalized therapy and counseling sessions.",
-      features: ["1-on-1 video sessions", "Chat with counselors", "Track your progress"],
-      gradient: [colors.primary, colors.accent],
+      icon: "heart",
+      title: "I need support",
+      subtitle: "Start your healing journey",
+      description: "Connect with licensed therapists who understand your unique needs",
+      features: ["Personalized matching", "Secure video sessions", "24/7 messaging"],
+      gradient: colors.primaryGradient,
+      iconBg: isDarkColorScheme ? "rgba(99, 102, 241, 0.2)" : "rgba(99, 102, 241, 0.1)",
+      anim: card1Anim,
     },
     {
       id: "counsellor" as UserRole,
-      icon: "medical-outline",
-      title: "I'm a mental health professional",
-      description: "Join our platform to provide therapy and support to those in need through our secure platform.",
-      features: ["Manage your practice", "Connect with clients", "Flexible scheduling"],
-      gradient: [colors.secondary, colors.primary],
+      icon: "medical",
+      title: "I'm a therapist",
+      subtitle: "Expand your practice",
+      description: "Join our network and help people worldwide from anywhere",
+      features: ["Set your schedule", "Manage clients easily", "Secure & HIPAA compliant"],
+      gradient: colors.secondaryGradient,
+      iconBg: isDarkColorScheme ? "rgba(16, 185, 129, 0.2)" : "rgba(16, 185, 129, 0.1)",
+      anim: card2Anim,
     },
   ];
+
+  const renderCard = (option: typeof roleOptions[0], index: number) => {
+    const isSelected = selectedRole === option.id;
+    
+    return (
+      <Animated.View
+        key={option.id}
+        style={{
+          opacity: option.anim,
+          transform: [
+            {
+              translateY: option.anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [40, 0],
+              }),
+            },
+            {
+              scale: isSelected ? pulseAnim : 1,
+            },
+          ],
+        }}
+      >
+        <Pressable
+          onPress={() => handleRoleSelect(option.id)}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.97 : 1 }],
+          })}
+        >
+          <View
+            style={{
+              backgroundColor: isSelected ? colors.cardBgSelected : colors.cardBg,
+              borderRadius: 24,
+              borderWidth: isSelected ? 2 : 1,
+              borderColor: isSelected ? option.gradient[0] : colors.border,
+              overflow: "hidden",
+              // Premium shadow
+              shadowColor: isSelected ? option.gradient[0] : "#000",
+              shadowOffset: { width: 0, height: isSelected ? 12 : 4 },
+              shadowOpacity: isSelected ? 0.3 : 0.08,
+              shadowRadius: isSelected ? 24 : 12,
+              elevation: isSelected ? 12 : 4,
+            }}
+          >
+            {/* Gradient accent bar at top when selected */}
+            {isSelected && (
+              <LinearGradient
+                colors={option.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ height: 4 }}
+              />
+            )}
+            
+            <View style={{ padding: 24, paddingTop: isSelected ? 20 : 24 }}>
+              {/* Header Row */}
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                {/* Icon with gradient background */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                  <LinearGradient
+                    colors={option.gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Ionicons name={option.icon as any} size={26} color="#FFFFFF" />
+                  </LinearGradient>
+                  
+                  <View>
+                    <Text style={{ 
+                      fontSize: 18, 
+                      fontWeight: "700", 
+                      color: colors.textPrimary,
+                      letterSpacing: -0.3,
+                    }}>
+                      {option.title}
+                    </Text>
+                    <Text style={{ 
+                      fontSize: 13, 
+                      color: isSelected ? option.gradient[0] : colors.textSecondary,
+                      fontWeight: "500",
+                      marginTop: 2,
+                    }}>
+                      {option.subtitle}
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Selection indicator */}
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    borderWidth: 2,
+                    borderColor: isSelected ? option.gradient[0] : colors.textMuted,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: isSelected ? option.gradient[0] : "transparent",
+                  }}
+                >
+                  {isSelected && (
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  )}
+                </View>
+              </View>
+              
+              {/* Description */}
+              <Text style={{ 
+                fontSize: 14, 
+                color: colors.textSecondary,
+                lineHeight: 22,
+                marginBottom: 18,
+              }}>
+                {option.description}
+              </Text>
+              
+              {/* Feature pills - Modern style */}
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {option.features.map((feature, idx) => (
+                  <View 
+                    key={idx}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: isSelected 
+                        ? (isDarkColorScheme ? `${option.gradient[0]}20` : `${option.gradient[0]}10`)
+                        : (isDarkColorScheme ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      gap: 6,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: isSelected ? option.gradient[0] : colors.textMuted,
+                      }}
+                    />
+                    <Text style={{ 
+                      fontSize: 12, 
+                      fontWeight: "600",
+                      color: isSelected ? option.gradient[0] : colors.textSecondary,
+                    }}>
+                      {feature}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      </Animated.View>
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -70,36 +319,56 @@ export default function RoleSelectionScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{ 
           flexGrow: 1, 
-          paddingHorizontal: 24,
-          paddingTop: 48,
+          paddingHorizontal: 20,
+          paddingTop: 32,
           paddingBottom: 32,
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Section */}
-        <View style={{ alignItems: "center", marginBottom: 48 }}>
-          {/* Logo/Brand Icon */}
-          <View 
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 24,
-              backgroundColor: colors.primary + "15",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 24,
-            }}
-          >
-            <MaterialCommunityIcons name="brain" size={40} color={colors.primary} />
+        {/* Premium Header */}
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+            alignItems: "center",
+            marginBottom: 40,
+          }}
+        >
+          {/* Logo with gradient ring */}
+          <View style={{ marginBottom: 24 }}>
+            <LinearGradient
+              colors={["#6366F1", "#8B5CF6", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: 88,
+                height: 88,
+                borderRadius: 28,
+                padding: 3,
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  borderRadius: 25,
+                  backgroundColor: colors.background,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 44 }}>🧠</Text>
+              </View>
+            </LinearGradient>
           </View>
           
           <Text 
             style={{ 
-              fontSize: 28, 
-              fontWeight: "700", 
-              color: colors.text,
+              fontSize: 32, 
+              fontWeight: "700",
+              color: colors.textPrimary,
               textAlign: "center",
-              marginBottom: 12,
+              marginBottom: 8,
+              letterSpacing: -0.5,
             }}
           >
             Welcome to MindSets
@@ -110,165 +379,92 @@ export default function RoleSelectionScreen() {
               color: colors.textSecondary,
               textAlign: "center",
               lineHeight: 24,
-              maxWidth: 320,
+              maxWidth: 300,
             }}
           >
-            Your journey to mental wellness starts here. Choose how you'd like to get started.
+            Your journey to better mental health starts here
           </Text>
+        </Animated.View>
+
+        {/* Role Cards */}
+        <View style={{ gap: 16, marginBottom: 32 }}>
+          {roleOptions.map((option, index) => renderCard(option, index))}
         </View>
 
-        {/* Role Selection Cards */}
-        <View style={{ marginBottom: 32 }}>
-          {roleOptions.map((option, index) => {
-            const isSelected = selectedRole === option.id;
-            
-            return (
-              <Pressable
-                key={option.id}
-                onPress={() => handleRoleSelect(option.id)}
-                style={{ marginBottom: index === 0 ? 16 : 0 }}
-              >
-                <View 
-                  style={{
-                    backgroundColor: isSelected ? colors.cardSelected : colors.card,
-                    borderRadius: 20,
-                    borderWidth: 2,
-                    borderColor: isSelected ? colors.borderSelected : colors.border,
-                    padding: 24,
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Icon and Checkmark Row */}
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <View 
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 16,
-                        backgroundColor: isSelected ? colors.primary + "20" : colors.primary + "10",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Ionicons 
-                        name={option.icon as any} 
-                        size={28} 
-                        color={isSelected ? colors.primary : colors.textSecondary}
-                      />
-                    </View>
-                    
-                    {isSelected && (
-                      <View 
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 14,
-                          backgroundColor: colors.primary,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Ionicons name="checkmark" size={18} color="#FFF" />
-                      </View>
-                    )}
-                  </View>
-                  
-                  {/* Content */}
-                  <Text 
-                    style={{ 
-                      fontSize: 18, 
-                      fontWeight: "700", 
-                      color: isSelected ? colors.primary : colors.text,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {option.title}
-                  </Text>
-                  <Text 
-                    style={{ 
-                      fontSize: 14, 
-                      color: colors.textSecondary,
-                      lineHeight: 21,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {option.description}
-                  </Text>
-                  
-                  {/* Features */}
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                    {option.features.map((feature, idx) => (
-                      <View 
-                        key={idx}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          backgroundColor: isSelected ? colors.primary + "10" : colors.background,
-                          paddingHorizontal: 10,
-                          paddingVertical: 6,
-                          borderRadius: 20,
-                        }}
-                      >
-                        <Ionicons 
-                          name="checkmark-circle" 
-                          size={14} 
-                          color={isSelected ? colors.primary : colors.textSecondary}
-                          style={{ marginRight: 4 }}
-                        />
-                        <Text 
-                          style={{ 
-                            fontSize: 12, 
-                            fontWeight: "500",
-                            color: isSelected ? colors.primary : colors.textSecondary,
-                          }}
-                        >
-                          {feature}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Action Buttons */}
-        <View style={{ marginTop: "auto" }}>
+        {/* CTA Section */}
+        <Animated.View
+          style={{
+            opacity: buttonAnim,
+            transform: [{
+              translateY: buttonAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [30, 0],
+              }),
+            }],
+            marginTop: "auto",
+          }}
+        >
+          {/* Continue Button with Gradient */}
           <Pressable
             onPress={handleContinue}
             disabled={!selectedRole}
-            style={{
-              backgroundColor: selectedRole ? colors.primary : colors.border,
-              borderRadius: 14,
-              paddingVertical: 18,
-              alignItems: "center",
-              marginBottom: 16,
-              opacity: selectedRole ? 1 : 0.6,
-            }}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.9 : 1,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+              marginBottom: 20,
+            })}
           >
-            <Text 
-              style={{ 
-                fontSize: 16, 
-                fontWeight: "600",
-                color: selectedRole ? "#FFFFFF" : colors.textSecondary,
+            <LinearGradient
+              colors={selectedRole 
+                ? (selectedRole === "user" ? colors.primaryGradient : colors.secondaryGradient)
+                : [isDarkColorScheme ? "#2D3748" : "#E2E8F0", isDarkColorScheme ? "#2D3748" : "#E2E8F0"]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                borderRadius: 16,
+                paddingVertical: 18,
+                alignItems: "center",
+                shadowColor: selectedRole ? "#6366F1" : "transparent",
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.4,
+                shadowRadius: 16,
+                elevation: selectedRole ? 8 : 0,
               }}
             >
-              Continue
-            </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text 
+                  style={{ 
+                    fontSize: 17, 
+                    fontWeight: "600",
+                    color: selectedRole ? "#FFFFFF" : colors.textMuted,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  Continue
+                </Text>
+                {selectedRole && (
+                  <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                )}
+              </View>
+            </LinearGradient>
           </Pressable>
 
+          {/* Sign In Link */}
           <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 15, color: colors.textSecondary }}>
+            <Text style={{ fontSize: 14, color: colors.textSecondary }}>
               Already have an account?{" "}
             </Text>
-            <Pressable onPress={() => router.replace("/(auth)/sign-in")}>
-              <Text style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}>
-                Sign In
+            <Pressable 
+              onPress={() => router.replace("/(auth)/sign-in")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#6366F1" }}>
+                Sign in
               </Text>
             </Pressable>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );

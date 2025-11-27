@@ -1,70 +1,49 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { H2, P } from "@/components/ui/typography";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { AdminService } from "@/services/adminService";
 import {
-  CounsellorProfileData,
-  LICENSE_TYPES,
-  MENTAL_HEALTH_CONCERNS,
-  THERAPY_APPROACHES,
+    CounsellorProfileData,
+    LICENSE_TYPES,
+    MENTAL_HEALTH_CONCERNS,
+    THERAPY_APPROACHES,
 } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface CounsellorSignUpData {
-  // Basic info
   email: string;
   password: string;
   confirmPassword: string;
   firstName: string;
   lastName: string;
-
-  // Professional info
   licenseNumber: string;
   licenseType: string;
   yearsExperience: string;
-
-  // Specializations
   specializations: string[];
   approaches: string[];
-  ageGroups: string[];
-
-  // Availability
   hourlyRate: string;
-  maxClientsPerWeek: string;
-  languages: string[];
-  // Documents
-  resume?: string; // Base64 encoded string
   documents: {
     license?: DocumentPicker.DocumentPickerAsset;
     degree?: DocumentPicker.DocumentPickerAsset;
-    certification?: DocumentPicker.DocumentPickerAsset;
-    insurance?: DocumentPicker.DocumentPickerAsset;
   };
 }
 
@@ -72,10 +51,10 @@ export default function CounsellorSignUpScreen() {
   const router = useRouter();
   const { signUpEnhanced } = useAuth();
   const { isDarkColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [formData, setFormData] = useState<CounsellorSignUpData>({
     email: "",
     password: "",
@@ -87,33 +66,62 @@ export default function CounsellorSignUpScreen() {
     yearsExperience: "",
     specializations: [],
     approaches: [],
-    ageGroups: [],
     hourlyRate: "",
-    maxClientsPerWeek: "",
-    languages: ["English"],
-    resume: "",
     documents: {},
   });
-  // Add document picker functions
-  const pickDocument = async (
-    type: keyof CounsellorSignUpData["documents"],
-  ) => {
+
+  // Premium animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    fadeAnim.setValue(0);
+    slideAnim.setValue(30);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentStep, fadeAnim, slideAnim]);
+
+  // Premium Material Design 3 colors
+  const colors = {
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    primary: "#6366F1",
+    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+    secondary: "#10B981",
+    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    accent: "#8B5CF6",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    input: isDarkColorScheme ? "#1E293B" : "#F8FAFC",
+    error: "#EF4444",
+    success: "#10B981",
+  };
+
+  const pickDocument = async (type: "license" | "degree") => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["application/pdf", "image/*"],
         copyToCacheDirectory: true,
       });
-
       if (!result.canceled && result.assets[0]) {
         setFormData((prev) => ({
           ...prev,
-          documents: {
-            ...prev.documents,
-            [type]: result.assets[0],
-          },
+          documents: { ...prev.documents, [type]: result.assets[0] },
         }));
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to pick document");
     }
   };
@@ -124,71 +132,36 @@ export default function CounsellorSignUpScreen() {
     formData.confirmPassword &&
     formData.firstName &&
     formData.lastName &&
-    formData.password === formData.confirmPassword;
+    formData.password === formData.confirmPassword &&
+    formData.password.length >= 6;
 
   const isStep2Valid =
-    formData.licenseNumber && formData.licenseType && formData.yearsExperience;
+    formData.licenseNumber &&
+    formData.licenseType &&
+    formData.yearsExperience &&
+    formData.specializations.length > 0;
 
-  const isStep3Valid =
-    formData.specializations.length > 0 && formData.approaches.length > 0; // Update step validation
-  const isStep5Valid = formData.documents.license && formData.documents.degree;
-  const handleArrayToggle = (
-    array: string[],
-    value: string,
-    field: keyof CounsellorSignUpData,
-  ) => {
+  const toggleSpecialization = (item: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: array.includes(value)
-        ? array.filter((item) => item !== value)
-        : [...array, value],
+      specializations: prev.specializations.includes(item)
+        ? prev.specializations.filter((s) => s !== item)
+        : [...prev.specializations, item],
     }));
   };
 
-  const handleSpecializationToggle = (specialization: string) => {
+  const toggleApproach = (item: string) => {
     setFormData((prev) => ({
       ...prev,
-      specializations: prev.specializations.includes(specialization)
-        ? prev.specializations.filter((s) => s !== specialization)
-        : [...prev.specializations, specialization],
+      approaches: prev.approaches.includes(item)
+        ? prev.approaches.filter((a) => a !== item)
+        : [...prev.approaches, item],
     }));
   };
 
-  const handleApproachToggle = (approach: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      approaches: prev.approaches.includes(approach)
-        ? prev.approaches.filter((a) => a !== approach)
-        : [...prev.approaches, approach],
-    }));
-  };
-
-  const handleAgeGroupToggle = (ageGroup: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      ageGroups: prev.ageGroups.includes(ageGroup)
-        ? prev.ageGroups.filter((ag) => ag !== ageGroup)
-        : [...prev.ageGroups, ageGroup],
-    }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    } else {
-      router.back();
-    }
-  };
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Create the enhanced profile data for counsellor
       const profileData: Partial<CounsellorProfileData> = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -198,18 +171,13 @@ export default function CounsellorSignUpScreen() {
         yearsExperience: parseInt(formData.yearsExperience),
         specializations: formData.specializations,
         approaches: formData.approaches,
-        ageGroups: formData.ageGroups,
         hourlyRate: parseFloat(formData.hourlyRate) || undefined,
-        maxClientsPerWeek: parseInt(formData.maxClientsPerWeek) || undefined,
-        languages: formData.languages,
+        languages: ["English"],
         acceptsNewClients: true,
         verificationStatus: "pending",
-        availableHours: {
-          timezone: "UTC", // Default timezone, can be updated later
-        },
+        availableHours: { timezone: "UTC" },
       };
 
-      // Sign up the user first
       const userCredential = await signUpEnhanced(
         formData.email,
         formData.password,
@@ -217,171 +185,254 @@ export default function CounsellorSignUpScreen() {
         "counsellor",
       );
 
-      // Upload documents if user was created successfully
-      if (
-        userCredential?.user?.uid &&
-        Object.keys(formData.documents).length > 0
-      ) {
+      if (userCredential?.user?.uid && Object.keys(formData.documents).length > 0) {
         try {
-          const uploadedDocuments =
-            await AdminService.uploadCounsellorDocuments(
-              formData.documents,
-              userCredential.user.uid,
-            );
-
-          // Update the user profile with document URLs
+          const uploadedDocuments = await AdminService.uploadCounsellorDocuments(
+            formData.documents,
+            userCredential.user.uid,
+          );
           await AdminService.updateCounsellorDocuments(
             userCredential.user.uid,
             uploadedDocuments,
           );
         } catch (uploadError) {
           console.error("Error uploading documents:", uploadError);
-          Alert.alert(
-            "Documents Upload Failed",
-            "Your account was created but documents failed to upload. You can upload them later from your profile.",
-          );
         }
       }
 
       Alert.alert(
-        "Application Submitted",
-        "Thank you for applying to join MindConnect as a counsellor. Your application is under review and we&apos;ll contact you within 3-5 business days.",
+        "Application Submitted! 🎉",
+        "Thank you for applying to join MindSets. Your application is under review and we'll contact you within 3-5 business days.",
         [{ text: "OK", onPress: () => router.replace("/(auth)/sign-in") }],
       );
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.message || "Failed to submit application. Please try again.",
-      );
+      Alert.alert("Error", error.message || "Failed to submit application.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Step 1: Personal & Account Info
   const renderStep1 = () => (
-    <CardContent className="space-y-4">
-      <Text className="mb-2">Personal Information</Text>
-      <Text className="mb-4">Lets start with your basic information.</Text>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">First Name</Label>
-        <Input
-          value={formData.firstName}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, firstName: text }))
-          }
-          placeholder="Enter your first name"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
+    <View style={{ gap: 20 }}>
+      {/* Section Header */}
+      <View style={{ alignItems: "center", marginBottom: 8 }}>
+        <LinearGradient
+          colors={["#6366F1", "#8B5CF6"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 64, height: 64, borderRadius: 20,
+            alignItems: "center", justifyContent: "center", marginBottom: 16
+          }}
+        >
+          <Ionicons name="person-outline" size={32} color="#FFFFFF" />
+        </LinearGradient>
+        <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text, letterSpacing: -0.3 }}>
+          Personal Information
+        </Text>
+        <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 6 }}>
+          Let&apos;s start with your basic details
+        </Text>
       </View>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Last Name</Label>
-        <Input
-          value={formData.lastName}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, lastName: text }))
-          }
-          placeholder="Enter your last name"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
+
+      {/* Name Row */}
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            First Name
+          </Text>
+          <Input
+            value={formData.firstName}
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, firstName: text }))}
+            placeholder="John"
+            style={{
+              height: 54, borderRadius: 14, paddingHorizontal: 16,
+              backgroundColor: colors.input,
+              borderWidth: 2, borderColor: formData.firstName ? colors.primary : colors.border,
+              fontSize: 16, color: colors.text
+            }}
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Last Name
+          </Text>
+          <Input
+            value={formData.lastName}
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, lastName: text }))}
+            placeholder="Smith"
+            style={{
+              height: 54, borderRadius: 14, paddingHorizontal: 16,
+              backgroundColor: colors.input,
+              borderWidth: 2, borderColor: formData.lastName ? colors.primary : colors.border,
+              fontSize: 16, color: colors.text
+            }}
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
       </View>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Professional Email</Label>
+
+      {/* Email */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Professional Email
+        </Text>
         <Input
           value={formData.email}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, email: text }))
-          }
-          placeholder="Enter your professional email"
+          onChangeText={(text) => setFormData((prev) => ({ ...prev, email: text }))}
+          placeholder="dr.smith@clinic.com"
           keyboardType="email-address"
           autoCapitalize="none"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
+          style={{
+            height: 54, borderRadius: 14, paddingHorizontal: 16,
+            backgroundColor: colors.input,
+            borderWidth: 2, borderColor: formData.email.includes("@") ? colors.success : (formData.email ? colors.primary : colors.border),
+            fontSize: 16, color: colors.text
+          }}
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Password</Label>
+
+      {/* Password */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Password
+        </Text>
         <Input
           value={formData.password}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, password: text }))
-          }
+          onChangeText={(text) => setFormData((prev) => ({ ...prev, password: text }))}
           placeholder="Create a secure password"
           secureTextEntry
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
+          style={{
+            height: 54, borderRadius: 14, paddingHorizontal: 16,
+            backgroundColor: colors.input,
+            borderWidth: 2, borderColor: formData.password.length >= 6 ? colors.success : (formData.password ? colors.primary : colors.border),
+            fontSize: 16, color: colors.text
+          }}
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Confirm Password</Label>
+
+      {/* Confirm Password */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Confirm Password
+        </Text>
         <Input
           value={formData.confirmPassword}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, confirmPassword: text }))
-          }
+          onChangeText={(text) => setFormData((prev) => ({ ...prev, confirmPassword: text }))}
           placeholder="Confirm your password"
           secureTextEntry
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
+          style={{
+            height: 54, borderRadius: 14, paddingHorizontal: 16,
+            backgroundColor: colors.input,
+            borderWidth: 2, borderColor: (formData.password === formData.confirmPassword && formData.confirmPassword) ? colors.success : (formData.confirmPassword ? colors.primary : colors.border),
+            fontSize: 16, color: colors.text
+          }}
+          placeholderTextColor={colors.textSecondary}
         />
+        {formData.password !== formData.confirmPassword && formData.confirmPassword ? (
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+            <Ionicons name="alert-circle" size={14} color={colors.error} />
+            <Text style={{ color: colors.error, fontSize: 12, marginLeft: 6 }}>Passwords do not match</Text>
+          </View>
+        ) : formData.password === formData.confirmPassword && formData.confirmPassword ? (
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+            <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+            <Text style={{ color: colors.success, fontSize: 12, marginLeft: 6 }}>Passwords match</Text>
+          </View>
+        ) : null}
       </View>
-
-      {formData.password !== formData.confirmPassword &&
-        formData.confirmPassword && (
-          <Text className="text-destructive text-sm">
-            Passwords do not match
-          </Text>
-        )}
-    </CardContent>
+    </View>
   );
 
+  // Step 2: Professional Credentials & Specializations
   const renderStep2 = () => (
-    <CardContent className="space-y-4">
-      <H2 className="mb-2">Professional Credentials</H2>
-      <P className="mb-4">
-        Please provide your professional license information.
-      </P>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">License Number</Label>
-        <Input
-          value={formData.licenseNumber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, licenseNumber: text }))
-          }
-          placeholder="Enter your license number"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
+    <View style={{ gap: 20 }}>
+      {/* Section Header */}
+      <View style={{ alignItems: "center", marginBottom: 8 }}>
+        <LinearGradient
+          colors={["#10B981", "#059669"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 64, height: 64, borderRadius: 20,
+            alignItems: "center", justifyContent: "center", marginBottom: 16
+          }}
+        >
+          <Ionicons name="medal-outline" size={32} color="#FFFFFF" />
+        </LinearGradient>
+        <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text, letterSpacing: -0.3 }}>
+          Professional Credentials
+        </Text>
+        <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 6 }}>
+          Your qualifications and expertise
+        </Text>
       </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">License Type</Label>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="max-h-32"
-        >
-          <View className="flex-row space-x-2">
-            {LICENSE_TYPES.map((license) => (
+      {/* License Number & Years */}
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            License Number
+          </Text>
+          <Input
+            value={formData.licenseNumber}
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, licenseNumber: text }))}
+            placeholder="LIC-12345"
+            style={{
+              height: 54, borderRadius: 14, paddingHorizontal: 16,
+              backgroundColor: colors.input,
+              borderWidth: 2, borderColor: formData.licenseNumber ? colors.primary : colors.border,
+              fontSize: 16, color: colors.text
+            }}
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Experience (Years)
+          </Text>
+          <Input
+            value={formData.yearsExperience}
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, yearsExperience: text }))}
+            placeholder="5"
+            keyboardType="numeric"
+            style={{
+              height: 54, borderRadius: 14, paddingHorizontal: 16,
+              backgroundColor: colors.input,
+              borderWidth: 2, borderColor: formData.yearsExperience ? colors.primary : colors.border,
+              fontSize: 16, color: colors.text
+            }}
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+      </View>
+
+      {/* License Type */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          License Type
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            {LICENSE_TYPES.slice(0, 6).map((license) => (
               <Pressable
                 key={license}
-                onPress={() =>
-                  setFormData((prev) => ({ ...prev, licenseType: license }))
-                }
-                className={`px-3 py-2 rounded-lg border min-w-max ${
-                  formData.licenseType === license
-                    ? "bg-primary border-primary"
-                    : "bg-background border-border"
-                }`}
+                onPress={() => setFormData((prev) => ({ ...prev, licenseType: license }))}
+                style={{
+                  paddingHorizontal: 18, paddingVertical: 12, borderRadius: 24,
+                  backgroundColor: formData.licenseType === license ? colors.primary : colors.surfaceVariant,
+                  borderWidth: 2,
+                  borderColor: formData.licenseType === license ? colors.primary : "transparent",
+                }}
               >
-                <Text
-                  className={`text-sm whitespace-nowrap ${
-                    formData.licenseType === license
-                      ? "text-primary-foreground"
-                      : "text-foreground"
-                  }`}
-                >
+                <Text style={{
+                  fontSize: 14, fontWeight: "600",
+                  color: formData.licenseType === license ? "#FFFFFF" : colors.text,
+                }}>
                   {license}
                 </Text>
               </Pressable>
@@ -390,77 +441,55 @@ export default function CounsellorSignUpScreen() {
         </ScrollView>
       </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Years of Experience</Label>
-        <Input
-          value={formData.yearsExperience}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, yearsExperience: text }))
-          }
-          placeholder="e.g., 5"
-          keyboardType="numeric"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
-      </View>
-    </CardContent>
-  );
-
-  const renderStep3 = () => (
-    <CardContent className="space-y-4">
-      <H2 className="mb-2">Expertise & Specializations</H2>
-      <P className="mb-4">Tell us about your areas of expertise.</P>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Specializations (Select all that apply)
-        </Label>
-        <View className="flex-row flex-wrap gap-2">
-          {MENTAL_HEALTH_CONCERNS.slice(0, 15).map((specialization) => (
+      {/* Specializations */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Specializations (Select at least 1)
+        </Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          {MENTAL_HEALTH_CONCERNS.slice(0, 10).map((spec) => (
             <Pressable
-              key={specialization}
-              onPress={() => handleSpecializationToggle(specialization)}
-              className={`px-3 py-2 rounded-full border ${
-                formData.specializations.includes(specialization)
-                  ? "bg-primary border-primary"
-                  : "bg-background border-border"
-              }`}
+              key={spec}
+              onPress={() => toggleSpecialization(spec)}
+              style={{
+                paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20,
+                backgroundColor: formData.specializations.includes(spec) ? colors.secondary : colors.surfaceVariant,
+                borderWidth: 2,
+                borderColor: formData.specializations.includes(spec) ? colors.secondary : "transparent",
+              }}
             >
-              <Text
-                className={`text-sm ${
-                  formData.specializations.includes(specialization)
-                    ? "text-primary-foreground"
-                    : "text-foreground"
-                }`}
-              >
-                {specialization
-                  .replace("-", " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+              <Text style={{
+                fontSize: 13, fontWeight: "600",
+                color: formData.specializations.includes(spec) ? "#FFFFFF" : colors.text,
+              }}>
+                {spec.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               </Text>
             </Pressable>
           ))}
         </View>
       </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Therapy Approaches</Label>
-        <View className="flex-row flex-wrap gap-2">
-          {THERAPY_APPROACHES.slice(0, 10).map((approach) => (
+      {/* Therapy Approaches */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Therapy Approaches
+        </Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          {THERAPY_APPROACHES.slice(0, 6).map((approach) => (
             <Pressable
               key={approach}
-              onPress={() => handleApproachToggle(approach)}
-              className={`px-3 py-2 rounded-full border ${
-                formData.approaches.includes(approach)
-                  ? "bg-primary border-primary"
-                  : "bg-background border-border"
-              }`}
+              onPress={() => toggleApproach(approach)}
+              style={{
+                paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20,
+                backgroundColor: formData.approaches.includes(approach) ? colors.accent : colors.surfaceVariant,
+                borderWidth: 2,
+                borderColor: formData.approaches.includes(approach) ? colors.accent : "transparent",
+              }}
             >
-              <Text
-                className={`text-sm ${
-                  formData.approaches.includes(approach)
-                    ? "text-primary-foreground"
-                    : "text-foreground"
-                }`}
-              >
+              <Text style={{
+                fontSize: 13, fontWeight: "600",
+                color: formData.approaches.includes(approach) ? "#FFFFFF" : colors.text,
+              }}>
                 {approach}
               </Text>
             </Pressable>
@@ -468,201 +497,152 @@ export default function CounsellorSignUpScreen() {
         </View>
       </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Age Groups You Work With
-        </Label>
-        <View className="flex-row flex-wrap gap-2">
-          {[
-            "Children (5-12)",
-            "Teens (13-17)",
-            "Young Adults (18-25)",
-            "Adults (26-64)",
-            "Seniors (65+)",
-          ].map((ageGroup) => (
-            <Pressable
-              key={ageGroup}
-              onPress={() => handleAgeGroupToggle(ageGroup)}
-              className={`px-3 py-2 rounded-full border ${
-                formData.ageGroups.includes(ageGroup)
-                  ? "bg-primary border-primary"
-                  : "bg-background border-border"
-              }`}
-            >
-              <Text
-                className={`text-sm ${
-                  formData.ageGroups.includes(ageGroup)
-                    ? "text-primary-foreground"
-                    : "text-foreground"
-                }`}
-              >
-                {ageGroup}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-    </CardContent>
-  );
-
-  const renderStep4 = () => (
-    <CardContent className="space-y-4">
-      <H2 className="mb-2">Practice Details</H2>
-      <P className="mb-4">Final details about your practice.</P>
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">Hourly Rate (USD)</Label>
+      {/* Hourly Rate */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Hourly Rate (USD) - Optional
+        </Text>
         <Input
           value={formData.hourlyRate}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, hourlyRate: text }))
-          }
+          onChangeText={(text) => setFormData((prev) => ({ ...prev, hourlyRate: text }))}
           placeholder="e.g., 120"
           keyboardType="numeric"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
+          style={{
+            height: 54, borderRadius: 14, paddingHorizontal: 16,
+            backgroundColor: colors.input,
+            borderWidth: 2, borderColor: formData.hourlyRate ? colors.primary : colors.border,
+            fontSize: 16, color: colors.text
+          }}
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
-      <View className="space-y-2">
-        <Label className="font-semibold text-base">
-          Maximum Clients Per Week
-        </Label>
-        <Input
-          value={formData.maxClientsPerWeek}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, maxClientsPerWeek: text }))
-          }
-          placeholder="e.g., 20"
-          keyboardType="numeric"
-          className="h-12 rounded-lg px-4 bg-background border border-input text-base text-foreground"
-          placeholderTextColor="#9CA3AF"
-        />
+      {/* Document Upload */}
+      <View>
+        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textSecondary, marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          Documents (Optional - can upload later)
+        </Text>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => pickDocument("license")}
+            style={{
+              flex: 1, height: 90, borderRadius: 16,
+              backgroundColor: colors.surfaceVariant,
+              borderWidth: 2, borderStyle: "dashed",
+              borderColor: formData.documents.license ? colors.success : colors.border,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Ionicons 
+              name={formData.documents.license ? "checkmark-circle" : "document-outline"} 
+              size={28} 
+              color={formData.documents.license ? colors.success : colors.textSecondary} 
+            />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: formData.documents.license ? colors.success : colors.textSecondary, marginTop: 6 }}>
+              {formData.documents.license ? "License ✓" : "License"}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => pickDocument("degree")}
+            style={{
+              flex: 1, height: 90, borderRadius: 16,
+              backgroundColor: colors.surfaceVariant,
+              borderWidth: 2, borderStyle: "dashed",
+              borderColor: formData.documents.degree ? colors.success : colors.border,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Ionicons 
+              name={formData.documents.degree ? "checkmark-circle" : "school-outline"} 
+              size={28} 
+              color={formData.documents.degree ? colors.success : colors.textSecondary} 
+            />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: formData.documents.degree ? colors.success : colors.textSecondary, marginTop: 6 }}>
+              {formData.documents.degree ? "Degree ✓" : "Degree"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
-      <View className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-        <Text className="text-green-800 dark:text-green-200 text-sm font-medium mb-2">
-          Application Review Process:
-        </Text>
-        <Text className="text-green-800 dark:text-green-200 text-sm">
-          • Credential verification (1-2 days){"\n"}• Background check (2-3
-          days){"\n"}• Platform training (1 day){"\n"}• Account activation
-        </Text>
-      </View>
-    </CardContent>
-  );
-  // Render the appropriate step based on currentStep
-
-  // Add new step 5 for documents
-  const renderStep5 = () => (
-    <CardContent className="space-y-4">
-      <Text className="mb-2">Required Documents</Text>
-      <Text className="mb-4">
-        Please upload the required professional documents.
-      </Text>
-      {/* License Document */}
-      <View className="space-y-2">
-        <Text className="font-semibold text-base">Professional License *</Text>
-        <Pressable
-          onPress={() => pickDocument("license")}
-          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-        >
-          <Text
-            className={
-              formData.documents.license
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }
-          >
-            {formData.documents.license
-              ? formData.documents.license.name
-              : "Tap to upload license"}
+      {/* Info Box */}
+      <View style={{
+        backgroundColor: colors.primaryContainer,
+        padding: 18, borderRadius: 16,
+        borderWidth: 1, borderColor: colors.primary + "30",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+          <View style={{ 
+            width: 32, height: 32, borderRadius: 10, 
+            backgroundColor: colors.primary + "20", 
+            alignItems: "center", justifyContent: "center" 
+          }}>
+            <Ionicons name="information-circle" size={20} color={colors.primary} />
+          </View>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary, marginLeft: 10 }}>
+            Review Process
           </Text>
-          <Text className="text-primary">Browse</Text>
-        </Pressable>
-      </View>
-      {/* Degree Document */}
-      <View className="space-y-2">
-        <Text className="font-semibold text-base">Degree Certificate *</Text>
-        <Pressable
-          onPress={() => pickDocument("degree")}
-          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-        >
-          <Text
-            className={
-              formData.documents.degree
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }
-          >
-            {formData.documents.degree
-              ? formData.documents.degree.name
-              : "Tap to upload degree"}
-          </Text>
-          <Text className="text-primary">Browse</Text>
-        </Pressable>
-      </View>
-      {/* Additional Certifications */}
-      <View className="space-y-2">
-        <Text className="font-semibold text-base">
-          Additional Certifications
-        </Text>
-        <Pressable
-          onPress={() => pickDocument("certification")}
-          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-        >
-          <Text
-            className={
-              formData.documents.certification
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }
-          >
-            {formData.documents.certification
-              ? formData.documents.certification.name
-              : "Tap to upload certifications"}
-          </Text>
-          <Text className="text-primary">Browse</Text>
-        </Pressable>
-      </View>
-      {/* Malpractice Insurance */}
-      <View className="space-y-2">
-        <Text className="font-semibold text-base">Malpractice Insurance</Text>
-        <Pressable
-          onPress={() => pickDocument("insurance")}
-          className="h-12 rounded-lg px-4 bg-background border border-input flex-row items-center justify-between"
-        >
-          <Text
-            className={
-              formData.documents.insurance
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }
-          >
-            {formData.documents.insurance
-              ? formData.documents.insurance.name
-              : "Tap to upload insurance"}
-          </Text>
-          <Text className="text-primary">Browse</Text>
-        </Pressable>
-      </View>
-      <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-        <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium mb-2">
-          Document Requirements:
-        </Text>
-        <Text className="text-blue-800 dark:text-blue-200 text-sm">
-          • All documents must be clear and legible{"\n"}• Accepted formats:
-          PDF, JPG, PNG{"\n"}• Maximum file size: 10MB per document{"\n"}•
-          Documents will be securely stored and verified
+        </View>
+        <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22 }}>
+          Your application will be reviewed within 3-5 business days. We&apos;ll verify your credentials and contact you with next steps.
         </Text>
       </View>
-    </CardContent>
+    </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <StatusBar
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+      
+      {/* Premium Header */}
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 16 }}>
+        <Pressable
+          onPress={() => currentStep === 1 ? router.back() : setCurrentStep(1)}
+          style={{
+            width: 44, height: 44, borderRadius: 14,
+            backgroundColor: colors.surfaceVariant,
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+        </Pressable>
+        <View style={{ flex: 1, alignItems: "center" }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, letterSpacing: -0.3 }}>
+            Join as Professional
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+            <View style={{ 
+              width: 8, height: 8, borderRadius: 4, 
+              backgroundColor: colors.primary, marginRight: 6 
+            }} />
+            <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: "500" }}>
+              Step {currentStep} of 2
+            </Text>
+          </View>
+        </View>
+        <View style={{ width: 44 }} />
+      </View>
+
+      {/* Progress Bar */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+        <View style={{ 
+          height: 6, 
+          backgroundColor: colors.surfaceVariant, 
+          borderRadius: 3,
+          overflow: "hidden"
+        }}>
+          <LinearGradient
+            colors={["#6366F1", "#8B5CF6"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              height: 6, 
+              width: `${currentStep * 50}%`, 
+              borderRadius: 3,
+            }}
+          />
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -670,102 +650,75 @@ export default function CounsellorSignUpScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              padding: 24,
-            }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={{ maxWidth: 480, width: "100%", alignSelf: "center" }}>
-              <Card
-                style={{
-                  elevation: 4,
-                  shadowColor: "#000",
-                  shadowOpacity: 0.08,
-                  shadowRadius: 12,
-                  borderRadius: 16,
-                }}
-              >
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-center mb-2">
-                    <Text> Sign Up as Counsellor</Text>
-                  </CardTitle>
-                  <CardDescription className="text-center mb-2">
-                    <Text>Apply to join MindConnect as a professional</Text>
-                  </CardDescription>
-                  {/* Step Indicator */}
-                  <View className="flex-row justify-center items-center mb-2">
-                    {[1, 2, 3, 4, 5].map((step) => (
-                      <View
-                        key={step}
-                        className={`w-3 h-3 rounded-full mx-1 ${currentStep === step ? "bg-blue-500" : "bg-gray-300"}`}
-                      />
-                    ))}
-                  </View>
-                </CardHeader>
-                {/* Error Message */}
-                {error ? (
-                  <View className="bg-red-100 rounded-lg p-2 mb-2">
-                    <Text className="text-red-700 text-center text-sm">
-                      {error}
-                    </Text>
-                  </View>
-                ) : null}
-                {/* Loading Indicator */}
-                {loading && (
-                  <View className="mb-2">
-                    <ActivityIndicator size="small" color="#3B82F6" />
-                  </View>
-                )}
-                {/* Step Content */}
-                {currentStep === 1 && renderStep1()}
-                {currentStep === 2 && renderStep2()}
-                {currentStep === 3 && renderStep3()}
-                {currentStep === 4 && renderStep4()}
-                {currentStep === 5 && renderStep5()}
-                {/* Navigation Buttons */}
-                <CardContent>
-                  <View className="flex-row justify-between mt-4">
-                    <Button
-                      variant="outline"
-                      onPress={handleBack}
-                      disabled={loading}
-                      style={{ flex: 1, marginRight: 8 }}
-                    >
-                      <Text className="text-foreground">Back</Text>
-                    </Button>
-                    {currentStep < 5 ? (
-                      <Button
-                        onPress={handleNext}
-                        disabled={
-                          loading ||
-                          (currentStep === 1 && !isStep1Valid) ||
-                          (currentStep === 2 && !isStep2Valid) ||
-                          (currentStep === 3 && !isStep3Valid) ||
-                          (currentStep === 5 && !isStep5Valid)
-                        }
-                        style={{ flex: 1, marginLeft: 8 }}
-                      >
-                        <Text className="text-primary-foreground">Next</Text>
-                      </Button>
-                    ) : (
-                      <Button
-                        onPress={handleSubmit}
-                        disabled={loading}
-                        style={{ flex: 1, marginLeft: 8 }}
-                      >
-                        <Text className="text-primary-foreground">Submit</Text>
-                      </Button>
-                    )}
-                  </View>
-                </CardContent>
-              </Card>
-            </View>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+              {currentStep === 1 ? renderStep1() : renderStep2()}
+            </Animated.View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Bottom Action - Fixed with safe area */}
+      <View style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        paddingHorizontal: 20, paddingTop: 20, paddingBottom: Math.max(insets.bottom, 20),
+        backgroundColor: colors.background,
+        borderTopWidth: 1, borderTopColor: colors.border,
+      }}>
+        <Pressable
+          onPress={currentStep === 1 ? () => setCurrentStep(2) : handleSubmit}
+          disabled={loading || (currentStep === 1 ? !isStep1Valid : !isStep2Valid)}
+          style={{ opacity: loading || (currentStep === 1 ? !isStep1Valid : !isStep2Valid) ? 0.6 : 1 }}
+        >
+          <LinearGradient
+            colors={(currentStep === 1 ? isStep1Valid : isStep2Valid) ? ["#6366F1", "#8B5CF6"] : [colors.surfaceVariant, colors.surfaceVariant]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              height: 56, borderRadius: 16,
+              alignItems: "center", justifyContent: "center",
+              flexDirection: "row",
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: (currentStep === 1 ? isStep1Valid : isStep2Valid) ? 0.3 : 0,
+              shadowRadius: 12,
+              elevation: (currentStep === 1 ? isStep1Valid : isStep2Valid) ? 6 : 0,
+            }}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Text style={{ 
+                  fontSize: 17, 
+                  fontWeight: "700", 
+                  color: (currentStep === 1 ? isStep1Valid : isStep2Valid) ? "#FFFFFF" : colors.textSecondary 
+                }}>
+                  {currentStep === 1 ? "Continue" : "Submit Application"}
+                </Text>
+                <Ionicons 
+                  name={currentStep === 1 ? "arrow-forward" : "checkmark-circle"} 
+                  size={20} 
+                  color={(currentStep === 1 ? isStep1Valid : isStep2Valid) ? "#FFFFFF" : colors.textSecondary} 
+                  style={{ marginLeft: 8 }} 
+                />
+              </>
+            )}
+          </LinearGradient>
+        </Pressable>
+
+        {currentStep === 1 && (
+          <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 16 }}>
+            <Text style={{ fontSize: 14, color: colors.textSecondary }}>Already have an account? </Text>
+            <Pressable onPress={() => router.push("/(auth)/sign-in")}>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.primary }}>Sign In</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 }

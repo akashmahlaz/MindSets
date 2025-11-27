@@ -1,17 +1,35 @@
 import { useColorScheme as useNativewindColorScheme } from "nativewind";
 import { useColorScheme as useRNColorScheme } from "react-native";
 
-export function useColorScheme() {
-  const nativewind = useNativewindColorScheme();
-  const systemColorScheme = useRNColorScheme();
+// Type for the return value
+type ColorSchemeResult = {
+  colorScheme: "light" | "dark";
+  isDarkColorScheme: boolean;
+  setColorScheme: (scheme: "light" | "dark" | "system") => void;
+  toggleColorScheme: () => void;
+};
+
+// Wrapper hook that adds isDarkColorScheme for convenience
+export function useColorScheme(): ColorSchemeResult {
+  // Call both hooks at the top level (hooks rules)
+  const rnColorScheme = useRNColorScheme();
   
-  // Use nativewind colorScheme if available, otherwise fall back to system
-  const colorScheme = nativewind?.colorScheme ?? systemColorScheme ?? "light";
+  // Nativewind hook - wrap in try-catch at module level isn't possible
+  // but we can safely call it and handle undefined values
+  const nativewindResult = useNativewindColorScheme();
   
+  // Determine color scheme with fallbacks:
+  // 1. Nativewind colorScheme (if defined)
+  // 2. React Native colorScheme (system preference)
+  // 3. Default to "light"
+  const colorScheme: "light" | "dark" = 
+    nativewindResult?.colorScheme ?? rnColorScheme ?? "light";
+  
+  // Always return a complete object with isDarkColorScheme
   return {
     colorScheme,
     isDarkColorScheme: colorScheme === "dark",
-    setColorScheme: nativewind?.setColorScheme ?? (() => {}),
-    toggleColorScheme: nativewind?.toggleColorScheme ?? (() => {}),
+    setColorScheme: nativewindResult?.setColorScheme ?? (() => {}),
+    toggleColorScheme: nativewindResult?.toggleColorScheme ?? (() => {}),
   };
 }

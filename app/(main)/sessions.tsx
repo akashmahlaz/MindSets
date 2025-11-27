@@ -3,44 +3,71 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getUserSessions, SessionBooking } from "@/services/sessionService";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    Animated,
     Pressable,
     RefreshControl,
     ScrollView,
     Share,
     StatusBar,
     Text,
+    TouchableOpacity,
     View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SessionsScreen() {
   const { userProfile } = useAuth();
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [sessions, setSessions] = useState<SessionBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
 
-  // Premium colors
+  // Premium animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  // Premium Material Design 3 colors
   const colors = {
-    background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
-    card: isDarkColorScheme ? "#171D26" : "#FFFFFF",
-    cardAlt: isDarkColorScheme ? "#1E2632" : "#F8FAFC",
-    text: isDarkColorScheme ? "#F0F2F5" : "#1E2530",
-    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
-    primary: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
-    secondary: isDarkColorScheme ? "#4CC38A" : "#3FA57A",
-    accent: isDarkColorScheme ? "#B79CFC" : "#A78BFA",
+    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    primary: "#6366F1",
+    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+    secondary: "#10B981",
+    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    purple: "#8B5CF6",
     warning: "#F59E0B",
-    success: isDarkColorScheme ? "#4CC38A" : "#26A269",
+    warningContainer: isDarkColorScheme ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)",
+    success: "#10B981",
     error: "#EF4444",
-    border: isDarkColorScheme ? "#323A48" : "#E2E5E9",
+    errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
   };
 
   useEffect(() => {
@@ -102,10 +129,10 @@ export default function SessionsScreen() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; bg: string; label: string; icon: string }> = {
-      pending: { color: colors.warning, bg: colors.warning + "15", label: "Pending", icon: "time-outline" },
-      confirmed: { color: colors.success, bg: colors.success + "15", label: "Confirmed", icon: "checkmark-circle-outline" },
-      completed: { color: colors.primary, bg: colors.primary + "15", label: "Completed", icon: "checkmark-done-outline" },
-      cancelled: { color: colors.error, bg: colors.error + "15", label: "Cancelled", icon: "close-circle-outline" },
+      pending: { color: colors.warning, bg: colors.warningContainer, label: "Pending", icon: "time-outline" },
+      confirmed: { color: colors.success, bg: colors.secondaryContainer, label: "Confirmed", icon: "checkmark-circle-outline" },
+      completed: { color: colors.primary, bg: colors.primaryContainer, label: "Completed", icon: "checkmark-done-outline" },
+      cancelled: { color: colors.error, bg: colors.errorContainer, label: "Cancelled", icon: "close-circle-outline" },
     };
     return configs[status] || configs.pending;
   };
@@ -151,291 +178,320 @@ export default function SessionsScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ color: colors.textSecondary, marginTop: 16, fontSize: 16 }}>Loading sessions...</Text>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: colors.primaryContainer,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.textSecondary, marginTop: 8, fontSize: 16 }}>Loading sessions...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-      
-      {/* Header */}
-      <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 20 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <View>
-            <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>
-              Sessions
-            </Text>
-            <Text style={{ fontSize: 15, color: colors.textSecondary, marginTop: 4 }}>
-              {userProfile?.role === "counsellor" ? "Manage your appointments" : "Track your therapy sessions"}
-            </Text>
+    <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+        
+        {/* Premium Header */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <View>
+              <Text style={{ fontSize: 26, fontWeight: "700", color: colors.text, letterSpacing: -0.5 }}>
+                Sessions
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
+                {userProfile?.role === "counsellor" ? "Manage your appointments" : "Track your therapy sessions"}
+              </Text>
+            </View>
+            
+            <TouchableOpacity
+              onPress={createNewSession}
+              style={{ overflow: 'hidden', borderRadius: 16 }}
+            >
+              <LinearGradient
+                colors={['#6366F1', '#8B5CF6']}
+                style={{
+                  width: 48,
+                  height: 48,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons name="add" size={24} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
-          
-          <Pressable
-            onPress={createNewSession}
+
+          {/* Premium Tabs */}
+          <View 
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: colors.primary,
-              alignItems: "center",
-              justifyContent: "center",
+              flexDirection: "row",
+              backgroundColor: colors.surfaceVariant,
+              borderRadius: 14,
+              padding: 4,
             }}
           >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </Pressable>
-        </View>
-
-        {/* Tabs */}
-        <View 
-          style={{
-            flexDirection: "row",
-            backgroundColor: colors.cardAlt,
-            borderRadius: 12,
-            padding: 4,
-          }}
-        >
-          {[
-            { id: "upcoming", label: "Upcoming", count: upcomingSessions.length },
-            { id: "completed", label: "History", count: completedSessions.length },
-          ].map((tab) => (
-            <Pressable
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id as "upcoming" | "completed")}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 10,
-                backgroundColor: activeTab === tab.id ? colors.card : "transparent",
-                alignItems: "center",
-                flexDirection: "row",
-                justifyContent: "center",
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: 14, 
-                  fontWeight: "600",
-                  color: activeTab === tab.id ? colors.text : colors.textSecondary,
+            {[
+              { id: "upcoming", label: "Upcoming", count: upcomingSessions.length },
+              { id: "completed", label: "History", count: completedSessions.length },
+            ].map((tab) => (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => setActiveTab(tab.id as "upcoming" | "completed")}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  backgroundColor: activeTab === tab.id ? colors.surface : "transparent",
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  shadowColor: activeTab === tab.id ? '#000' : 'transparent',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: activeTab === tab.id ? 0.1 : 0,
+                  shadowRadius: 4,
+                  elevation: activeTab === tab.id ? 2 : 0,
                 }}
               >
-                {tab.label}
-              </Text>
-              {tab.count > 0 && (
-                <View 
-                  style={{
-                    backgroundColor: activeTab === tab.id ? colors.primary : colors.border,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 10,
-                    marginLeft: 8,
+                <Text 
+                  style={{ 
+                    fontSize: 14, 
+                    fontWeight: "600",
+                    color: activeTab === tab.id ? colors.text : colors.textSecondary,
                   }}
                 >
-                  <Text style={{ fontSize: 12, fontWeight: "600", color: activeTab === tab.id ? "#FFFFFF" : colors.textSecondary }}>
-                    {tab.count}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refreshSessions} tintColor={colors.primary} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {currentSessions.length === 0 ? (
-          <View style={{ alignItems: "center", paddingTop: 60, paddingBottom: 40 }}>
-            <View 
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: colors.cardAlt,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 20,
-              }}
-            >
-              <Ionicons name="calendar-outline" size={36} color={colors.textSecondary} />
-            </View>
-            <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
-              No {activeTab === "upcoming" ? "upcoming" : "past"} sessions
-            </Text>
-            <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", lineHeight: 20, maxWidth: 280 }}>
-              {activeTab === "upcoming" 
-                ? "Book a session to start your mental health journey"
-                : "Your completed sessions will appear here"}
-            </Text>
-            {activeTab === "upcoming" && (
-              <Pressable
-                onPress={createNewSession}
-                style={{
-                  backgroundColor: colors.primary,
-                  paddingHorizontal: 24,
-                  paddingVertical: 14,
-                  borderRadius: 12,
-                  marginTop: 24,
-                }}
-              >
-                <Text style={{ fontSize: 15, fontWeight: "600", color: "#FFFFFF" }}>
-                  Book Session
+                  {tab.label}
                 </Text>
-              </Pressable>
-            )}
-          </View>
-        ) : (
-          <View style={{ gap: 12 }}>
-            {currentSessions.map((session) => {
-              const statusConfig = getStatusConfig(session.status);
-              
-              return (
-                <Pressable key={session.id}>
+                {tab.count > 0 && (
                   <View 
                     style={{
-                      backgroundColor: colors.card,
-                      borderRadius: 16,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: colors.border,
+                      backgroundColor: activeTab === tab.id ? colors.primary : colors.border,
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 10,
+                      marginLeft: 8,
                     }}
                   >
-                    {/* Header Row */}
-                    <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-                        <View 
-                          style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 12,
-                            backgroundColor: colors.primary + "15",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginRight: 12,
-                          }}
-                        >
-                          <Ionicons name={getTypeIcon(session.type) as any} size={22} color={colors.primary} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text }}>
-                            {session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session
-                          </Text>
-                          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
-                            {userProfile?.role === "counsellor" ? `With ${session.clientName}` : `With ${session.counselorName}`}
-                          </Text>
-                        </View>
-                      </View>
-                      
-                      <View 
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          backgroundColor: statusConfig.bg,
-                          paddingHorizontal: 10,
-                          paddingVertical: 6,
-                          borderRadius: 20,
-                        }}
-                      >
-                        <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
-                        <Text style={{ fontSize: 12, fontWeight: "600", color: statusConfig.color, marginLeft: 4 }}>
-                          {statusConfig.label}
-                        </Text>
-                      </View>
-                    </View>
+                    <Text style={{ fontSize: 12, fontWeight: "600", color: activeTab === tab.id ? "#FFFFFF" : colors.textSecondary }}>
+                      {tab.count}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-                    {/* Time Info */}
+      <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={refreshSessions} tintColor={colors.primary} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {currentSessions.length === 0 ? (
+            <View style={{ alignItems: "center", paddingTop: 60, paddingBottom: 40 }}>
+              <View 
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: colors.primaryContainer,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 20,
+                }}
+              >
+                <Ionicons name="calendar-outline" size={36} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
+                No {activeTab === "upcoming" ? "upcoming" : "past"} sessions
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", lineHeight: 20, maxWidth: 280 }}>
+                {activeTab === "upcoming" 
+                  ? "Book a session to start your mental health journey"
+                  : "Your completed sessions will appear here"}
+              </Text>
+              {activeTab === "upcoming" && (
+                <TouchableOpacity
+                  onPress={createNewSession}
+                  style={{ marginTop: 24, overflow: 'hidden', borderRadius: 14 }}
+                >
+                  <LinearGradient
+                    colors={['#6366F1', '#8B5CF6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      paddingHorizontal: 28,
+                      paddingVertical: 14,
+                    }}
+                  >
+                    <Text style={{ fontSize: 15, fontWeight: "600", color: "#FFFFFF" }}>
+                      Book Session
+                </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={{ gap: 14 }}>
+              {currentSessions.map((session) => {
+                const statusConfig = getStatusConfig(session.status);
+                
+                return (
+                  <Pressable key={session.id}>
                     <View 
                       style={{
-                        backgroundColor: colors.cardAlt,
-                        borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 12,
+                        backgroundColor: colors.surface,
+                        borderRadius: 20,
+                        padding: 18,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 8,
+                        elevation: 2,
                       }}
                     >
-                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-                          <Text style={{ fontSize: 14, color: colors.text, fontWeight: "500", marginLeft: 8 }}>
-                            {formatDate(session.date)}
-                          </Text>
+                      {/* Header Row */}
+                      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+                        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                          <View 
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 14,
+                              backgroundColor: colors.primaryContainer,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 14,
+                            }}
+                          >
+                            <Ionicons name={getTypeIcon(session.type) as any} size={22} color={colors.primary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+                              {session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session
+                            </Text>
+                            <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
+                              {userProfile?.role === "counsellor" ? `With ${session.clientName}` : `With ${session.counselorName}`}
+                            </Text>
+                          </View>
                         </View>
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-                          <Text style={{ fontSize: 14, color: colors.text, fontWeight: "500", marginLeft: 6 }}>
-                            {session.duration} min
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-
-                    {/* Notes */}
-                    {session.notes && (
-                      <View 
-                        style={{
-                          borderLeftWidth: 3,
-                          borderLeftColor: colors.primary,
-                          paddingLeft: 12,
-                          paddingVertical: 4,
-                          marginBottom: 12,
-                        }}
-                      >
-                        <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
-                          {session.notes}
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* Actions */}
-                    {session.status === "confirmed" && activeTab === "upcoming" && (
-                      <View style={{ flexDirection: "row", gap: 10 }}>
-                        <Pressable
-                          onPress={() => joinSession(session)}
+                        
+                        <View 
                           style={{
-                            flex: 1,
-                            backgroundColor: colors.primary,
                             flexDirection: "row",
                             alignItems: "center",
-                            justifyContent: "center",
-                            paddingVertical: 12,
-                            borderRadius: 10,
+                            backgroundColor: statusConfig.bg,
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 20,
                           }}
                         >
-                          <Ionicons name="videocam" size={18} color="#FFFFFF" />
-                          <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
-                            Join Session
+                          <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+                          <Text style={{ fontSize: 12, fontWeight: "600", color: statusConfig.color, marginLeft: 4 }}>
+                            {statusConfig.label}
                           </Text>
-                        </Pressable>
-                        
-                        <Pressable
-                          onPress={() => shareSessionDetails(session)}
+                        </View>
+                      </View>
+
+                      {/* Time Info */}
+                      <View 
+                        style={{
+                          backgroundColor: colors.surfaceVariant,
+                          borderRadius: 12,
+                          padding: 14,
+                          marginBottom: 14,
+                        }}
+                      >
+                        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: "600", marginLeft: 8 }}>
+                              {formatDate(session.date)}
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <Ionicons name="time-outline" size={16} color={colors.purple} />
+                            <Text style={{ fontSize: 14, color: colors.text, fontWeight: "600", marginLeft: 6 }}>
+                              {session.duration} min
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      {/* Notes */}
+                      {session.notes && (
+                        <View 
                           style={{
-                            paddingHorizontal: 16,
-                            paddingVertical: 12,
-                            borderRadius: 10,
-                            backgroundColor: colors.cardAlt,
-                            borderWidth: 1,
-                            borderColor: colors.border,
+                            borderLeftWidth: 3,
+                            borderLeftColor: colors.primary,
+                            paddingLeft: 14,
+                            paddingVertical: 4,
+                            marginBottom: 14,
                           }}
                         >
-                          <Ionicons name="share-outline" size={18} color={colors.text} />
-                        </Pressable>
-                      </View>
-                    )}
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+                          <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 20 }}>
+                            {session.notes}
+                          </Text>
+                        </View>
+                      )}
+
+                      {/* Actions */}
+                      {session.status === "confirmed" && activeTab === "upcoming" && (
+                        <View style={{ flexDirection: "row", gap: 12 }}>
+                          <TouchableOpacity
+                            onPress={() => joinSession(session)}
+                            style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}
+                          >
+                            <LinearGradient
+                              colors={['#6366F1', '#8B5CF6']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 0 }}
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                paddingVertical: 14,
+                              }}
+                            >
+                              <Ionicons name="videocam" size={18} color="#FFFFFF" />
+                              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
+                                Join Session
+                              </Text>
+                            </LinearGradient>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
+                            onPress={() => shareSessionDetails(session)}
+                            style={{
+                              paddingHorizontal: 18,
+                              paddingVertical: 14,
+                              borderRadius: 12,
+                              backgroundColor: colors.surfaceVariant,
+                            }}
+                          >
+                            <Ionicons name="share-outline" size={18} color={colors.text} />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Animated.View>
   );
 }

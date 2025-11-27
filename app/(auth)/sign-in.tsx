@@ -1,31 +1,33 @@
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as Apple from "expo-apple-authentication";
 import * as Google from "expo-auth-session/providers/google";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-    getAuth,
-    GoogleAuthProvider,
-    OAuthProvider,
-    signInWithCredential,
-    signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithCredential,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { app } from "../../firebaseConfig";
+import { auth } from "../../firebaseConfig";
 
 export default function SignInScreen() {
   const [email, setEmail] = useState("");
@@ -35,21 +37,66 @@ export default function SignInScreen() {
   const [loadingType, setLoadingType] = useState<"email" | "google" | "apple" | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const auth = getAuth(app);
   const { isDarkColorScheme } = useColorScheme();
+  
+  // Premium animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const formAnim = useRef(new Animated.Value(0)).current;
 
-  // Premium color scheme
+  useEffect(() => {
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.exp),
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(formAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim, formAnim]);
+
+  // Premium 2025 color palette
   const colors = {
-    background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
-    card: isDarkColorScheme ? "#171D26" : "#FFFFFF",
-    text: isDarkColorScheme ? "#F0F2F5" : "#1E2530",
-    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
-    primary: isDarkColorScheme ? "#6B8CF5" : "#4A6CF4",
-    secondary: isDarkColorScheme ? "#4CC38A" : "#3FA57A",
-    border: isDarkColorScheme ? "#323A48" : "#E2E5E9",
-    input: isDarkColorScheme ? "#1E2632" : "#F4F5F7",
+    // Background
+    background: isDarkColorScheme ? "#0C0F17" : "#F8FAFF",
+    
+    // Cards & surfaces
+    card: isDarkColorScheme ? "rgba(30, 35, 50, 0.8)" : "rgba(255, 255, 255, 0.95)",
+    
+    // Text
+    text: isDarkColorScheme ? "#FFFFFF" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
+    
+    // Primary gradient
+    primaryGradient: ["#6366F1", "#8B5CF6"] as const,
+    primary: "#6366F1",
+    
+    // Inputs
+    inputBg: isDarkColorScheme ? "rgba(30, 35, 50, 0.6)" : "rgba(255, 255, 255, 0.8)",
+    inputBorder: isDarkColorScheme ? "rgba(148, 163, 184, 0.15)" : "rgba(15, 23, 42, 0.08)",
+    inputFocusBorder: "#6366F1",
+    
+    // Borders
+    border: isDarkColorScheme ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)",
+    
+    // Error
     error: "#EF4444",
-    errorBg: isDarkColorScheme ? "rgba(239, 68, 68, 0.1)" : "rgba(239, 68, 68, 0.05)",
+    errorBg: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
   };
 
   // Google Auth
@@ -136,8 +183,8 @@ export default function SignInScreen() {
         });
         await signInWithCredential(auth, firebaseCredential);
       }
-    } catch (error: any) {
-      if (error.code !== "ERR_REQUEST_CANCELED") {
+    } catch (err: any) {
+      if (err.code !== "ERR_REQUEST_CANCELED") {
         setError("Failed to sign in with Apple.");
       }
     } finally {
@@ -192,162 +239,285 @@ export default function SignInScreen() {
           <ScrollView
             contentContainerStyle={{
               flexGrow: 1,
-              paddingHorizontal: 24,
-              paddingTop: 48,
+              paddingHorizontal: 20,
+              paddingTop: 40,
               paddingBottom: 32,
             }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Header */}
-            <View style={{ alignItems: "center", marginBottom: 40 }}>
-              <View 
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 20,
-                  backgroundColor: colors.primary + "15",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 24,
-                }}
-              >
-                <MaterialCommunityIcons name="brain" size={36} color={colors.primary} />
+            {/* Premium Header */}
+            <Animated.View 
+              style={{ 
+                alignItems: "center", 
+                marginBottom: 40,
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              }}
+            >
+              {/* Logo with gradient ring */}
+              <View style={{ marginBottom: 24 }}>
+                <LinearGradient
+                  colors={["#6366F1", "#8B5CF6", "#EC4899"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 24,
+                    padding: 3,
+                  }}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      borderRadius: 21,
+                      backgroundColor: colors.background,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 40 }}>🧠</Text>
+                  </View>
+                </LinearGradient>
               </View>
               
-              <Text style={{ fontSize: 26, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
-                Welcome Back
-              </Text>
-              <Text style={{ fontSize: 15, color: colors.textSecondary, textAlign: "center" }}>
-                Sign in to continue your wellness journey
-              </Text>
-            </View>
-
-            {/* Form */}
-            <View style={{ marginBottom: 24 }}>
-              {/* Email Input */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
-                  Email
-                </Text>
-                <View 
-                  style={{
-                    backgroundColor: colors.input,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
-                  <TextInput
-                    placeholder="Enter your email"
-                    placeholderTextColor={colors.textSecondary}
-                    value={email}
-                    onChangeText={(text) => { setEmail(text); setError(""); }}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    editable={!isLoading}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 16,
-                      paddingHorizontal: 12,
-                      fontSize: 16,
-                      color: colors.text,
-                    }}
-                  />
-                </View>
-              </View>
-
-              {/* Password Input */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
-                  Password
-                </Text>
-                <View 
-                  style={{
-                    backgroundColor: colors.input,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} />
-                  <TextInput
-                    placeholder="Enter your password"
-                    placeholderTextColor={colors.textSecondary}
-                    value={password}
-                    onChangeText={(text) => { setPassword(text); setError(""); }}
-                    secureTextEntry={!showPassword}
-                    editable={!isLoading}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 16,
-                      paddingHorizontal: 12,
-                      fontSize: 16,
-                      color: colors.text,
-                    }}
-                  />
-                  <Pressable onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons 
-                      name={showPassword ? "eye-outline" : "eye-off-outline"} 
-                      size={20} 
-                      color={colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* Error Message */}
-              {error ? (
-                <View 
-                  style={{
-                    backgroundColor: colors.errorBg,
-                    borderRadius: 10,
-                    padding: 12,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  <Ionicons name="alert-circle" size={18} color={colors.error} />
-                  <Text style={{ color: colors.error, fontSize: 14, marginLeft: 8, flex: 1 }}>
-                    {error}
-                  </Text>
-                </View>
-              ) : null}
-
-              {/* Sign In Button */}
-              <Pressable
-                onPress={handleEmailSignIn}
-                disabled={isLoading}
-                style={{
-                  backgroundColor: colors.primary,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  opacity: isLoading ? 0.7 : 1,
+              <Text 
+                style={{ 
+                  fontSize: 28, 
+                  fontWeight: "700", 
+                  color: colors.text, 
+                  marginBottom: 8,
+                  letterSpacing: -0.5,
                 }}
               >
-                {isLoading && loadingType === "email" ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={{ fontSize: 16, fontWeight: "600", color: "#FFFFFF" }}>
-                    Sign In
+                Welcome Back
+              </Text>
+              <Text 
+                style={{ 
+                  fontSize: 15, 
+                  color: colors.textSecondary, 
+                  textAlign: "center",
+                  lineHeight: 22,
+                }}
+              >
+                Sign in to continue your wellness journey
+              </Text>
+            </Animated.View>
+
+            {/* Form Card */}
+            <Animated.View 
+              style={{ 
+                marginBottom: 24,
+                opacity: formAnim,
+                transform: [{
+                  translateY: formAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                }],
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.card,
+                  borderRadius: 20,
+                  padding: 20,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 12,
+                  elevation: 4,
+                }}
+              >
+                {/* Email Input */}
+                <View style={{ marginBottom: 16 }}>
+                  <Text 
+                    style={{ 
+                      fontSize: 13, 
+                      fontWeight: "600", 
+                      color: colors.textSecondary, 
+                      marginBottom: 8,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Email
                   </Text>
-                )}
-              </Pressable>
-            </View>
+                  <View 
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderRadius: 14,
+                      borderWidth: 1.5,
+                      borderColor: colors.inputBorder,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 14,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        backgroundColor: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.1)",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="mail" size={18} color={colors.primary} />
+                    </View>
+                    <TextInput
+                      placeholder="Enter your email"
+                      placeholderTextColor={colors.textMuted}
+                      value={email}
+                      onChangeText={(text) => { setEmail(text); setError(""); }}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      editable={!isLoading}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 16,
+                        paddingHorizontal: 12,
+                        fontSize: 16,
+                        color: colors.text,
+                      }}
+                    />
+                  </View>
+                </View>
+
+                {/* Password Input */}
+                <View style={{ marginBottom: 20 }}>
+                  <Text 
+                    style={{ 
+                      fontSize: 13, 
+                      fontWeight: "600", 
+                      color: colors.textSecondary, 
+                      marginBottom: 8,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Password
+                  </Text>
+                  <View 
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderRadius: 14,
+                      borderWidth: 1.5,
+                      borderColor: colors.inputBorder,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 14,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        backgroundColor: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.1)",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="lock-closed" size={18} color={colors.primary} />
+                    </View>
+                    <TextInput
+                      placeholder="Enter your password"
+                      placeholderTextColor={colors.textMuted}
+                      value={password}
+                      onChangeText={(text) => { setPassword(text); setError(""); }}
+                      secureTextEntry={!showPassword}
+                      editable={!isLoading}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 16,
+                        paddingHorizontal: 12,
+                        fontSize: 16,
+                        color: colors.text,
+                      }}
+                    />
+                    <Pressable 
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={{
+                        padding: 8,
+                      }}
+                    >
+                      <Ionicons 
+                        name={showPassword ? "eye" : "eye-off"} 
+                        size={20} 
+                        color={colors.textMuted}
+                      />
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Error Message */}
+                {error ? (
+                  <View 
+                    style={{
+                      backgroundColor: colors.errorBg,
+                      borderRadius: 12,
+                      padding: 14,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 20,
+                    }}
+                  >
+                    <Ionicons name="alert-circle" size={20} color={colors.error} />
+                    <Text style={{ color: colors.error, fontSize: 14, marginLeft: 10, flex: 1, fontWeight: "500" }}>
+                      {error}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Sign In Button with Gradient */}
+                <Pressable
+                  onPress={handleEmailSignIn}
+                  disabled={isLoading}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.9 : 1,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  })}
+                >
+                  <LinearGradient
+                    colors={colors.primaryGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      borderRadius: 14,
+                      paddingVertical: 16,
+                      alignItems: "center",
+                      opacity: isLoading ? 0.7 : 1,
+                      shadowColor: colors.primary,
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.35,
+                      shadowRadius: 12,
+                      elevation: 6,
+                    }}
+                  >
+                    {isLoading && loadingType === "email" ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <Text style={{ fontSize: 16, fontWeight: "600", color: "#FFFFFF" }}>
+                          Sign In
+                        </Text>
+                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                      </View>
+                    )}
+                  </LinearGradient>
+                </Pressable>
+              </View>
+            </Animated.View>
 
             {/* Divider */}
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-              <Text style={{ paddingHorizontal: 16, fontSize: 13, color: colors.textSecondary }}>
+              <Text style={{ paddingHorizontal: 16, fontSize: 13, color: colors.textMuted, fontWeight: "500" }}>
                 or continue with
               </Text>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
@@ -359,17 +529,23 @@ export default function SignInScreen() {
               <Pressable
                 onPress={handleGoogleSignIn}
                 disabled={isLoading || !request}
-                style={{
+                style={({ pressed }) => ({
                   backgroundColor: colors.card,
-                  borderRadius: 12,
+                  borderRadius: 14,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  paddingVertical: 14,
+                  paddingVertical: 15,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  opacity: isLoading ? 0.7 : 1,
-                }}
+                  opacity: isLoading ? 0.7 : pressed ? 0.9 : 1,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 8,
+                  elevation: 2,
+                })}
               >
                 {isLoading && loadingType === "google" ? (
                   <ActivityIndicator size="small" color={colors.text} />
@@ -388,15 +564,21 @@ export default function SignInScreen() {
                 <Pressable
                   onPress={handleAppleSignIn}
                   disabled={isLoading}
-                  style={{
+                  style={({ pressed }) => ({
                     backgroundColor: isDarkColorScheme ? "#FFFFFF" : "#000000",
-                    borderRadius: 12,
-                    paddingVertical: 14,
+                    borderRadius: 14,
+                    paddingVertical: 15,
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-                    opacity: isLoading ? 0.7 : 1,
-                  }}
+                    opacity: isLoading ? 0.7 : pressed ? 0.9 : 1,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
+                    elevation: 2,
+                  })}
                 >
                   {isLoading && loadingType === "apple" ? (
                     <ActivityIndicator size="small" color={isDarkColorScheme ? "#000000" : "#FFFFFF"} />
@@ -422,9 +604,12 @@ export default function SignInScreen() {
             {/* Sign Up Link */}
             <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: "auto" }}>
               <Text style={{ fontSize: 15, color: colors.textSecondary }}>
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
               </Text>
-              <Pressable onPress={() => router.push("/(auth)/role-selection")}>
+              <Pressable 
+                onPress={() => router.push("/(auth)/role-selection")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Text style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}>
                   Sign Up
                 </Text>

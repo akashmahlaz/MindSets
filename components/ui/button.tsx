@@ -14,6 +14,8 @@ const buttonVariants = cva(
         outline:
           "border border-input bg-background web:hover:bg-muted active:bg-muted",
         text: "web:hover:bg-muted active:bg-muted",
+        ghost: "web:hover:bg-muted/50 active:bg-muted/50",
+        secondary: "bg-secondary web:hover:opacity-90 active:opacity-90",
       },
       size: {
         default: "h-14 px-6 py-3 native:h-14 native:px-6 native:py-3",
@@ -38,6 +40,8 @@ const buttonTextVariants = cva(
         destructive: "text-destructive-foreground",
         outline: "text-foreground",
         text: "text-foreground",
+        ghost: "text-foreground",
+        secondary: "text-secondary-foreground",
       },
       size: {
         default: "",

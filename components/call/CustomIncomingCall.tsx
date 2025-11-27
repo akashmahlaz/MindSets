@@ -24,7 +24,7 @@ export const CustomIncomingCall = () => {
 
   // Navigate to the call screen once the call is joined
   useEffect(() => {
-    if (callingState === CallingState.JOINED) {
+    if (callingState === CallingState.JOINED && call) {
       const isVideo =
         call?.state.custom?.isVideo || call?.state.custom?.callType === "video";
       router.push({
