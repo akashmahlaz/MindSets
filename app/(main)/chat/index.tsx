@@ -85,34 +85,16 @@ export default function ChannelListScreen() {
         backgroundColor={colors.background}
       />
       
-      {/* Premium Header */}
+      {/* Clean Header - No unnecessary icons */}
       <View style={{ 
         paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        paddingTop: 8,
+        paddingBottom: 16,
         backgroundColor: colors.background,
       }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View>
-            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.text }}>
-              Messages
-            </Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>
-              Your conversations
-            </Text>
-          </View>
-          <View style={{
-            width: 44,
-            height: 44,
-            borderRadius: 14,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <Ionicons name="create-outline" size={22} color={colors.primary} />
-          </View>
-        </View>
+        <Text style={{ fontSize: 32, fontWeight: '700', color: colors.text, letterSpacing: -0.5 }}>
+          Messages
+        </Text>
       </View>
 
       {/* Channel List */}

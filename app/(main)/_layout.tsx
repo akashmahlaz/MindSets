@@ -48,20 +48,20 @@ export default function TabLayout() {
           },
           tabBarStyle: {
             backgroundColor: colors.surfaceContainer,
-            borderTopWidth: 1,
-            borderTopColor: colors.outline,
+            borderTopWidth: 0,
             height: tabBarHeight,
             paddingTop: 8,
-            paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+            paddingBottom: Platform.OS === "android" ? Math.max(insets.bottom, 8) : 0,
             ...Platform.select({
               ios: {
                 shadowColor: "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: isDarkColorScheme ? 0.3 : 0.06,
-                shadowRadius: 12,
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: isDarkColorScheme ? 0.15 : 0.08,
+                shadowRadius: 8,
               },
               android: {
-                elevation: 12,
+                elevation: 8,
+                shadowColor: "#000",
               },
             }),
           },

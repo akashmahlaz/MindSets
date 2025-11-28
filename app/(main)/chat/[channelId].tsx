@@ -6,25 +6,25 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StatusBar,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-  Channel,
-  MessageInput,
-  MessageList,
+    Channel,
+    MessageInput,
+    MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -159,15 +159,24 @@ export default function ChatScreen() {
         backgroundColor={colors.background}
       />
       
-      {/* Premium Header */}
+      {/* Premium Header - Clean, no border */}
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: colors.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        ...Platform.select({
+          ios: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: isDarkColorScheme ? 0.15 : 0.05,
+            shadowRadius: 4,
+          },
+          android: {
+            elevation: 2,
+          },
+        }),
       }}>
         <Pressable
           onPress={handleBack}

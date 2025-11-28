@@ -105,6 +105,7 @@ export default function UserProfileScreen() {
     { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#8B5CF6" },
     { icon: "heart-outline", label: "Saved Counselors", route: "/(main)/Counselors", color: "#EC4899" },
     { icon: "document-text-outline", label: "Resources", route: "/(resources)/articles", color: "#10B981" },
+    { icon: "journal-outline", label: "My Journal", route: "/(resources)/journal", color: "#F59E0B" },
   ];
 
   return (
@@ -335,7 +336,7 @@ export default function UserProfileScreen() {
             </View>
           </View>
 
-          {/* Sign Out Button */}
+          {/* Sign Out - Subtle at bottom */}
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <Pressable
               onPress={handleLogout}
@@ -343,13 +344,15 @@ export default function UserProfileScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: 16,
-                borderRadius: 16,
-                backgroundColor: colors.errorContainer,
+                paddingVertical: 14,
+                borderRadius: 14,
+                backgroundColor: 'transparent',
+                borderWidth: 1,
+                borderColor: colors.border,
               }}
             >
-              <Ionicons name="log-out-outline" size={20} color={colors.error} />
-              <Text style={{ color: colors.error, marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
+              <Ionicons name="log-out-outline" size={18} color={colors.textSecondary} />
+              <Text style={{ color: colors.textSecondary, marginLeft: 8, fontSize: 15, fontWeight: '500' }}>
                 Sign Out
               </Text>
             </Pressable>
