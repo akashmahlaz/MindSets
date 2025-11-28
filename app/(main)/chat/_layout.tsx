@@ -4,6 +4,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Stack } from "expo-router";
 import React from "react";
 import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Chat, DeepPartial, OverlayProvider, Theme } from "stream-chat-expo";
 
 // This ensures that when navigating to a chat (e.g., from profile), 
@@ -15,6 +16,10 @@ export const unstable_settings = {
 export default function ChatLayout() {
   const { chatClient, isChatConnected } = useChat();
   const { isDarkColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
+  
+  // Tab bar height (49) + bottom safe area for proper positioning
+  const bottomInset = insets.bottom + 49;
 
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
@@ -70,41 +75,40 @@ export default function ChatLayout() {
       container: {
         backgroundColor: colors.background,
         borderTopWidth: 0,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        paddingBottom: 16,
+        paddingHorizontal: 8,
+        paddingVertical: 6,
       },
       inputBox: {
         backgroundColor: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
-        borderRadius: 24,
+        borderRadius: 20,
         color: colors.text,
         fontSize: 16,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        minHeight: 48,
-        maxHeight: 120,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        minHeight: 36,
+        maxHeight: 100,
       },
       inputBoxContainer: {
         backgroundColor: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
         borderWidth: 1,
         borderColor: isDarkColorScheme ? "#334155" : "#E2E8F0",
-        borderRadius: 24,
+        borderRadius: 20,
         paddingHorizontal: 4,
         marginHorizontal: 0,
         alignItems: "center",
       },
       sendButton: {
         backgroundColor: colors.primary,
-        borderRadius: 20,
-        width: 40,
-        height: 40,
+        borderRadius: 16,
+        width: 32,
+        height: 32,
         justifyContent: "center",
         alignItems: "center",
       },
       attachButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         backgroundColor: "transparent",
       },
     },
@@ -212,7 +216,7 @@ export default function ChatLayout() {
   }
 
   return (
-    <OverlayProvider value={{ style: chatTheme }}>
+    <OverlayProvider value={{ style: chatTheme }} bottomInset={bottomInset}>
       <Chat client={chatClient} style={chatTheme}>
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}

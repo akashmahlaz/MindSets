@@ -8,10 +8,12 @@ import {
     TextInput,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMessageInputContext } from "stream-chat-expo";
 
 export const CustomMessageInput = () => {
   const { isDarkColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
   
   const {
     text,
@@ -43,7 +45,7 @@ export const CustomMessageInput = () => {
         backgroundColor: colors.background,
         paddingHorizontal: 12,
         paddingTop: 8,
-        paddingBottom: 8,
+        paddingBottom: Platform.OS === "ios" ? 8 : Math.max(insets.bottom, 8),
         borderTopWidth: 0,
       }}
     >

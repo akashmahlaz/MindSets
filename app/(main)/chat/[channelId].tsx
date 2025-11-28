@@ -1,5 +1,4 @@
 import "@/app/global.css";
-import CustomMessageInput from "@/components/chat/CustomMessageInput";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
@@ -8,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+    ActionSheetIOS,
     ActivityIndicator,
     Alert,
     Image,
@@ -24,6 +24,7 @@ import {
 import { Channel as StreamChannel } from "stream-chat";
 import {
     Channel,
+    MessageInput,
     MessageList,
 } from "stream-chat-expo";
 
@@ -310,9 +311,32 @@ export default function ChatScreen() {
           </Text>
         </View>
         
-        {/* Call buttons - with proper spacing */}
+        {/* Call button - shows options */}
         <Pressable
-          onPress={() => handleCall(false)}
+          onPress={() => {
+            if (Platform.OS === 'ios') {
+              ActionSheetIOS.showActionSheetWithOptions(
+                {
+                  options: ['Cancel', 'Voice Call', 'Video Call'],
+                  cancelButtonIndex: 0,
+                },
+                (buttonIndex) => {
+                  if (buttonIndex === 1) handleCall(false);
+                  else if (buttonIndex === 2) handleCall(true);
+                }
+              );
+            } else {
+              Alert.alert(
+                'Start Call',
+                'Choose call type',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Voice Call', onPress: () => handleCall(false) },
+                  { text: 'Video Call', onPress: () => handleCall(true) },
+                ]
+              );
+            }
+          }}
           disabled={isCreatingCall}
           style={({ pressed }) => ({
             width: 38,
@@ -321,40 +345,23 @@ export default function ChatScreen() {
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
-            marginRight: 8,
             opacity: pressed || isCreatingCall ? 0.6 : 1,
           })}
         >
           <Ionicons name="call-outline" size={20} color={colors.primary} />
         </Pressable>
-        <Pressable
-          onPress={() => handleCall(true)}
-          disabled={isCreatingCall}
-          style={({ pressed }) => ({
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: pressed || isCreatingCall ? 0.6 : 1,
-          })}
-        >
-          <Ionicons name="videocam-outline" size={20} color={colors.primary} />
-        </Pressable>
       </View>
 
-      {/* Chat Area - Stream Chat handles keyboard */}
-      <Channel
-        channel={channel}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        Input={CustomMessageInput}
-      >
+      {/* Chat Area - Stream handles keyboard */}
         <View style={{ flex: 1 }}>
-          <MessageList />
+          <Channel
+            channel={channel}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+          >
+            <MessageList />
+            <MessageInput additionalTextInputContainerProps={{ style: { marginBottom: insets.bottom + 49 } }} />
+          </Channel>
         </View>
-        <CustomMessageInput />
-      </Channel>
       </SafeAreaView>
     </View>
   );
