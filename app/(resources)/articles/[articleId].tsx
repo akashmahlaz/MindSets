@@ -49,7 +49,7 @@ const getColors = (isDark: boolean) => ({
   dangerSoft: isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
 });
 
-export default function ArticleDetail() {
+export default function StoryDetail() {
   const router = useRouter();
   const { articleId } = useLocalSearchParams();
   const { userProfile } = useAuth();
@@ -88,8 +88,8 @@ export default function ArticleDetail() {
         incrementArticleViews(id);
       }
     } catch (error) {
-      console.error("Failed to load article:", error);
-      Alert.alert("Error", "Failed to load article");
+      console.error("Failed to load story:", error);
+      Alert.alert("Error", "Failed to load story");
       router.back();
     } finally {
       setLoading(false);
@@ -101,7 +101,7 @@ export default function ArticleDetail() {
 
     try {
       await Share.share({
-        message: `Check out this article: ${article.title}`,
+        message: `Check out this story: ${article.title}`,
         title: article.title,
       });
     } catch (error) {
@@ -113,8 +113,8 @@ export default function ArticleDetail() {
     if (!article || !userProfile) return;
 
     Alert.alert(
-      "Delete Article",
-      "Are you sure you want to delete this article? This action cannot be undone.",
+      "Delete Story",
+      "Are you sure you want to delete this story? This action cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -123,11 +123,11 @@ export default function ArticleDetail() {
           onPress: async () => {
             try {
               await deleteArticle(article.id);
-              Alert.alert("Success", "Article deleted successfully");
+              Alert.alert("Success", "Story deleted successfully");
               router.back();
             } catch (error) {
-              console.error("Failed to delete article:", error);
-              Alert.alert("Error", "Failed to delete article");
+              console.error("Failed to delete story:", error);
+              Alert.alert("Error", "Failed to delete story");
             }
           },
         },
@@ -272,7 +272,7 @@ export default function ArticleDetail() {
               lineHeight: 22,
               marginBottom: 32,
             }}>
-              This article doesn't exist or has been removed.
+              This story doesn&apos;t exist or has been removed.
             </Text>
             <TouchableOpacity
               onPress={() => router.back()}

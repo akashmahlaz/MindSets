@@ -12,18 +12,39 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Image,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function EditArticle() {
+// Perplexity-inspired color tokens
+const getColors = (isDark: boolean) => ({
+  background: isDark ? "#0D0D0D" : "#FFFFFF",
+  surface: isDark ? "#171717" : "#F9FAFB",
+  surfaceHover: isDark ? "#1F1F1F" : "#F3F4F6",
+  text: isDark ? "#FAFAFA" : "#111827",
+  textSecondary: isDark ? "#A3A3A3" : "#6B7280",
+  textMuted: isDark ? "#737373" : "#9CA3AF",
+  border: isDark ? "#262626" : "#E5E7EB",
+  borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
+  primary: "#6366F1",
+  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+  danger: "#EF4444",
+  success: "#10B981",
+});
+
+export default function EditStory() {
   const router = useRouter();
   const { articleId } = useLocalSearchParams();
   const { userProfile } = useAuth();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = getColors(isDark);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -171,10 +192,20 @@ export default function EditArticle() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-muted-foreground mt-4">Loading article...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 20,
+            backgroundColor: colors.primarySoft,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 16,
+          }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.textSecondary, fontSize: 15 }}>Loading article...</Text>
         </View>
       </SafeAreaView>
     );
@@ -182,17 +213,33 @@ export default function EditArticle() {
 
   if (!article) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="document-text-outline" size={64} color="#9CA3AF" />
-          <Text className="text-xl font-semibold text-foreground mt-4 mb-2">
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40 }}>
+          <View style={{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: colors.surface,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 20,
+          }}>
+            <Ionicons name="document-text-outline" size={36} color={colors.textMuted} />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
             Article not found
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
-            className="bg-primary px-6 py-3 rounded-lg"
+            style={{
+              backgroundColor: colors.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 12,
+              marginTop: 16,
+            }}
           >
-            <Text className="text-white font-medium">Go Back</Text>
+            <Text style={{ color: "#FFF", fontWeight: "600" }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -200,198 +247,331 @@ export default function EditArticle() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
       {/* Header */}
-      <View className="px-6 py-4 border-b border-border bg-card">
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-            <Ionicons name="arrow-back" size={24} color="#000" />
-          </TouchableOpacity>
+      <View style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.borderSubtle,
+      }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
+        </TouchableOpacity>
 
-          <Text className="text-lg font-semibold text-foreground">
-            Edit Article
-          </Text>
+        <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>
+          Edit Story
+        </Text>
 
-          <TouchableOpacity
-            onPress={handleUpdate}
-            disabled={saving}
-            className={`px-4 py-2 rounded-lg ${saving ? "bg-gray-300" : "bg-primary"}`}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text className="text-white font-medium">Update</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={handleUpdate}
+          disabled={saving}
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 10,
+            backgroundColor: saving ? colors.surfaceHover : colors.primary,
+          }}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFF" }}>Update</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6 py-6">
+      <ScrollView 
+        style={{ flex: 1 }} 
+        contentContainerStyle={{ padding: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Title */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Title *
           </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="Enter article title"
-            className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+            placeholder="Enter story title"
+            placeholderTextColor={colors.textMuted}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 17,
+              fontWeight: "600",
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: errors.title ? colors.danger : colors.borderSubtle,
+            }}
             multiline
           />
-          {errors.title && (
-            <Text className="text-red-500 text-sm mt-1">{errors.title}</Text>
-          )}
+          {errors.title && <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.title}</Text>}
         </View>
 
         {/* Description */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Description *
           </Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
             placeholder="Brief description of the article"
-            className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+            placeholderTextColor={colors.textMuted}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 15,
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: errors.description ? colors.danger : colors.borderSubtle,
+              minHeight: 80,
+            }}
             multiline
-            numberOfLines={3}
+            textAlignVertical="top"
           />
-          {errors.description && (
-            <Text className="text-red-500 text-sm mt-1">
-              {errors.description}
-            </Text>
-          )}
+          {errors.description && <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.description}</Text>}
         </View>
 
         {/* Category and Read Time */}
-        <View className="flex-row mb-6">
-          <View className="flex-1 mr-3">
-            <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ flexDirection: "row", marginBottom: 24, gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
               Category *
             </Text>
             <TextInput
               value={category}
               onChangeText={setCategory}
               placeholder="e.g., Mental Health"
-              className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: errors.category ? colors.danger : colors.borderSubtle,
+              }}
             />
-            {errors.category && (
-              <Text className="text-red-500 text-sm mt-1">
-                {errors.category}
-              </Text>
-            )}
+            {errors.category && <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.category}</Text>}
           </View>
 
-          <View className="flex-1 ml-3">
-            <Text className="text-base font-semibold text-foreground mb-2">
-              Read Time (min) *
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Read Time *
             </Text>
             <TextInput
               value={readTime}
               onChangeText={setReadTime}
               placeholder="5"
               keyboardType="numeric"
-              className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: errors.readTime ? colors.danger : colors.borderSubtle,
+              }}
             />
-            {errors.readTime && (
-              <Text className="text-red-500 text-sm mt-1">
-                {errors.readTime}
-              </Text>
-            )}
+            {errors.readTime && <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.readTime}</Text>}
           </View>
         </View>
 
         {/* Tags */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Tags
           </Text>
           <TextInput
             value={tags}
             onChangeText={setTags}
             placeholder="anxiety, depression, coping (comma separated)"
-            className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+            placeholderTextColor={colors.textMuted}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 15,
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            }}
           />
-          <Text className="text-sm text-muted-foreground mt-1">
-            Separate tags with commas
-          </Text>
+          <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 6 }}>Separate tags with commas</Text>
         </View>
 
         {/* Image URL */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Featured Image URL
           </Text>
+          {imageUrl ? (
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={{ width: "100%", height: 180 }}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={removeImage}
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: colors.danger,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Ionicons name="close" size={16} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={imageUrl}
             onChangeText={setImageUrl}
             placeholder="https://example.com/image.jpg"
-            className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+            placeholderTextColor={colors.textMuted}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 15,
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            }}
             autoCapitalize="none"
             autoCorrect={false}
           />
         </View>
 
         {/* Content */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Content *
           </Text>
           <TextInput
             value={content}
             onChangeText={setContent}
             placeholder="Write your article content here..."
-            className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+            placeholderTextColor={colors.textMuted}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 16,
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: errors.content ? colors.danger : colors.borderSubtle,
+              minHeight: 200,
+              lineHeight: 24,
+            }}
             multiline
-            numberOfLines={10}
             textAlignVertical="top"
           />
-          {errors.content && (
-            <Text className="text-red-500 text-sm mt-1">{errors.content}</Text>
-          )}
+          {errors.content && <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.content}</Text>}
         </View>
 
         {/* Publishing Options */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-foreground mb-4">
+        <View style={{ marginBottom: 32 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Publishing Options
           </Text>
 
           <TouchableOpacity
             onPress={() => setIsPublished(!isPublished)}
-            className="flex-row items-center mb-3"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 12,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            }}
           >
-            <View
-              className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                isPublished ? "bg-primary border-primary" : "border-border"
-              }`}
-            >
-              {isPublished && (
-                <Ionicons name="checkmark" size={16} color="#fff" />
-              )}
+            <View style={{
+              width: 24,
+              height: 24,
+              borderRadius: 8,
+              borderWidth: 2,
+              borderColor: isPublished ? colors.primary : colors.border,
+              backgroundColor: isPublished ? colors.primary : "transparent",
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 14,
+            }}>
+              {isPublished && <Ionicons name="checkmark" size={14} color="#FFF" />}
             </View>
-            <Text className="text-foreground">Publish article</Text>
+            <Text style={{ fontSize: 15, color: colors.text, fontWeight: "500" }}>Publish article</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => setIsFeatured(!isFeatured)}
-            className="flex-row items-center"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            }}
           >
-            <View
-              className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                isFeatured ? "bg-primary border-primary" : "border-border"
-              }`}
-            >
-              {isFeatured && (
-                <Ionicons name="checkmark" size={16} color="#fff" />
-              )}
+            <View style={{
+              width: 24,
+              height: 24,
+              borderRadius: 8,
+              borderWidth: 2,
+              borderColor: isFeatured ? colors.primary : colors.border,
+              backgroundColor: isFeatured ? colors.primary : "transparent",
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 14,
+            }}>
+              {isFeatured && <Ionicons name="checkmark" size={14} color="#FFF" />}
             </View>
-            <Text className="text-foreground">Feature article</Text>
+            <Text style={{ fontSize: 15, color: colors.text, fontWeight: "500" }}>Feature article</Text>
           </TouchableOpacity>
         </View>
 
-        <View className="h-8" />
+        {/* Bottom spacing */}
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );

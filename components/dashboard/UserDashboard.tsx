@@ -601,11 +601,11 @@ export default function UserDashboard() {
           )}
         </View>
 
-        {/* Featured Articles */}
+        {/* Featured Stories */}
         <View style={{ paddingHorizontal: 24 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
-              Wellness Resources
+              Featured Stories
             </Text>
             <Pressable onPress={() => router.push("/(resources)/articles" as any)}>
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>

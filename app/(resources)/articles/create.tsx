@@ -15,9 +15,26 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    useColorScheme,
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Perplexity-inspired color tokens
+const getColors = (isDark: boolean) => ({
+  background: isDark ? "#0D0D0D" : "#FFFFFF",
+  surface: isDark ? "#171717" : "#F9FAFB",
+  surfaceHover: isDark ? "#1F1F1F" : "#F3F4F6",
+  text: isDark ? "#FAFAFA" : "#111827",
+  textSecondary: isDark ? "#A3A3A3" : "#6B7280",
+  textMuted: isDark ? "#737373" : "#9CA3AF",
+  border: isDark ? "#262626" : "#E5E7EB",
+  borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
+  primary: "#6366F1",
+  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+  danger: "#EF4444",
+  success: "#10B981",
+});
 
 const categories = [
   "Mental Health",
@@ -31,9 +48,12 @@ const categories = [
   "Other",
 ];
 
-export default function CreateArticle() {
+export default function CreateStory() {
   const router = useRouter();
   const { userProfile } = useAuth();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = getColors(isDark);
   const [loading, setLoading] = useState(false);
 
   // Form state
@@ -87,7 +107,7 @@ export default function CreateArticle() {
 
   const handleSubmit = async () => {
     if (!userProfileData) {
-      Alert.alert("Error", "You must be logged in to create an article");
+      Alert.alert("Error", "You must be logged in to create a story");
       return;
     }
 
@@ -122,15 +142,15 @@ export default function CreateArticle() {
         userProfileData.photoURL || undefined
       );
 
-      Alert.alert("Success", "Article created successfully!", [
+      Alert.alert("Success", "Story published successfully!", [
         {
           text: "OK",
           onPress: () => router.push("/articles" as any),
         },
       ]);
     } catch (error) {
-      console.error("Failed to create article:", error);
-      Alert.alert("Error", "Failed to create article. Please try again.");
+      console.error("Failed to create story:", error);
+      Alert.alert("Error", "Failed to create story. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -178,92 +198,160 @@ export default function CreateArticle() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
       {/* Header */}
-      <View className="px-6 py-4 border-b border-border bg-card">
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-10 h-10 items-center justify-center rounded-full bg-background"
-          >
-            <Ionicons name="close" size={24} color="#000" />
-          </TouchableOpacity>
+      <View style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.borderSubtle,
+      }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Ionicons name="close" size={20} color={colors.text} />
+        </TouchableOpacity>
 
-          <Text className="text-xl font-bold text-foreground">
-            Write Article
+        <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>
+          Write Story
+        </Text>
+
+        <TouchableOpacity
+          onPress={handleSaveDraft}
+          disabled={loading}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 10,
+            backgroundColor: colors.surface,
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textSecondary }}>
+            Draft
           </Text>
-
-          <TouchableOpacity
-            onPress={handleSaveDraft}
-            disabled={loading}
-            className="px-4 py-2 bg-secondary rounded-lg"
-          >
-            <Text className="text-secondary-foreground font-medium">Draft</Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
-        className="flex-1"
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView className="flex-1" contentContainerStyle={{ padding: 24 }}>
+        <ScrollView 
+          style={{ flex: 1 }} 
+          contentContainerStyle={{ padding: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Title */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Title *
             </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Enter article title..."
-              className="bg-card border border-border rounded-lg px-4 py-3 text-foreground text-lg"
-              placeholderTextColor="#6B7280"
+              placeholder="Enter story title..."
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 17,
+                fontWeight: "600",
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+              }}
               multiline
             />
           </View>
 
           {/* Description */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Description *
             </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="Brief description of your article..."
-              className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
-              placeholderTextColor="#6B7280"
+              placeholder="Brief description of your story..."
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+                minHeight: 80,
+              }}
               multiline
-              numberOfLines={3}
+              textAlignVertical="top"
             />
           </View>
 
           {/* Category */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Category
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="flex-row"
+              contentContainerStyle={{ gap: 8 }}
             >
               {categories.map((cat) => (
                 <TouchableOpacity
                   key={cat}
                   onPress={() => setCategory(cat)}
-                  className={`mr-2 px-4 py-2 rounded-lg border ${
-                    category === cat
-                      ? "bg-primary border-primary"
-                      : "bg-card border-border"
-                  }`}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                    backgroundColor: category === cat ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: category === cat ? colors.primary : colors.borderSubtle,
+                  }}
                 >
-                  <Text
-                    className={`font-medium ${
-                      category === cat ? "text-white" : "text-foreground"
-                    }`}
-                  >
+                  <Text style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: category === cat ? "#FFF" : colors.text,
+                  }}>
                     {cat}
                   </Text>
                 </TouchableOpacity>
@@ -272,85 +360,147 @@ export default function CreateArticle() {
           </View>
 
           {/* Tags */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Tags (comma separated)
             </Text>
             <TextInput
               value={tags}
               onChangeText={setTags}
               placeholder="anxiety, mindfulness, self-care..."
-              className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+              }}
             />
           </View>
 
           {/* Featured Image */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Featured Image
             </Text>
             
             {imageUrl ? (
-              <View className="mb-4">
-                <View className="relative">
+              <View style={{ marginBottom: 12 }}>
+                <View style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
                   <Image
                     source={{ uri: imageUrl }}
-                    className="w-full h-48 rounded-lg"
+                    style={{ width: "100%", height: 180 }}
                     resizeMode="cover"
                   />
                   <TouchableOpacity
                     onPress={removeImage}
-                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full items-center justify-center"
+                    style={{
+                      position: "absolute",
+                      top: 12,
+                      right: 12,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: colors.danger,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
                   >
-                    <Ionicons name="close" size={16} color="#fff" />
+                    <Ionicons name="close" size={16} color="#FFF" />
                   </TouchableOpacity>
                 </View>
               </View>
             ) : (
-              <View className="mb-4">
-                <TouchableOpacity
-                  onPress={handleImageUpload}
-                  disabled={uploadingImage}
-                  className="border-2 border-dashed border-border rounded-lg p-8 items-center justify-center bg-card"
-                >
-                  {uploadingImage ? (
-                    <View className="items-center">
-                      <ActivityIndicator size="large" color="#3B82F6" />
-                      <Text className="text-muted-foreground mt-2">Uploading...</Text>
+              <TouchableOpacity
+                onPress={handleImageUpload}
+                disabled={uploadingImage}
+                style={{
+                  borderWidth: 2,
+                  borderStyle: "dashed",
+                  borderColor: colors.border,
+                  borderRadius: 16,
+                  padding: 32,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: colors.surface,
+                }}
+              >
+                {uploadingImage ? (
+                  <View style={{ alignItems: "center" }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{ color: colors.textSecondary, marginTop: 12, fontSize: 14 }}>
+                      Uploading...
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{ alignItems: "center" }}>
+                    <View style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: colors.primarySoft,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginBottom: 12,
+                    }}>
+                      <Ionicons name="camera-outline" size={28} color={colors.primary} />
                     </View>
-                  ) : (
-                    <View className="items-center">
-                      <Ionicons name="camera-outline" size={48} color="#6B7280" />
-                      <Text className="text-foreground font-medium mt-2 mb-1">
-                        Upload Image
-                      </Text>
-                      <Text className="text-muted-foreground text-sm text-center">
-                        Tap to take a photo or choose from gallery
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
+                    <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 }}>
+                      Upload Image
+                    </Text>
+                    <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: "center" }}>
+                      Tap to take a photo or choose from gallery
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             )}
             
             {/* Alternative: Image URL input */}
-            <View className="mt-2">
-              <Text className="text-xs text-muted-foreground mb-2">
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 8 }}>
                 Or enter image URL:
               </Text>
-              <View className="flex-row items-center">
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <TextInput
                   value={imageUrl}
                   onChangeText={(text) => {
                     setImageUrl(text);
                     if (text.trim()) {
-                      setImagePath(""); // Clear path if URL is entered manually
+                      setImagePath("");
                     }
                   }}
                   placeholder="https://example.com/image.jpg"
-                  className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-foreground"
-                  placeholderTextColor="#6B7280"
+                  placeholderTextColor={colors.textMuted}
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.surface,
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    fontSize: 14,
+                    color: colors.text,
+                    borderWidth: 1,
+                    borderColor: colors.borderSubtle,
+                  }}
                   autoCapitalize="none"
                   keyboardType="url"
                 />
@@ -360,9 +510,9 @@ export default function CreateArticle() {
                       setImageUrl("");
                       setImagePath("");
                     }}
-                    className="ml-2 p-2"
+                    style={{ marginLeft: 8, padding: 8 }}
                   >
-                    <Ionicons name="close-circle" size={20} color="#EF4444" />
+                    <Ionicons name="close-circle" size={22} color={colors.danger} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -370,88 +520,162 @@ export default function CreateArticle() {
           </View>
 
           {/* Read Time */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Estimated Read Time (minutes)
             </Text>
             <TextInput
               value={readTime}
               onChangeText={setReadTime}
               placeholder="5"
-              className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+                width: 100,
+              }}
               keyboardType="numeric"
-              style={{ width: 80 }}
             />
           </View>
 
           {/* Content */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-foreground mb-2">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 13, 
+              fontWeight: "600", 
+              color: colors.textMuted, 
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}>
               Content *
             </Text>
             <TextInput
               value={content}
               onChangeText={handleContentChange}
-              placeholder="Write your article content here..."
-              className="bg-card border border-border rounded-lg px-4 py-3 text-foreground min-h-[200px]"
-              placeholderTextColor="#6B7280"
+              placeholder="Write your story here..."
+              placeholderTextColor={colors.textMuted}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 16,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+                minHeight: 200,
+                lineHeight: 24,
+              }}
               multiline
               textAlignVertical="top"
             />
-            <Text className="text-xs text-muted-foreground mt-1">
-              Word count:
-              {content.split(/\s+/).filter((word) => word.length > 0).length}
+            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8 }}>
+              Word count: {content.split(/\s+/).filter((word) => word.length > 0).length}
             </Text>
           </View>
 
           {/* Publish Toggle */}
-          <View className="mb-8">
-            <View className="flex-row items-center justify-between bg-card border border-border rounded-lg px-4 py-3">
+          <View style={{ marginBottom: 32 }}>
+            <TouchableOpacity
+              onPress={() => setIsPublished(!isPublished)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: colors.surface,
+                borderRadius: 14,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.borderSubtle,
+              }}
+            >
               <View>
-                <Text className="text-foreground font-semibold">
+                <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>
                   Publish immediately
                 </Text>
-                <Text className="text-muted-foreground text-sm">
-                  Make article visible to all users
+                <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: 2 }}>
+                  Make story visible to all users
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={() => setIsPublished(!isPublished)}
-                className={`w-12 h-6 rounded-full ${
-                  isPublished ? "bg-primary" : "bg-gray-300"
-                } justify-center`}
-              >
-                <View
-                  className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
-                    isPublished ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </TouchableOpacity>
-            </View>
+              <View style={{
+                width: 52,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: isPublished ? colors.success : colors.surfaceHover,
+                justifyContent: "center",
+                padding: 2,
+              }}>
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#FFF",
+                  transform: [{ translateX: isPublished ? 24 : 0 }],
+                  ...Platform.select({
+                    ios: {
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 2,
+                    },
+                    android: { elevation: 2 },
+                  }),
+                }} />
+              </View>
+            </TouchableOpacity>
           </View>
+
+          {/* Bottom spacing */}
+          <View style={{ height: 100 }} />
         </ScrollView>
 
         {/* Submit Button */}
-        <View className="px-6 py-4 border-t border-border bg-card">
+        <View style={{
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderSubtle,
+          backgroundColor: colors.background,
+        }}>
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={
-              loading || !title.trim() || !description.trim() || !content.trim()
-            }
-            className={`w-full py-3 px-6 rounded-lg ${
-              loading || !title.trim() || !description.trim() || !content.trim()
-                ? "bg-gray-300 dark:bg-gray-600"
-                : "bg-primary"
-            }`}
+            disabled={loading || !title.trim() || !description.trim() || !content.trim()}
+            style={{
+              backgroundColor: (loading || !title.trim() || !description.trim() || !content.trim()) 
+                ? colors.surfaceHover 
+                : colors.primary,
+              paddingVertical: 16,
+              borderRadius: 14,
+              alignItems: "center",
+            }}
           >
-            <Text className="text-center font-semibold text-white">
-              {loading
-                ? "Publishing..."
-                : isPublished
-                  ? "Publish Article"
-                  : "Save Draft"}
-            </Text>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: (loading || !title.trim() || !description.trim() || !content.trim()) 
+                  ? colors.textMuted 
+                  : "#FFF",
+              }}>
+                {isPublished ? "Publish Story" : "Save Draft"}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

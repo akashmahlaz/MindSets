@@ -1,29 +1,31 @@
 import { useAuth } from "@/context/AuthContext";
 import {
-    Article,
-    getAllArticles,
-    getUserArticles,
+  Article,
+  getAllArticles,
+  getUserArticles,
 } from "@/services/articleService";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Dimensions,
-    Image,
-    Platform,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Dimensions,
+  Image,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+type TabType = "discover" | "my-stories";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.55; // Big cards like Perplexity
 
 // Perplexity-inspired color tokens
 const getColors = (isDark: boolean) => ({
@@ -35,14 +37,30 @@ const getColors = (isDark: boolean) => ({
   textMuted: isDark ? "#737373" : "#9CA3AF",
   border: isDark ? "#262626" : "#E5E7EB",
   borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
-  primary: "#6366F1",
-  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-  accent: isDark ? "#818CF8" : "#4F46E5",
+  primary: "#20B2AA", // Teal accent like Perplexity
+  primarySoft: isDark ? "rgba(32, 178, 170, 0.15)" : "rgba(32, 178, 170, 0.1)",
+  accent: isDark ? "#20B2AA" : "#20B2AA",
   success: "#10B981",
   warning: "#F59E0B",
 });
 
-export default function ArticlesIndex() {
+// Category tabs like Perplexity
+const CATEGORIES = [
+  { id: "for-you", label: "For You" },
+  { id: "top-stories", label: "Top Stories" },
+  { id: "mental-health", label: "Mental Health" },
+  { id: "wellness", label: "Wellness" },
+  { id: "relationships", label: "Relationships" },
+  { id: "self-care", label: "Self Care" },
+];
+
+// Main tabs
+const MAIN_TABS = [
+  { id: "discover", label: "Discover", icon: "compass-outline" },
+  { id: "my-stories", label: "My Stories", icon: "person-outline" },
+];
+
+export default function StoriesIndex() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -52,25 +70,24 @@ export default function ArticlesIndex() {
   const [userArticles, setUserArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTab, setSelectedTab] = useState<"all" | "my">("all");
+  const [selectedCategory, setSelectedCategory] = useState("for-you");
+  const [activeTab, setActiveTab] = useState<TabType>("discover");
 
   useEffect(() => {
-    loadArticles();
-  }, [selectedTab]);
+    loadStories();
+  }, [activeTab]);
 
-  const loadArticles = async () => {
+  const loadStories = async () => {
     try {
       setLoading(true);
-      if (selectedTab === "all") {
-        const data = await getAllArticles();
-        setArticles(data);
-      } else if (userProfile?.uid) {
-        const data = await getUserArticles(userProfile.uid);
-        setUserArticles(data);
+      const data = await getAllArticles();
+      setArticles(data);
+      if (userProfile?.uid) {
+        const userData = await getUserArticles(userProfile.uid);
+        setUserArticles(userData);
       }
     } catch (error) {
-      console.error("Failed to load articles:", error);
+      console.error("Failed to load stories:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -79,56 +96,51 @@ export default function ArticlesIndex() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadArticles();
+    loadStories();
   };
 
-  const filteredArticles =
-    selectedTab === "all"
-      ? articles.filter(
-          (article) =>
-            article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            article.category.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-      : userArticles.filter(
-          (article) =>
-            article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            article.category.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-  const handleArticlePress = (articleId: string) => {
+  // Filter stories by category or show user's stories
+  const filteredStories = activeTab === "my-stories" 
+    ? userArticles
+    : articles.filter((article) => {
+        if (selectedCategory === "for-you") return true;
+        if (selectedCategory === "top-stories") return article.isFeatured || article.viewCount > 10;
+        return article.category.toLowerCase().includes(selectedCategory.replace("-", " "));
+      });
+  const handleStoryPress = (storyId: string) => {
     router.push({
       pathname: "/articles/[articleId]" as any,
-      params: { articleId },
+      params: { articleId: storyId },
     });
   };
 
-  // Featured article - first featured or first article
-  const featuredArticle = filteredArticles.find(a => a.isFeatured) || filteredArticles[0];
-  const remainingArticles = filteredArticles.filter(a => a.id !== featuredArticle?.id);
-
-  // Perplexity-style Featured Card
-  const renderFeaturedCard = (article: Article) => (
+  // Perplexity-style Big Story Card (vertical scroll)
+  const renderBigStoryCard = (article: Article) => (
     <Pressable
-      onPress={() => handleArticlePress(article.id)}
+      key={article.id}
+      onPress={() => handleStoryPress(article.id)}
       style={{
-        marginBottom: 32,
-        borderRadius: 20,
+        marginBottom: 24,
+        marginHorizontal: 16,
+      }}
+    >
+      {/* Big Image Card with Rounded Corners */}
+      <View style={{
+        height: CARD_HEIGHT,
+        borderRadius: 24,
         overflow: "hidden",
         backgroundColor: colors.surface,
         ...Platform.select({
           ios: {
-            shadowColor: isDark ? "#000" : "#6366F1",
+            shadowColor: "#000",
             shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: isDark ? 0.4 : 0.12,
-            shadowRadius: 24,
+            shadowOpacity: isDark ? 0.4 : 0.15,
+            shadowRadius: 20,
           },
-          android: {
-            elevation: 8,
-          },
+          android: { elevation: 8 },
         }),
-      }}
-    >
-      {/* Hero Image */}
-      <View style={{ height: 200, position: "relative" }}>
+      }}>
+        {/* Full Card Image */}
         {article.imageUrl ? (
           <Image
             source={{ uri: article.imageUrl }}
@@ -137,23 +149,88 @@ export default function ArticlesIndex() {
           />
         ) : (
           <LinearGradient
-            colors={isDark ? ["#312E81", "#1E1B4B"] : ["#EEF2FF", "#C7D2FE"]}
+            colors={isDark ? ["#1a3a38", "#0d1f1e"] : ["#e0f2f1", "#b2dfdb"]}
             style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}
           >
-            <Ionicons name="newspaper-outline" size={48} color={colors.primary} />
+            <Ionicons name="newspaper-outline" size={64} color={colors.primary} />
           </LinearGradient>
         )}
-        {/* Gradient Overlay */}
+
+        {/* Gradient Overlay for Text Readability */}
         <LinearGradient
-          colors={["transparent", isDark ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.4)"]}
+          colors={["transparent", "rgba(0,0,0,0.85)"]}
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            height: 100,
+            height: "60%",
+            justifyContent: "flex-end",
+            padding: 20,
+            paddingBottom: 24,
           }}
-        />
+        >
+          {/* Title - Big & Bold */}
+          <Text style={{
+            fontSize: 24,
+            fontWeight: "700",
+            color: "#FFFFFF",
+            lineHeight: 32,
+            marginBottom: 12,
+            letterSpacing: -0.5,
+          }} numberOfLines={3}>
+            {article.title}
+          </Text>
+
+          {/* Description Preview */}
+          <Text style={{
+            fontSize: 15,
+            color: "rgba(255,255,255,0.85)",
+            lineHeight: 22,
+            marginBottom: 16,
+          }} numberOfLines={2}>
+            {article.description}
+          </Text>
+
+          {/* Author Row */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {/* Author Avatar */}
+              <View style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                overflow: "hidden",
+                backgroundColor: "rgba(255,255,255,0.2)",
+                marginRight: 10,
+              }}>
+                {article.authorPhotoURL ? (
+                  <Image source={{ uri: article.authorPhotoURL }} style={{ width: "100%", height: "100%" }} />
+                ) : (
+                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Text style={{ fontSize: 14, color: "#FFF" }}>👤</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: "500", color: "rgba(255,255,255,0.9)" }}>
+                {article.authorName}
+              </Text>
+            </View>
+
+            {/* Bookmark Icon */}
+            <TouchableOpacity style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: "rgba(255,255,255,0.15)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <Ionicons name="bookmark-outline" size={20} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+
         {/* Featured Badge */}
         {article.isFeatured && (
           <View style={{
@@ -174,360 +251,141 @@ export default function ArticlesIndex() {
           </View>
         )}
       </View>
-
-      {/* Content */}
-      <View style={{ padding: 20 }}>
-        {/* Category */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-          <View style={{
-            backgroundColor: colors.primarySoft,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 12,
-          }}>
-            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>
-              {article.category}
-            </Text>
-          </View>
-          <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 12 }}>
-            {article.readTime} min read
-          </Text>
-        </View>
-
-        {/* Title */}
-        <Text style={{
-          fontSize: 22,
-          fontWeight: "700",
-          color: colors.text,
-          lineHeight: 28,
-          marginBottom: 8,
-          letterSpacing: -0.3,
-        }} numberOfLines={2}>
-          {article.title}
-        </Text>
-
-        {/* Description */}
-        <Text style={{
-          fontSize: 15,
-          color: colors.textSecondary,
-          lineHeight: 22,
-          marginBottom: 16,
-        }} numberOfLines={2}>
-          {article.description}
-        </Text>
-
-        {/* Author Row */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              overflow: "hidden",
-              backgroundColor: colors.surfaceHover,
-              marginRight: 10,
-            }}>
-              {article.authorPhotoURL ? (
-                <Image source={{ uri: article.authorPhotoURL }} style={{ width: "100%", height: "100%" }} />
-              ) : (
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                  <Text style={{ fontSize: 14 }}>👤</Text>
-                </View>
-              )}
-            </View>
-            <View>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                {article.authorName}
-              </Text>
-              <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                {article.createdAt?.toDate?.()?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) || "Recent"}
-              </Text>
-            </View>
-          </View>
-
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons name="eye-outline" size={14} color={colors.textMuted} />
-            <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>
-              {article.viewCount}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </Pressable>
-  );
-
-  // Perplexity-style Compact Article Card
-  const renderArticleCard = (article: Article, index: number) => (
-    <Pressable
-      key={article.id}
-      onPress={() => handleArticlePress(article.id)}
-      style={({ pressed }) => ({
-        marginBottom: 16,
-        borderRadius: 16,
-        overflow: "hidden",
-        backgroundColor: pressed ? colors.surfaceHover : colors.surface,
-        borderWidth: 1,
-        borderColor: colors.borderSubtle,
-      })}
-    >
-      <View style={{ flexDirection: "row", padding: 16 }}>
-        {/* Left Content */}
-        <View style={{ flex: 1, paddingRight: 16 }}>
-          {/* Category & Time */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <Text style={{
-              fontSize: 12,
-              fontWeight: "600",
-              color: colors.primary,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              {article.category}
-            </Text>
-            <View style={{
-              width: 3,
-              height: 3,
-              borderRadius: 1.5,
-              backgroundColor: colors.textMuted,
-              marginHorizontal: 8,
-            }} />
-            <Text style={{ fontSize: 12, color: colors.textMuted }}>
-              {article.readTime} min
-            </Text>
-          </View>
-
-          {/* Title */}
-          <Text style={{
-            fontSize: 16,
-            fontWeight: "600",
-            color: colors.text,
-            lineHeight: 22,
-            marginBottom: 6,
-            letterSpacing: -0.2,
-          }} numberOfLines={2}>
-            {article.title}
-          </Text>
-
-          {/* Description */}
-          <Text style={{
-            fontSize: 14,
-            color: colors.textSecondary,
-            lineHeight: 20,
-            marginBottom: 12,
-          }} numberOfLines={2}>
-            {article.description}
-          </Text>
-
-          {/* Author & Stats */}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ fontSize: 13, color: colors.textMuted }}>
-              {article.authorName}
-            </Text>
-            <View style={{
-              width: 3,
-              height: 3,
-              borderRadius: 1.5,
-              backgroundColor: colors.textMuted,
-              marginHorizontal: 8,
-            }} />
-            <Ionicons name="eye-outline" size={12} color={colors.textMuted} />
-            <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>
-              {article.viewCount}
-            </Text>
-          </View>
-        </View>
-
-        {/* Thumbnail */}
-        <View style={{
-          width: 80,
-          height: 80,
-          borderRadius: 12,
-          overflow: "hidden",
-          backgroundColor: colors.surfaceHover,
-        }}>
-          {article.imageUrl ? (
-            <Image
-              source={{ uri: article.imageUrl }}
-              style={{ width: "100%", height: "100%" }}
-              resizeMode="cover"
-            />
-          ) : (
-            <LinearGradient
-              colors={isDark ? ["#312E81", "#1E1B4B"] : ["#EEF2FF", "#E0E7FF"]}
-              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-            >
-              <Ionicons name="document-text-outline" size={24} color={colors.primary} />
-            </LinearGradient>
-          )}
-        </View>
-      </View>
-
-      {/* Featured Indicator */}
-      {article.isFeatured && (
-        <View style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          backgroundColor: colors.warning,
-          width: 6,
-          height: 6,
-          borderRadius: 3,
-        }} />
-      )}
     </Pressable>
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
-      {/* Minimal Header - Perplexity Style */}
+      {/* Header - Stories Style */}
       <View style={{
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingTop: 8,
-        paddingBottom: 16,
+        paddingBottom: 12,
         backgroundColor: colors.background,
       }}>
-        {/* Top Row */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        {/* Top Row - Back, Title, Add */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
               width: 40,
               height: 40,
-              borderRadius: 12,
-              backgroundColor: colors.surface,
+              borderRadius: 20,
               justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <Ionicons name="arrow-back" size={20} color={colors.text} />
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
 
-          <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>
-            Articles
+          <Text style={{ 
+            fontSize: 20, 
+            fontWeight: "700", 
+            color: colors.text,
+            letterSpacing: -0.3,
+          }}>
+            Stories
           </Text>
 
-          {(userProfile?.role === "counsellor" || userProfile?.role === "admin") && (
-            <TouchableOpacity
-              onPress={() => router.push("/(resources)/articles/create")}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                backgroundColor: colors.primary,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Ionicons name="add" size={20} color="#FFF" />
-            </TouchableOpacity>
-          )}
-
-          {!(userProfile?.role === "counsellor" || userProfile?.role === "admin") && (
-            <View style={{ width: 40 }} />
-          )}
+          {/* Add Button - All users can create stories */}
+          <TouchableOpacity
+            onPress={() => router.push("/(resources)/articles/create")}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Ionicons name="add-circle-outline" size={28} color={colors.text} />
+          </TouchableOpacity>
         </View>
 
-        {/* Search Bar - Minimal */}
+        {/* Main Tabs - Discover / My Stories */}
         <View style={{
           flexDirection: "row",
-          alignItems: "center",
           backgroundColor: colors.surface,
           borderRadius: 14,
-          paddingHorizontal: 14,
-          height: 48,
-          borderWidth: 1,
-          borderColor: colors.borderSubtle,
-        }}>
-          <Ionicons name="search" size={18} color={colors.textMuted} />
-          <TextInput
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={{
-              flex: 1,
-              marginLeft: 10,
-              fontSize: 15,
-              color: colors.text,
-            }}
-            placeholderTextColor={colors.textMuted}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Tab Pills - Perplexity Style */}
-        <View style={{
-          flexDirection: "row",
-          marginTop: 16,
-          backgroundColor: colors.surface,
-          borderRadius: 12,
           padding: 4,
+          marginBottom: 16,
         }}>
-          <TouchableOpacity
-            onPress={() => setSelectedTab("all")}
-            style={{
-              flex: 1,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: selectedTab === "all" ? colors.background : "transparent",
-              ...Platform.select({
-                ios: selectedTab === "all" ? {
+          {MAIN_TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id as TabType)}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 12,
+                borderRadius: 10,
+                backgroundColor: activeTab === tab.id ? colors.background : "transparent",
+                ...(activeTab === tab.id && Platform.OS === "ios" ? {
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.08,
+                  shadowOpacity: 0.1,
                   shadowRadius: 4,
-                } : {},
-                android: selectedTab === "all" ? { elevation: 2 } : {},
-              }),
-            }}
-          >
-            <Text style={{
-              textAlign: "center",
-              fontWeight: "600",
-              fontSize: 14,
-              color: selectedTab === "all" ? colors.text : colors.textMuted,
-            }}>
-              All Articles
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setSelectedTab("my")}
-            style={{
-              flex: 1,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: selectedTab === "my" ? colors.background : "transparent",
-              ...Platform.select({
-                ios: selectedTab === "my" ? {
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 4,
-                } : {},
-                android: selectedTab === "my" ? { elevation: 2 } : {},
-              }),
-            }}
-          >
-            <Text style={{
-              textAlign: "center",
-              fontWeight: "600",
-              fontSize: 14,
-              color: selectedTab === "my" ? colors.text : colors.textMuted,
-            }}>
-              My Articles
-            </Text>
-          </TouchableOpacity>
+                } : {}),
+                ...(activeTab === tab.id && Platform.OS === "android" ? { elevation: 2 } : {}),
+              }}
+            >
+              <Ionicons 
+                name={tab.icon as any} 
+                size={18} 
+                color={activeTab === tab.id ? colors.primary : colors.textMuted} 
+              />
+              <Text style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: activeTab === tab.id ? colors.text : colors.textMuted,
+                marginLeft: 6,
+              }}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
+
+        {/* Category Tabs - Only show on Discover tab */}
+        {activeTab === "discover" && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingRight: 16 }}
+          >
+            {CATEGORIES.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                onPress={() => setSelectedCategory(category.id)}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  backgroundColor: selectedCategory === category.id 
+                    ? colors.primary 
+                    : colors.surface,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: selectedCategory === category.id ? "#FFFFFF" : colors.textSecondary,
+                }}>
+                  {category.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
-      {/* Articles List */}
+      {/* Stories - Big Vertical Scrolling Cards */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -538,127 +396,87 @@ export default function ArticlesIndex() {
         }
       >
         {loading ? (
-          // Skeleton Loading - Perplexity Style
+          // Skeleton Loading - Big Cards
           <>
-            {/* Featured Skeleton */}
-            <View style={{
-              marginBottom: 32,
-              borderRadius: 20,
-              overflow: "hidden",
-              backgroundColor: colors.surface,
-            }}>
-              <View style={{ height: 200, backgroundColor: colors.surfaceHover }} />
-              <View style={{ padding: 20 }}>
-                <View style={{ flexDirection: "row", marginBottom: 12 }}>
-                  <View style={{ width: 60, height: 20, borderRadius: 10, backgroundColor: colors.surfaceHover }} />
-                  <View style={{ width: 60, height: 20, borderRadius: 10, backgroundColor: colors.surfaceHover, marginLeft: 12 }} />
-                </View>
-                <View style={{ height: 24, borderRadius: 8, backgroundColor: colors.surfaceHover, marginBottom: 8 }} />
-                <View style={{ height: 16, borderRadius: 8, backgroundColor: colors.surfaceHover, width: "80%" }} />
-              </View>
-            </View>
-
-            {/* Card Skeletons */}
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={{
-                marginBottom: 16,
-                borderRadius: 16,
+                marginBottom: 24,
+                marginHorizontal: 16,
+                height: CARD_HEIGHT,
+                borderRadius: 24,
                 backgroundColor: colors.surface,
-                padding: 16,
-                flexDirection: "row",
+                overflow: "hidden",
               }}>
-                <View style={{ flex: 1, paddingRight: 16 }}>
-                  <View style={{ height: 12, borderRadius: 6, backgroundColor: colors.surfaceHover, width: 80, marginBottom: 8 }} />
-                  <View style={{ height: 18, borderRadius: 8, backgroundColor: colors.surfaceHover, marginBottom: 6 }} />
-                  <View style={{ height: 14, borderRadius: 7, backgroundColor: colors.surfaceHover, width: "90%" }} />
+                <View style={{ flex: 1, backgroundColor: colors.surfaceHover }} />
+                <View style={{ 
+                  position: "absolute", 
+                  bottom: 0, 
+                  left: 0, 
+                  right: 0, 
+                  padding: 20,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                }}>
+                  <View style={{ height: 28, borderRadius: 8, backgroundColor: "rgba(255,255,255,0.2)", marginBottom: 12, width: "90%" }} />
+                  <View style={{ height: 16, borderRadius: 8, backgroundColor: "rgba(255,255,255,0.15)", width: "70%" }} />
                 </View>
-                <View style={{ width: 80, height: 80, borderRadius: 12, backgroundColor: colors.surfaceHover }} />
               </View>
             ))}
           </>
-        ) : filteredArticles.length > 0 ? (
-          <>
-            {/* Featured Article */}
-            {featuredArticle && renderFeaturedCard(featuredArticle)}
-
-            {/* Section Header */}
-            {remainingArticles.length > 0 && (
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                <Text style={{
-                  fontSize: 13,
-                  fontWeight: "600",
-                  color: colors.textMuted,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.8,
-                }}>
-                  More Articles
-                </Text>
-                <View style={{
-                  flex: 1,
-                  height: 1,
-                  backgroundColor: colors.borderSubtle,
-                  marginLeft: 12,
-                }} />
-              </View>
-            )}
-
-            {/* Article List */}
-            {remainingArticles.map((article, index) => renderArticleCard(article, index))}
-          </>
+        ) : filteredStories.length > 0 ? (
+          // Big Story Cards
+          filteredStories.map((story) => renderBigStoryCard(story))
         ) : (
-          // Empty State - Clean Design
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+          // Empty State
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 80, paddingHorizontal: 20 }}>
             <View style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
+              width: 100,
+              height: 100,
+              borderRadius: 50,
               backgroundColor: colors.surface,
               justifyContent: "center",
               alignItems: "center",
-              marginBottom: 20,
+              marginBottom: 24,
             }}>
-              <Ionicons name="newspaper-outline" size={36} color={colors.textMuted} />
+              <Ionicons name={activeTab === "my-stories" ? "create-outline" : "newspaper-outline"} size={48} color={colors.textMuted} />
             </View>
             <Text style={{
-              fontSize: 20,
-              fontWeight: "600",
+              fontSize: 22,
+              fontWeight: "700",
               color: colors.text,
               marginBottom: 8,
             }}>
-              {selectedTab === "my" ? "No articles yet" : "No articles found"}
+              {activeTab === "my-stories" ? "No stories yet" : "No stories found"}
             </Text>
             <Text style={{
-              fontSize: 15,
+              fontSize: 16,
               color: colors.textSecondary,
               textAlign: "center",
               paddingHorizontal: 40,
-              lineHeight: 22,
+              lineHeight: 24,
             }}>
-              {selectedTab === "my"
-                ? "Start sharing your knowledge by writing your first article!"
-                : "Try adjusting your search or check back later."}
+              {activeTab === "my-stories" 
+                ? "Share your thoughts and experiences with the community"
+                : "Check back later for new content"}
             </Text>
-            {selectedTab === "my" && (userProfile?.role === "counsellor" || userProfile?.role === "admin") && (
-              <TouchableOpacity
-                onPress={() => router.push("/articles/create" as any)}
-                style={{
-                  backgroundColor: colors.primary,
-                  paddingHorizontal: 24,
-                  paddingVertical: 14,
-                  borderRadius: 12,
-                  marginTop: 24,
-                }}
-              >
-                <Text style={{ color: "#FFF", fontWeight: "600", fontSize: 15 }}>
-                  Write Article
-                </Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              onPress={() => router.push("/articles/create" as any)}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 28,
+                paddingVertical: 16,
+                borderRadius: 24,
+                marginTop: 28,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons name="create-outline" size={20} color="#FFF" />
+              <Text style={{ color: "#FFF", fontWeight: "600", fontSize: 16, marginLeft: 8 }}>
+                Write Story
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
-
-        {/* Bottom Spacing */}
-        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );

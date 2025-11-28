@@ -104,7 +104,7 @@ export default function UserProfileScreen() {
     { icon: "chatbubbles-outline", label: "My Conversations", route: "/chat", color: "#6366F1" },
     { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#8B5CF6" },
     { icon: "heart-outline", label: "Saved Counselors", route: "/(main)/Counselors", color: "#EC4899" },
-    { icon: "document-text-outline", label: "Resources", route: "/(resources)/articles", color: "#10B981" },
+    { icon: "book-outline", label: "Stories", route: "/(resources)/articles", color: "#10B981" },
     { icon: "journal-outline", label: "My Journal", route: "/(resources)/journal", color: "#F59E0B" },
   ];
 
