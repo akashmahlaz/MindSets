@@ -152,7 +152,7 @@ export default function ProfileScreen() {
         "@/services/chatHelpers"
       );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
-      router.push(`/chat/${channel.id}` as any);
+      router.push(`/(main)/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
         "Chat Error",
@@ -182,7 +182,7 @@ export default function ProfileScreen() {
         "@/services/chatHelpers"
       );
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
-      router.push(`/chat/${channel.id}` as any);
+      router.push(`/(main)/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
         "Chat Error",

@@ -141,7 +141,7 @@ export default function ClientList() {
         "@/services/chatHelpers"
       );
       const channel = await createOrGetDirectChannel(user, targetClient.uid);
-      router.push(`/chat/${channel.id}` as any);
+      router.push(`/(main)/chat/${channel.id}` as any);
     } catch (error) {
       Alert.alert(
         "Chat Error",

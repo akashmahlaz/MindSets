@@ -1,7 +1,7 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter, useSegments } from "expo-router";
 import React from "react";
 import { Platform, StatusBar } from "react-native";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -10,25 +10,28 @@ import { Ionicons } from "@expo/vector-icons";
 export default function TabLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const segments = useSegments();
   
-  // Premium Material Design 3 color scheme
+  // Premium Material Design 3 color scheme - matching system navigation bar
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    surfaceContainer: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
+    surfaceContainer: isDarkColorScheme ? "#0C0F14" : "#FAFBFC", // Match background for seamless look
     primary: "#6366F1",
-    onSurfaceVariant: isDarkColorScheme ? "#CBD5E1" : "#64748B",
-    outline: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    onSurfaceVariant: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    outline: isDarkColorScheme ? "#1A1F2E" : "#E5E7EB",
   };
 
-  // Calculate tab bar height with safe area
-  const tabBarHeight = Platform.OS === "ios" ? 88 : 64 + insets.bottom;
+  // Calculate tab bar height - account for bottom safe area
+  const baseTabHeight = Platform.OS === "ios" ? 52 : 58;
+  const tabBarHeight = baseTabHeight + insets.bottom;
 
   return (
-    <SafeAreaProvider>
+    <>
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
-        translucent={false}
+        translucent={true}
       />
       <Tabs
         screenOptions={{
@@ -37,33 +40,23 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarLabelStyle: {
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: "600",
-            marginTop: 2,
-            marginBottom: Platform.OS === "ios" ? 0 : Math.max(insets.bottom, 8),
-            letterSpacing: 0.3,
+            marginTop: 0,
+            marginBottom: 0,
+            letterSpacing: 0.2,
           },
           tabBarIconStyle: {
-            marginTop: Platform.OS === "ios" ? 6 : 8,
+            marginTop: 0,
           },
           tabBarStyle: {
             backgroundColor: colors.surfaceContainer,
             borderTopWidth: 0,
-            height: tabBarHeight,
-            paddingTop: 8,
-            paddingBottom: Platform.OS === "android" ? Math.max(insets.bottom, 8) : 0,
-            ...Platform.select({
-              ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: isDarkColorScheme ? 0.15 : 0.08,
-                shadowRadius: 8,
-              },
-              android: {
-                elevation: 8,
-                shadowColor: "#000",
-              },
-            }),
+            height: Platform.OS === "ios" ? 52 + insets.bottom : 60 + insets.bottom,
+            paddingTop: 4,
+            paddingBottom: insets.bottom,
+            elevation: 0,
+            shadowOpacity: 0,
           },
         }}
       >
@@ -118,6 +111,17 @@ export default function TabLayout() {
               />
             ),
           }}
+          listeners={{
+            tabPress: (e) => {
+              // If we're already in chat but on a nested screen (like a specific chat),
+              // prevent default and navigate to chat list
+              const isInChatNested = segments.length > 2 && segments[1] === "chat";
+              if (isInChatNested) {
+                e.preventDefault();
+                router.replace("/(main)/chat");
+              }
+            },
+          }}
         />
         <Tabs.Screen
           name="profile"
@@ -133,6 +137,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </SafeAreaProvider>
+    </>
   );
 }

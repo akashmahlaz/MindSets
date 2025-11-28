@@ -1,7 +1,10 @@
-import { User } from "firebase/auth";
+import { getAuth, User } from "firebase/auth";
 import { Channel } from "stream-chat";
+import { app } from "../firebaseConfig";
 import { channelService } from "./channelService";
-import { chatClient, getStreamToken } from "./stream";
+import { chatClient } from "./stream";
+
+const auth = getAuth(app);
 
 export interface MessageOptions {
   text?: string;
@@ -22,65 +25,54 @@ export interface ChannelFilters {
   created_at?: { $gte?: Date; $lte?: Date };
 }
 
-// Check if a user exists in Stream and create if not
+// Ensure target user exists in Stream via server-side function
+export const ensureTargetUserExists = async (
+  targetUserId: string,
+): Promise<boolean> => {
+  try {
+    console.log(`Ensuring user ${targetUserId} exists in Stream Chat via server...`);
+    
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.error("No current user for auth");
+      return false;
+    }
+
+    const idToken = await currentUser.getIdToken();
+    
+    const response = await fetch(
+      "https://us-central1-mental-health-f7b7f.cloudfunctions.net/ensureStreamUser",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ targetUserId }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to ensure user exists:", errorData);
+      return false;
+    }
+
+    const data = await response.json();
+    console.log(`✅ User ${targetUserId} verified/created in Stream:`, data.message);
+    return true;
+  } catch (error) {
+    console.error(`Failed to ensure user ${targetUserId} exists:`, error);
+    return false;
+  }
+};
+
+// Check if a user exists in Stream and create if not (legacy - now uses server-side)
 export const ensureUserExists = async (
   userId: string,
   currentUser: User,
 ): Promise<boolean> => {
-  try {
-    console.log(`Checking if user ${userId} exists in Stream Chat...`);
-
-    // First check if the user exists using queryUsers
-    const { users } = await chatClient.queryUsers({ id: userId });
-
-    if (users.length > 0) {
-      console.log(`User ${userId} already exists in Stream Chat.`);
-      return true;
-    }
-
-    // User doesn't exist, try to create them
-    console.log(`User ${userId} doesn't exist in Stream Chat. Creating...`);
-
-    // For this user, we need to create them through the server
-    // Get token for current user
-    const token = await getStreamToken(currentUser.uid);
-    if (!token) {
-      console.error("Failed to get Stream token for user creation");
-      return false;
-    }
-
-    // Temporarily connect as the current user if not already connected
-    const wasConnected = !!chatClient.userID;
-    if (!wasConnected) {
-      await chatClient.connectUser(
-        {
-          id: currentUser.uid,
-          name: currentUser.displayName || currentUser.email || "Anonymous",
-          image:
-            currentUser.photoURL ||
-            `https://getstream.io/random_png/?name=${currentUser.displayName || currentUser.email}`,
-        },
-        token,
-      );
-    }
-
-    // Create the other user - we can only create a minimal user object
-    // The complete profile will be set when they log in themselves
-    await chatClient.upsertUser({
-      id: userId,
-      role: "user",
-      name: "User", // Minimal placeholder name
-    });
-
-    console.log(`Successfully created user ${userId} in Stream Chat.`);
-    return true;
-  } catch (error) {
-    console.error(
-      `Failed to ensure user ${userId} exists in Stream Chat:`,
-      error,
-    );
-    return false;
-  }
+  return ensureTargetUserExists(userId);
 };
 
 // Create or get a direct message channel between two users
@@ -93,13 +85,18 @@ export const createOrGetDirectChannel = async (
       `Creating/getting direct channel between ${currentUser.uid} and ${targetUserId}`,
     );
 
+    // First ensure target user exists in Stream via server-side
+    const userExists = await ensureTargetUserExists(targetUserId);
+    if (!userExists) {
+      console.warn("Could not verify target user exists, attempting channel creation anyway");
+    }
+
     // Create a sorted channel ID for consistency
     const channelId = [currentUser.uid, targetUserId].sort().join("-");
 
     console.log("Channel ID:", channelId);
 
     // Try to create/get the channel directly
-    // Stream will handle creating users if they don't exist when they connect
     const channel = chatClient.channel("messaging", channelId, {
       members: [currentUser.uid, targetUserId],
       created_by_id: currentUser.uid,
@@ -112,44 +109,6 @@ export const createOrGetDirectChannel = async (
     return channel;
   } catch (error) {
     console.error("Error creating/getting direct channel:", error);
-
-    // If the error is due to target user not existing, try a simpler approach
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (
-      errorMessage.includes("not found") ||
-      errorMessage.includes("does not exist")
-    ) {
-      console.log(
-        "Target user may not exist in Stream yet, creating minimal user reference",
-      );
-
-      try {
-        // Create a minimal user entry for the target user
-        await chatClient.upsertUser({
-          id: targetUserId,
-          name: `User ${targetUserId.substring(0, 8)}`, // Temporary name
-          role: "user",
-        });
-
-        // Try creating the channel again
-        const channelId = [currentUser.uid, targetUserId].sort().join("-");
-        const channel = chatClient.channel("messaging", channelId, {
-          members: [currentUser.uid, targetUserId],
-          created_by_id: currentUser.uid,
-        });
-
-        await channel.watch();
-        console.log("✅ Channel created successfully after user creation");
-        return channel;
-      } catch (retryError) {
-        console.error(
-          "Failed to create channel even after user creation:",
-          retryError,
-        );
-        throw retryError;
-      }
-    }
-
     throw error;
   }
 };

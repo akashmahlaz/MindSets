@@ -38,8 +38,8 @@ export const useStartChat = () => {
       // Create or get a direct message channel
       const channel = await createOrGetDirectChannel(user, targetUserId);
 
-      // Navigate to the chat screen
-      router.push(`/chat/${channel.id}`);
+      // Navigate to the chat screen within the (main) tab group
+      router.push(`/(main)/chat/${channel.id}`);
     } catch (error) {
       console.error("Error starting chat:", error);
       Alert.alert("Error", "Failed to start chat. Please try again.");

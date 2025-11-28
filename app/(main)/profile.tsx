@@ -45,7 +45,7 @@ export default function UserProfileScreen() {
 
   // Premium Material Design 3 colors
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",

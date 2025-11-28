@@ -3,26 +3,26 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
 import {
-    CounsellorProfileData,
-    UserProfile,
-    UserProfileData,
+  CounsellorProfileData,
+  UserProfile,
+  UserProfileData,
 } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -55,7 +55,7 @@ export default function CounselorsScreen() {
 
   // Premium Material Design 3 colors
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
@@ -303,7 +303,7 @@ export default function CounselorsScreen() {
 
   return (
     <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
           backgroundColor={colors.background}

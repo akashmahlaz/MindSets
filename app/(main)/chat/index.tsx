@@ -6,18 +6,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
-import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import { ActivityIndicator, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChannelList } from "stream-chat-expo";
 
 export default function ChannelListScreen() {
-  const { chatClient, isChatConnected } = useChat();
+  const { chatClient, isChatConnected, isConnecting, connectionError, retryConnection } = useChat();
   const { user } = useAuth();
   const { isDarkColorScheme } = useColorScheme();
 
   // MD3 Premium Colors
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#F8FAFF",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
     surfaceVariant: isDarkColorScheme ? "#232936" : "#F1F5F9",
     primary: "#6366F1",
@@ -25,7 +25,62 @@ export default function ChannelListScreen() {
     text: isDarkColorScheme ? "#F9FAFB" : "#111827",
     textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
     border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    error: "#EF4444",
   };
+
+  // Show error state with retry option
+  if (connectionError) {
+    return (
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }}
+      >
+        <StatusBar
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
+        <View style={{
+          width: 80,
+          height: 80,
+          borderRadius: 24,
+          backgroundColor: colors.error + '15',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 20,
+        }}>
+          <Ionicons name="cloud-offline-outline" size={40} color={colors.error} />
+        </View>
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+          Connection Error
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 14, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+          {connectionError}
+        </Text>
+        <TouchableOpacity
+          onPress={retryConnection}
+          disabled={isConnecting}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 12,
+            backgroundColor: colors.primary,
+            opacity: isConnecting ? 0.7 : 1,
+          }}
+        >
+          {isConnecting ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons name="refresh" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Try Again</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   if (!chatClient || !isChatConnected || !user) {
     return (
@@ -49,7 +104,7 @@ export default function ChannelListScreen() {
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
         <Text style={{ color: colors.textSecondary, fontSize: 16, fontWeight: '500' }}>
-          Loading channels...
+          {isConnecting ? "Connecting to chat..." : "Loading channels..."}
         </Text>
       </SafeAreaView>
     );

@@ -485,49 +485,42 @@ export const getUsersPushTokens = async (
   }
 };
 
-// Create Stream Chat user - proper implementation
+// Create Stream Chat user - now uses server-side function for reliability
 export const createStreamChatUser = async (
   userProfile: UserProfile,
 ): Promise<void> => {
   try {
     console.log("Creating Stream Chat user for:", userProfile.uid);
 
-    // Import stream services
-    const { chatClient } = await import("./stream");
+    // Call the server-side function to create the user
+    const response = await fetch(
+      "https://us-central1-mental-health-f7b7f.cloudfunctions.net/createStreamChatUser",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uid: userProfile.uid,
+          displayName: userProfile.displayName,
+          email: userProfile.email,
+          photoURL: userProfile.photoURL,
+        }),
+      },
+    );
 
-    if (!chatClient) {
-      console.error("Stream Chat client not available");
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Error creating user via server:", errorData);
       return;
     }
-    const streamUserData = {
-      id: userProfile.uid,
-      name: userProfile.displayName,
-      image: userProfile.photoURL || undefined,
-      role: "user", // Ensure user has proper role
-    };
 
-    try {
-      // Use upsertUser (singular) instead of upsertUsers (plural)
-      const result = await chatClient.upsertUser(streamUserData);
-      console.log(
-        "✅ User created/updated in Stream Chat:",
-        userProfile.uid,
-        result,
-      );
-    } catch (apiError: any) {
-      console.error("❌ Error creating user via Stream API:", apiError);
-      // If it's a permission error, try a different approach
-      if (
-        apiError.message?.includes("permissions") ||
-        apiError.message?.includes("auth")
-      ) {
-        console.log(
-          "⚠️ Permission issue, user will be created when they connect to chat",
-        );
-      }
-    }
+    const data = await response.json();
+    console.log("✅ User created/updated in Stream Chat:", userProfile.uid, data.message);
   } catch (error) {
     console.error("Error with Stream Chat user creation:", error);
+    // User will be created when they connect to chat
+    console.log("⚠️ User will be created when they connect to chat");
   }
 };
 

@@ -167,7 +167,7 @@ export class PushNotificationService {
     if (remoteMessage.data) {
       // Example: Navigate to chat if it's a chat notification
       if (remoteMessage.data.type === "chat") {
-        // router.push(`/chat/${remoteMessage.data.channelId}`);
+        // router.push(`/(main)/chat/${remoteMessage.data.channelId}`);
       }
     }
   }

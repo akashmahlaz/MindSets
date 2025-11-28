@@ -26,7 +26,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH * 0.78;
+const COUNSELOR_CARD_WIDTH = SCREEN_WIDTH * 0.75;
 
 export default function UserDashboard() {
   const { userProfile } = useAuth();
@@ -41,22 +41,28 @@ export default function UserDashboard() {
 
   const userProfileData = userProfile as UserProfileData;
 
-  // Premium Material Design 3 colors
+  // Colors - Dark theme primary (matching tab bar)
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
-    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    surfaceElevated: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    text: isDarkColorScheme ? "#F8FAFC" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+    textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
+    primary: "#8B5CF6",
+    primaryLight: "#A78BFA",
     secondary: "#10B981",
-    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
-    accent: "#8B5CF6",
-    accentContainer: isDarkColorScheme ? "rgba(139, 92, 246, 0.15)" : "rgba(139, 92, 246, 0.08)",
+    accent: "#EC4899",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    card: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    cardAlt: isDarkColorScheme ? "#1E2632" : "#F8FAFC",
+    cardBg: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
+    inputBg: isDarkColorScheme ? "#334155" : "#F1F5F9",
+  };
+
+  // Quick action colors
+  const quickActionColors = {
+    booking: ["#8B5CF6", "#7C3AED"],
+    messages: ["#10B981", "#059669"],
+    journal: ["#EC4899", "#DB2777"],
   };
 
   // Animations
@@ -67,12 +73,12 @@ export default function UserDashboard() {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 500,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 600,
+        duration: 500,
         useNativeDriver: true,
       }),
     ]).start();
@@ -81,11 +87,8 @@ export default function UserDashboard() {
   const loadCounsellors = async () => {
     try {
       const filters = userProfileData?.primaryConcerns
-        ? {
-            specializations: userProfileData.primaryConcerns,
-          }
+        ? { specializations: userProfileData.primaryConcerns }
         : undefined;
-
       const data = await getCounsellors(filters);
       setCounsellors(data);
     } catch (error) {
@@ -95,11 +98,6 @@ export default function UserDashboard() {
       setRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    loadCounsellors();
-    loadFeaturedArticles();
-  }, []);
 
   const loadFeaturedArticles = async () => {
     try {
@@ -112,6 +110,12 @@ export default function UserDashboard() {
       setArticlesLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadCounsellors();
+    loadFeaturedArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -126,17 +130,6 @@ export default function UserDashboard() {
     });
   };
 
-  const filteredCounsellors = counsellors.filter(
-    (counsellor) =>
-      counsellor.displayName
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      ("specializations" in counsellor &&
-        counsellor.specializations?.some((spec) =>
-          spec.toLowerCase().includes(searchQuery.toLowerCase()),
-        )),
-  );
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -144,163 +137,156 @@ export default function UserDashboard() {
     return "Good evening";
   };
 
-  const getSpecializationLabel = (spec: string | undefined) => {
-    const labels: Record<string, string> = {
-      anxiety: "Anxiety & Stress",
-      depression: "Depression",
-      relationship: "Relationships",
-      trauma: "Trauma & PTSD",
-      "stress-management": "Stress Management",
-    };
-    return spec ? labels[spec] || spec.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase()) : "General Counseling";
-  };
+  const filteredCounsellors = counsellors.filter(
+    (counsellor) =>
+      counsellor.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ("specializations" in counsellor &&
+        counsellor.specializations?.some((spec) =>
+          spec.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+  );
 
+  // Counselor card component
   const renderCounsellorCard = (counsellor: CounsellorProfileData, index: number) => {
     return (
       <Pressable
         key={counsellor.uid}
         onPress={() => handleCounsellorPress(counsellor)}
         style={{
-          width: CARD_WIDTH,
+          width: COUNSELOR_CARD_WIDTH,
           marginRight: 16,
-          marginLeft: index === 0 ? 0 : 0,
         }}
       >
-        <View 
+        <View
           style={{
-            backgroundColor: colors.surface,
-            borderRadius: 24,
+            backgroundColor: colors.cardBg,
+            borderRadius: 20,
             overflow: "hidden",
             shadowColor: "#000",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: isDarkColorScheme ? 0.4 : 0.1,
-            shadowRadius: 16,
-            elevation: 6,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: isDarkColorScheme ? 0.3 : 0.1,
+            shadowRadius: 12,
+            elevation: 5,
           }}
         >
-          {/* Profile Image with Gradient Overlay */}
-          <View style={{ height: 180, position: "relative" }}>
-            {counsellor.photoURL ? (
-              <Image
-                source={{ uri: counsellor.photoURL }}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-              />
-            ) : (
-              <LinearGradient
-                colors={isDarkColorScheme ? ["#1E293B", "#334155"] : ["#E0E7FF", "#C7D2FE"]}
-                style={{ 
-                  width: "100%", 
-                  height: "100%", 
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <View 
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 24,
-                    backgroundColor: colors.primaryContainer,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Ionicons name="person" size={40} color={colors.primary} />
-                </View>
-              </LinearGradient>
-            )}
-            {/* Availability Badge */}
-            <View 
+          {/* Top gradient section */}
+          <LinearGradient
+            colors={["#8B5CF6", "#EC4899"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ height: 80, position: "relative" }}
+          >
+            <View
               style={{
                 position: "absolute",
-                top: 14,
-                right: 14,
-                backgroundColor: "rgba(16, 185, 129, 0.95)",
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 20,
+                top: 12,
+                right: 12,
+                backgroundColor: "rgba(255,255,255,0.25)",
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 12,
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFF", marginRight: 6 }} />
-              <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "700" }}>Available</Text>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#4ADE80", marginRight: 6 }} />
+              <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "600" }}>Available</Text>
             </View>
-            
-            {/* Bottom gradient overlay */}
-            <LinearGradient
-              colors={["transparent", isDarkColorScheme ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)"]}
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 60,
-              }}
-            />
-          </View>
-          
-          {/* Content */}
-          <View style={{ padding: 18 }}>
-            {/* Name & Rating */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <Text 
-                style={{ 
-                  fontSize: 18, 
-                  fontWeight: "800", 
-                  color: colors.text,
-                  flex: 1,
-                  letterSpacing: -0.3,
+          </LinearGradient>
+
+          {/* Profile image */}
+          <View style={{ alignItems: "center", marginTop: -40 }}>
+            {counsellor.photoURL ? (
+              <Image
+                source={{ uri: counsellor.photoURL }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  borderWidth: 3,
+                  borderColor: colors.cardBg,
                 }}
-                numberOfLines={1}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  borderWidth: 3,
+                  borderColor: colors.cardBg,
+                  backgroundColor: colors.surfaceElevated,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                Dr. {counsellor.displayName}
-              </Text>
-              <View style={{ 
-                flexDirection: "row", 
-                alignItems: "center",
-                backgroundColor: "#FEF3C7",
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 8,
-              }}>
-                <Ionicons name="star" size={14} color="#F59E0B" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#B45309", marginLeft: 4 }}>4.9</Text>
+                <Ionicons name="person" size={36} color={colors.textSecondary} />
               </View>
-            </View>
-            
-            {/* Specialization */}
-            <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 14 }}>
-              {getSpecializationLabel(counsellor.specializations?.[0])}
+            )}
+          </View>
+
+          {/* Content */}
+          <View style={{ padding: 16, paddingTop: 12 }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: colors.text,
+                textAlign: "center",
+                marginBottom: 4,
+              }}
+              numberOfLines={1}
+            >
+              Dr. {counsellor.displayName}
             </Text>
-            
-            {/* Experience & Rate */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ 
-                  width: 28, height: 28, borderRadius: 8, 
-                  backgroundColor: colors.surfaceVariant, 
-                  alignItems: "center", justifyContent: "center", marginRight: 8 
-                }}>
-                  <Ionicons name="briefcase-outline" size={14} color={colors.textSecondary} />
+
+            <Text
+              style={{
+                fontSize: 13,
+                color: colors.textSecondary,
+                textAlign: "center",
+                marginBottom: 12,
+              }}
+            >
+              {counsellor.specializations?.[0]?.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health Expert"}
+            </Text>
+
+            {/* Stats */}
+            <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 14 }}>
+              <View style={{ alignItems: "center" }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="star" size={14} color="#FBBF24" />
+                  <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text, marginLeft: 4 }}>4.9</Text>
                 </View>
-                <Text style={{ fontSize: 14, color: colors.text, fontWeight: "600" }}>
-                  {counsellor.yearsExperience || "5+"}yrs exp
-                </Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted }}>Rating</Text>
               </View>
-              <View style={{ 
-                backgroundColor: colors.primaryContainer, 
-                paddingHorizontal: 12, 
-                paddingVertical: 6, 
-                borderRadius: 10 
-              }}>
-                <Text style={{ fontSize: 16, fontWeight: "800", color: colors.primary }}>
-                  ${counsellor.hourlyRate || "80"}
-                  <Text style={{ fontSize: 12, fontWeight: "600" }}>/hr</Text>
-                </Text>
+              <View style={{ width: 1, backgroundColor: colors.border }} />
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>{counsellor.yearsExperience || 5}+</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted }}>Years</Text>
+              </View>
+              <View style={{ width: 1, backgroundColor: colors.border }} />
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary }}>${counsellor.hourlyRate || 80}</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted }}>Per hr</Text>
               </View>
             </View>
+
+            {/* Connect button */}
+            <Pressable onPress={() => handleCounsellorPress(counsellor)}>
+              <LinearGradient
+                colors={["#8B5CF6", "#7C3AED"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "600" }}>Connect</Text>
+              </LinearGradient>
+            </Pressable>
           </View>
         </View>
       </Pressable>
@@ -309,182 +295,173 @@ export default function UserDashboard() {
 
   if (!userProfileData || userProfileData.role !== "user") {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-          <View 
+          <View
             style={{
               width: 64,
               height: 64,
               borderRadius: 32,
-              backgroundColor: colors.primary + "20",
+              backgroundColor: colors.surfaceElevated,
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 16,
             }}
           >
-            <Ionicons name="hourglass-outline" size={32} color={colors.primary} />
+            <Ionicons name="hourglass-outline" size={28} color={colors.primary} />
           </View>
-          <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>Loading dashboard...</Text>
+          <Text style={{ fontSize: 16, color: colors.text }}>Loading dashboard...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar 
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"} 
-        backgroundColor={colors.background} 
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+      <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} />
 
       <ScrollView
         style={{ flex: 1 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* Premium Header Section */}
-        <Animated.View 
-          style={{ 
-            paddingHorizontal: 24, 
-            paddingTop: 20, 
-            paddingBottom: 24,
+        {/* ============ OLD STYLE HEADER ============ */}
+        <Animated.View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 16,
+            paddingBottom: 20,
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }],
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4, fontWeight: "500" }}>
+          {/* Greeting and Profile */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <View>
+              <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 4 }}>
                 {getGreeting()} 👋
               </Text>
-              <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text, letterSpacing: -0.5 }}>
+              <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text }}>
                 {userProfileData?.firstName || userProfileData?.displayName?.split(" ")[0] || "there"}
               </Text>
             </View>
-            
-            <Pressable 
+
+            <Pressable
               onPress={() => router.push("/profile")}
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 18,
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                backgroundColor: colors.surfaceElevated,
+                alignItems: "center",
+                justifyContent: "center",
                 overflow: "hidden",
               }}
             >
-              <LinearGradient
-                colors={["#6366F1", "#8B5CF6"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  width: 52,
-                  height: 52,
-                  padding: 2,
-                }}
-              >
-                <View style={{
-                  flex: 1,
-                  borderRadius: 16,
-                  backgroundColor: colors.background,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
-                  <Ionicons name="person" size={24} color={colors.primary} />
-                </View>
-              </LinearGradient>
+              {userProfileData?.photoURL ? (
+                <Image
+                  source={{ uri: userProfileData.photoURL }}
+                  style={{ width: 48, height: 48, borderRadius: 16 }}
+                />
+              ) : (
+                <Ionicons name="person" size={22} color={colors.textSecondary} />
+              )}
             </Pressable>
           </View>
-          
-          {/* Premium Mood Check Card */}
+
+          {/* Mood Card - OLD STYLE */}
           <Pressable onPress={() => router.push("/(resources)/journal" as any)}>
-            <LinearGradient
-              colors={isDarkColorScheme ? ["#1E293B", "#334155"] : ["#EEF2FF", "#E0E7FF"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+            <View
               style={{
-                borderRadius: 20,
-                padding: 20,
+                backgroundColor: colors.cardBg,
+                borderRadius: 16,
+                padding: 16,
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <View 
+              <View
                 style={{
                   width: 52,
                   height: 52,
-                  borderRadius: 16,
-                  backgroundColor: colors.primaryContainer,
+                  borderRadius: 14,
+                  backgroundColor: colors.surfaceElevated,
                   alignItems: "center",
                   justifyContent: "center",
-                  marginRight: 16,
+                  marginRight: 14,
                 }}
               >
                 <Text style={{ fontSize: 28 }}>🌤️</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text, marginBottom: 4 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 2 }}>
                   How are you feeling today?
                 </Text>
-                <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>
                   Track your daily mood & wellness
                 </Text>
               </View>
-              <View style={{ 
-                width: 36, height: 36, borderRadius: 12, 
-                backgroundColor: colors.primary + "15",
-                alignItems: "center", justifyContent: "center" 
-              }}>
-                <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  backgroundColor: colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons name="chevron-forward" size={20} color="#FFF" />
               </View>
-            </LinearGradient>
+            </View>
           </Pressable>
         </Animated.View>
 
-        {/* Quick Actions */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-          <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 16, letterSpacing: -0.3 }}>
+        {/* ============ QUICK ACTIONS - OLD STYLE (3 equal cards) ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 14 }}>
             Quick Actions
           </Text>
           <View style={{ flexDirection: "row", gap: 12 }}>
             {[
-              { icon: "calendar-outline", label: "Book\nSession", color: "#6366F1", gradient: ["#6366F1", "#8B5CF6"], route: "/(main)/sessions" },
-              { icon: "chatbubbles-outline", label: "Messages", color: "#10B981", gradient: ["#10B981", "#059669"], route: "/chat" },
-              { icon: "journal-outline", label: "Journal", color: "#EC4899", gradient: ["#EC4899", "#DB2777"], route: "/(resources)/journal" },
+              { icon: "calendar-outline", label: "Book\nSession", colors: quickActionColors.booking, route: "/(main)/sessions" },
+              { icon: "chatbubbles-outline", label: "Messages", colors: quickActionColors.messages, route: "/chat" },
+              { icon: "journal-outline", label: "Journal", colors: quickActionColors.journal, route: "/(resources)/journal" },
             ].map((action, index) => (
               <Pressable
                 key={index}
                 onPress={() => router.push(action.route as any)}
                 style={{
                   flex: 1,
-                  backgroundColor: colors.surface,
-                  borderRadius: 20,
-                  padding: 18,
+                  backgroundColor: colors.cardBg,
+                  borderRadius: 16,
+                  padding: 16,
                   alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: isDarkColorScheme ? 0.2 : 0.06,
-                  shadowRadius: 8,
-                  elevation: 3,
                 }}
               >
                 <LinearGradient
-                  colors={action.gradient as any}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                  colors={action.colors as any}
                   style={{
                     width: 48,
                     height: 48,
-                    borderRadius: 16,
+                    borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: 12,
+                    marginBottom: 10,
                   }}
                 >
-                  <Ionicons name={action.icon as any} size={24} color="#FFFFFF" />
+                  <Ionicons name={action.icon as any} size={24} color="#FFF" />
                 </LinearGradient>
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, textAlign: "center", lineHeight: 18 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: colors.text,
+                    textAlign: "center",
+                    lineHeight: 18,
+                  }}
+                >
                   {action.label}
                 </Text>
               </Pressable>
@@ -492,20 +469,15 @@ export default function UserDashboard() {
           </View>
         </View>
 
-        {/* Search Section */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <View 
+        {/* ============ SEARCH BAR ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <View
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: colors.inputBg,
               borderRadius: 14,
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 16,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
-              shadowRadius: 6,
-              elevation: 2,
             }}
           >
             <Ionicons name="search" size={20} color={colors.textSecondary} />
@@ -527,9 +499,9 @@ export default function UserDashboard() {
           </View>
         </View>
 
-        {/* Recommended Counselors */}
+        {/* ============ RECOMMENDED COUNSELORS - NEW STYLE ============ */}
         <View style={{ marginBottom: 28 }}>
-          <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <View style={{ paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
               Recommended for You
             </Text>
@@ -537,41 +509,37 @@ export default function UserDashboard() {
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
             </Pressable>
           </View>
-          
+
           {loading ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 24 }}
-            >
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
               {[1, 2, 3].map((_, index) => (
-                <View 
+                <View
                   key={index}
                   style={{
-                    width: CARD_WIDTH,
+                    width: COUNSELOR_CARD_WIDTH,
                     marginRight: 16,
-                    backgroundColor: colors.card,
+                    backgroundColor: colors.cardBg,
                     borderRadius: 20,
-                    overflow: "hidden",
+                    height: 280,
                   }}
                 >
-                  <View style={{ height: 180, backgroundColor: colors.cardAlt }} />
-                  <View style={{ padding: 16 }}>
-                    <View style={{ height: 20, backgroundColor: colors.cardAlt, borderRadius: 6, marginBottom: 8 }} />
-                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, width: "60%", marginBottom: 12 }} />
-                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, width: "40%" }} />
+                  <View style={{ height: 80, backgroundColor: colors.surfaceElevated, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
+                  <View style={{ padding: 16, alignItems: "center" }}>
+                    <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.surfaceElevated, marginTop: -56 }} />
+                    <View style={{ height: 18, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "70%", marginTop: 12 }} />
+                    <View style={{ height: 14, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "50%", marginTop: 8 }} />
                   </View>
                 </View>
               ))}
             </ScrollView>
           ) : filteredCounsellors.length === 0 ? (
-            <View style={{ paddingHorizontal: 24, paddingVertical: 40, alignItems: "center" }}>
-              <View 
+            <View style={{ paddingHorizontal: 20, paddingVertical: 40, alignItems: "center" }}>
+              <View
                 style={{
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: colors.cardAlt,
+                  backgroundColor: colors.surfaceElevated,
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 16,
@@ -579,7 +547,7 @@ export default function UserDashboard() {
               >
                 <Ionicons name="people-outline" size={36} color={colors.textSecondary} />
               </View>
-              <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
+              <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
                 No counselors found
               </Text>
               <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center" }}>
@@ -590,9 +558,9 @@ export default function UserDashboard() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 24 }}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
               decelerationRate="fast"
-              snapToInterval={CARD_WIDTH + 16}
+              snapToInterval={COUNSELOR_CARD_WIDTH + 16}
             >
               {filteredCounsellors.slice(0, 5).map((counsellor, index) =>
                 renderCounsellorCard(counsellor as CounsellorProfileData, index)
@@ -601,9 +569,9 @@ export default function UserDashboard() {
           )}
         </View>
 
-        {/* Featured Stories */}
-        <View style={{ paddingHorizontal: 24 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        {/* ============ FEATURED STORIES ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
               Featured Stories
             </Text>
@@ -611,24 +579,23 @@ export default function UserDashboard() {
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
             </Pressable>
           </View>
-          
+
           {articlesLoading ? (
             <View style={{ gap: 12 }}>
               {[1, 2].map((_, index) => (
-                <View 
+                <View
                   key={index}
                   style={{
-                    backgroundColor: colors.card,
+                    backgroundColor: colors.cardBg,
                     borderRadius: 16,
-                    padding: 16,
+                    padding: 14,
                     flexDirection: "row",
                   }}
                 >
-                  <View style={{ width: 80, height: 80, borderRadius: 12, backgroundColor: colors.cardAlt, marginRight: 16 }} />
-                  <View style={{ flex: 1 }}>
-                    <View style={{ height: 16, backgroundColor: colors.cardAlt, borderRadius: 6, marginBottom: 8 }} />
-                    <View style={{ height: 14, backgroundColor: colors.cardAlt, borderRadius: 6, width: "80%", marginBottom: 8 }} />
-                    <View style={{ height: 12, backgroundColor: colors.cardAlt, borderRadius: 6, width: "40%" }} />
+                  <View style={{ width: 72, height: 72, borderRadius: 12, backgroundColor: colors.surfaceElevated, marginRight: 14 }} />
+                  <View style={{ flex: 1, justifyContent: "center" }}>
+                    <View style={{ height: 16, backgroundColor: colors.surfaceElevated, borderRadius: 6, marginBottom: 8 }} />
+                    <View style={{ height: 14, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "70%" }} />
                   </View>
                 </View>
               ))}
@@ -640,53 +607,54 @@ export default function UserDashboard() {
                   key={article.id}
                   onPress={() =>
                     router.push({
-                      pathname: "/articles/[articleId]" as any,
+                      pathname: "/(resources)/articles/[articleId]" as any,
                       params: { articleId: article.id },
                     })
                   }
                 >
-                  <View 
+                  <View
                     style={{
-                      backgroundColor: colors.card,
+                      backgroundColor: colors.cardBg,
                       borderRadius: 16,
-                      padding: 16,
+                      padding: 14,
                       flexDirection: "row",
                       alignItems: "center",
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
-                      shadowRadius: 6,
-                      elevation: 2,
                     }}
                   >
-                    <View 
+                    <View
                       style={{
                         width: 72,
                         height: 72,
-                        borderRadius: 12,
-                        backgroundColor: colors.primary + "15",
+                        borderRadius: 14,
+                        backgroundColor: colors.surfaceElevated,
                         alignItems: "center",
                         justifyContent: "center",
-                        marginRight: 16,
+                        marginRight: 14,
                       }}
                     >
                       <Ionicons name="document-text" size={28} color={colors.primary} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text 
-                        style={{ fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 }}
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "600",
+                          color: colors.text,
+                          marginBottom: 4,
+                          lineHeight: 20,
+                        }}
                         numberOfLines={2}
                       >
                         {article.title}
                       </Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
-                        <Text style={{ fontSize: 12, color: colors.textSecondary, marginLeft: 4 }}>
+                        <Ionicons name="time-outline" size={14} color={colors.textMuted} />
+                        <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>
                           {article.readTime || 5} min read
                         </Text>
-                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSecondary, marginHorizontal: 8 }} />
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textMuted, marginHorizontal: 8 }} />
                         <Text style={{ fontSize: 12, color: colors.primary, fontWeight: "500" }}>
-                          {article.category || "Health"}
+                          {article.category || "Wellness"}
                         </Text>
                       </View>
                     </View>
@@ -696,25 +664,80 @@ export default function UserDashboard() {
               ))}
             </View>
           ) : (
-            <View 
+            <View
               style={{
-                backgroundColor: colors.card,
+                backgroundColor: colors.cardBg,
                 borderRadius: 16,
                 padding: 32,
                 alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkColorScheme ? 0.15 : 0.04,
-                shadowRadius: 6,
-                elevation: 2,
               }}
             >
               <Ionicons name="newspaper-outline" size={40} color={colors.textSecondary} />
               <Text style={{ fontSize: 15, color: colors.textSecondary, marginTop: 12 }}>
-                No articles available
+                No stories available
               </Text>
+              <Pressable
+                onPress={() => router.push("/(resources)/articles/create" as any)}
+                style={{ marginTop: 16 }}
+              >
+                <LinearGradient
+                  colors={["#8B5CF6", "#7C3AED"]}
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "600" }}>Write a Story</Text>
+                </LinearGradient>
+              </Pressable>
             </View>
           )}
+        </View>
+
+        {/* ============ WELLNESS RESOURCES ============ */}
+        <View style={{ paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 14 }}>
+            Wellness Resources
+          </Text>
+          <View style={{ gap: 12 }}>
+            {[
+              { icon: "leaf-outline", label: "Meditation", desc: "Calm your mind", color: "#10B981", route: "/(resources)/meditation" },
+              { icon: "fitness-outline", label: "Breathing", desc: "Reduce stress", color: "#06B6D4", route: "/(resources)/breathing" },
+              { icon: "moon-outline", label: "Sleep", desc: "Better rest", color: "#8B5CF6", route: "/(resources)/sleep" },
+            ].map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => router.push(item.route as any)}
+                style={{
+                  backgroundColor: colors.cardBg,
+                  borderRadius: 14,
+                  padding: 14,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    backgroundColor: `${item.color}20`,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 14,
+                  }}
+                >
+                  <Ionicons name={item.icon as any} size={24} color={item.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{item.label}</Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>{item.desc}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </Pressable>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

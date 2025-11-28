@@ -38,9 +38,9 @@ export default function HomeScreen() {
     ]).start();
   }, [fadeAnim, scaleAnim]);
 
-  // MD3 Premium Colors
+  // MD3 Premium Colors - matching tab bar
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#F8FAFF",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
     primary: "#6366F1",
     primaryLight: "#818CF8",

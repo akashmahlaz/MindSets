@@ -14,7 +14,7 @@ import {
     Pressable,
     StatusBar,
     Text,
-    View,
+    View
 } from "react-native";
 import {
     SafeAreaView,
@@ -37,16 +37,19 @@ export default function ChatScreen() {
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Premium colors
+  // Premium colors - matching app theme
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
+    surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#252B3B" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
     primary: "#6366F1",
+    primaryLight: "#818CF8",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
     online: "#10B981",
+    myMessageBg: "#6366F1",
+    otherMessageBg: isDarkColorScheme ? "#1A1F2E" : "#F1F5F9",
   };
 
   useEffect(() => {
@@ -56,25 +59,33 @@ export default function ChatScreen() {
         return;
       }
       try {
-        let members: string[] = [user.uid];
         let channelIdStr: string = Array.isArray(channelId)
           ? channelId[0]
           : channelId;
-        if (
-          typeof channelIdStr === "string" &&
-          channelIdStr.startsWith("dm-")
-        ) {
-          const ids = channelIdStr.split("-").slice(1);
-          ids.forEach((id) => {
-            if (!members.includes(id)) members.push(id);
+        
+        // Try to extract member IDs from channel ID for DM channels
+        // Supports both "dm-uid1-uid2" and "uid1-uid2" formats
+        let members: string[] = [user.uid];
+        if (typeof channelIdStr === "string") {
+          let idParts: string[];
+          if (channelIdStr.startsWith("dm-")) {
+            idParts = channelIdStr.split("-").slice(1);
+          } else {
+            // Assume format is "uid1-uid2" (sorted)
+            idParts = channelIdStr.split("-");
+          }
+          idParts.forEach((id) => {
+            if (id && !members.includes(id)) members.push(id);
           });
         }
+        
         const channelObj = chatClient.channel("messaging", channelIdStr, {
           members,
         });
         await channelObj.watch();
         setChannel(channelObj);
       } catch (error) {
+        console.error("Error fetching channel:", error);
         Alert.alert("Error", "Failed to load chat channel.");
       } finally {
         setLoading(false);
@@ -138,26 +149,31 @@ export default function ChatScreen() {
     return otherUser?.image || undefined;
   };
 
-  const getHeaderTitle = () => {
-    if (!channel) return "Chat";
-    if ((channel.id as string).startsWith("dm-") && channel.state?.members) {
-      const members = Object.values(channel.state.members);
-      const otherMember = members.find((m: any) => m.user?.id !== user?.uid);
-      if (otherMember?.user) {
-        return otherMember.user.name || otherMember.user.id || "Chat";
-      }
+  // Get display name - clean up if it's an email
+  const getDisplayName = () => {
+    if (!otherUser) return "Chat";
+    const name = otherUser.name || otherUser.id || "Chat";
+    // If name looks like an email, extract the part before @
+    if (name.includes("@")) {
+      const emailName = name.split("@")[0];
+      // Capitalize first letter and replace dots/underscores with spaces
+      return emailName
+        .replace(/[._]/g, " ")
+        .replace(/\b\w/g, (l: string) => l.toUpperCase());
     }
-    return (channel.data as any)?.name || "Chat";
+    return name;
   };
 
   const isOnline = getOnlineStatus();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom"]}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
+      {/* Safe area only for top - tab bar handles bottom */}
+      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
       {/* Premium Header - Clean, no border */}
       <View style={{
@@ -237,8 +253,8 @@ export default function ChatScreen() {
         
         {/* Name & Status */}
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>
-            {otherUser?.name || getHeaderTitle()}
+          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }} numberOfLines={1}>
+            {getDisplayName()}
           </Text>
           <Text style={{ 
             fontSize: 13, 
@@ -279,23 +295,22 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      {/* Chat Area */}
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={0}
-      >
-        <Channel
-          channel={channel}
-          disableKeyboardCompatibleView={true}
-          keyboardVerticalOffset={0}
+      {/* Chat Area with proper keyboard handling */}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <Channel
+            channel={channel}
+            keyboardVerticalOffset={0}
+            disableKeyboardCompatibleView={true}
+          >
             <MessageList />
-          </View>
-          <MessageInput />
-        </Channel>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            <MessageInput />
+          </Channel>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
