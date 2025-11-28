@@ -1,6 +1,8 @@
 import "@/app/global.css";
+import CustomMessageInput from "@/components/chat/CustomMessageInput";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
+import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -9,7 +11,6 @@ import {
     ActivityIndicator,
     Alert,
     Image,
-    KeyboardAvoidingView,
     Platform,
     Pressable,
     StatusBar,
@@ -23,13 +24,13 @@ import {
 import { Channel as StreamChannel } from "stream-chat";
 import {
     Channel,
-    MessageInput,
     MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
   const { channelId } = useLocalSearchParams();
   const { chatClient, isChatConnected } = useChat();
+  const { createCall, isVideoConnected, isCreatingCall } = useVideo();
   const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -166,6 +167,58 @@ export default function ChatScreen() {
 
   const isOnline = getOnlineStatus();
 
+  // Generate a short unique call ID (max 64 chars for Stream.io)
+  const generateCallId = (): string => {
+    // Use shorter format: first 8 chars of each UID + timestamp base36
+    const shortUserId = user?.uid?.substring(0, 8) || "u";
+    const shortOtherId = otherUser?.id?.substring(0, 8) || "o";
+    const timestamp = Date.now().toString(36); // Base36 is shorter
+    return `${shortUserId}${shortOtherId}${timestamp}`;
+  };
+
+  // Handle initiating a call
+  const handleCall = async (isVideo: boolean) => {
+    if (!otherUser?.id || !user?.uid) {
+      Alert.alert("Error", "Cannot initiate call - user information missing");
+      return;
+    }
+
+    if (!isVideoConnected) {
+      Alert.alert("Error", "Video service not connected. Please try again.");
+      return;
+    }
+
+    if (isCreatingCall) {
+      return; // Already creating a call
+    }
+
+    try {
+      // Generate short unique call ID (max 64 chars for Stream.io)
+      const callId = generateCallId();
+      
+      console.log("Initiating call:", { callId, isVideo, to: otherUser.id, length: callId.length });
+      
+      const call = await createCall(callId, [otherUser.id], isVideo);
+      
+      if (call) {
+        // Navigate to call screen
+        router.push({
+          pathname: "/call/[callId]",
+          params: { 
+            callId: call.id,
+            callType: "default",
+            isVideo: isVideo.toString()
+          }
+        });
+      } else {
+        Alert.alert("Error", "Failed to create call. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error initiating call:", error);
+      Alert.alert("Error", "Failed to start call. Please try again.");
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar
@@ -175,63 +228,55 @@ export default function ChatScreen() {
       {/* Safe area only for top - tab bar handles bottom */}
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
-      {/* Premium Header - Clean, no border */}
+      {/* Premium Header - Clean design */}
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: colors.surface,
-        ...Platform.select({
-          ios: {
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: isDarkColorScheme ? 0.15 : 0.05,
-            shadowRadius: 4,
-          },
-          android: {
-            elevation: 2,
-          },
-        }),
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: colors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
       }}>
         <Pressable
           onPress={handleBack}
-          style={{
-            width: 40,
-            height: 40,
+          style={({ pressed }) => ({
+            width: 38,
+            height: 38,
             borderRadius: 12,
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
-            marginRight: 12,
-          }}
+            marginRight: 10,
+            opacity: pressed ? 0.7 : 1,
+          })}
         >
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
         
         {/* Avatar */}
-        <View style={{ position: 'relative', marginRight: 12 }}>
+        <View style={{ position: 'relative', marginRight: 10 }}>
           <View style={{
-            width: 44,
-            height: 44,
-            borderRadius: 14,
+            width: 42,
+            height: 42,
+            borderRadius: 21,
             overflow: 'hidden',
             backgroundColor: colors.surfaceVariant,
           }}>
             {getAvatarUrl() ? (
               <Image
                 source={{ uri: getAvatarUrl() }}
-                style={{ width: 44, height: 44 }}
+                style={{ width: 42, height: 42 }}
               />
             ) : (
               <View style={{
-                width: 44,
-                height: 44,
+                width: 42,
+                height: 42,
                 backgroundColor: colors.primary + '20',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-                <Ionicons name="person" size={22} color={colors.primary} />
+                <Ionicons name="person" size={20} color={colors.primary} />
               </View>
             )}
           </View>
@@ -241,75 +286,75 @@ export default function ChatScreen() {
               position: 'absolute',
               bottom: 0,
               right: 0,
-              width: 14,
-              height: 14,
-              borderRadius: 7,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
               backgroundColor: colors.online,
               borderWidth: 2,
-              borderColor: colors.surface,
+              borderColor: colors.background,
             }} />
           )}
         </View>
         
         {/* Name & Status */}
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }} numberOfLines={1}>
+        <View style={{ flex: 1, marginRight: 8 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }} numberOfLines={1}>
             {getDisplayName()}
           </Text>
           <Text style={{ 
-            fontSize: 13, 
+            fontSize: 12, 
             color: isOnline ? colors.online : colors.textSecondary,
-            marginTop: 2,
+            marginTop: 1,
           }}>
             {isOnline ? "Online" : "Offline"}
           </Text>
         </View>
         
-        {/* Call buttons */}
+        {/* Call buttons - with proper spacing */}
         <Pressable
-          onPress={() => {/* TODO: Voice call */}}
-          style={{
-            width: 40,
-            height: 40,
+          onPress={() => handleCall(false)}
+          disabled={isCreatingCall}
+          style={({ pressed }) => ({
+            width: 38,
+            height: 38,
             borderRadius: 12,
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
             marginRight: 8,
-          }}
+            opacity: pressed || isCreatingCall ? 0.6 : 1,
+          })}
         >
           <Ionicons name="call-outline" size={20} color={colors.primary} />
         </Pressable>
         <Pressable
-          onPress={() => {/* TODO: Video call */}}
-          style={{
-            width: 40,
-            height: 40,
+          onPress={() => handleCall(true)}
+          disabled={isCreatingCall}
+          style={({ pressed }) => ({
+            width: 38,
+            height: 38,
             borderRadius: 12,
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
-          }}
+            opacity: pressed || isCreatingCall ? 0.6 : 1,
+          })}
         >
           <Ionicons name="videocam-outline" size={20} color={colors.primary} />
         </Pressable>
       </View>
 
-      {/* Chat Area with proper keyboard handling */}
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
-          <Channel
-            channel={channel}
-            keyboardVerticalOffset={0}
-            disableKeyboardCompatibleView={true}
-          >
-            <MessageList />
-            <MessageInput />
-          </Channel>
-        </KeyboardAvoidingView>
+      {/* Chat Area - Stream Chat handles keyboard */}
+      <Channel
+        channel={channel}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        Input={CustomMessageInput}
+      >
+        <View style={{ flex: 1 }}>
+          <MessageList />
+        </View>
+        <CustomMessageInput />
+      </Channel>
       </SafeAreaView>
     </View>
   );

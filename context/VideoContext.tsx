@@ -15,6 +15,7 @@ import { SafeAreaView, StyleSheet } from "react-native";
 import InCallManager from "react-native-incall-manager";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createVideoClient } from "../services/stream";
+import { getUserProfile } from "../services/userService";
 import { useAuth } from "./AuthContext";
 
 interface VideoContextType {
@@ -171,7 +172,29 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
           const token = data.token;
 
           console.log("VideoContext: Token received, creating video client");
-          const client = createVideoClient(user, token);
+          
+          // Get user profile from Firestore for proper displayName
+          let displayName = user.displayName || user.email || "Anonymous";
+          let photoURL = user.photoURL;
+          
+          try {
+            const userProfile = await getUserProfile(user.uid);
+            if (userProfile) {
+              displayName = userProfile.displayName || displayName;
+              photoURL = userProfile.photoURL || photoURL;
+            }
+          } catch (profileError) {
+            console.log("VideoContext: Could not fetch user profile, using auth data");
+          }
+          
+          // Create a modified user object with Firestore data
+          const userWithProfile = {
+            ...user,
+            displayName,
+            photoURL,
+          } as typeof user;
+          
+          const client = createVideoClient(userWithProfile, token);
           if (client) {
             setVideoClient(client);
             setIsVideoConnected(true);
@@ -202,9 +225,11 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     initVideoClient();
-  }, [user?.uid]); // Only depend on user ID changes  // Create a ringing call following Stream.io's best practices
+  }, [user?.uid]); // Only depend on user ID changes  
+
+  // Create a ringing call following Stream.io's best practices
   // NOTE: Stream.io recommends using unique call IDs for ring calls (e.g., UUIDs)
-  // instead of reusing the same call ID multiple times
+  // Call ID must be max 64 characters
   const createCall = async (
     callId: string,
     members: string[],
@@ -215,12 +240,20 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
       return null;
     }
 
+    // Validate call ID length (Stream.io requires max 64 chars)
+    if (callId.length > 64) {
+      console.error("Call ID too long, truncating to 64 characters");
+      callId = callId.substring(0, 64);
+    }
+
     try {
       setIsCreatingCall(true);
       console.log(
         "Creating call:",
         callId,
-        "with members:",
+        "(length:",
+        callId.length,
+        ") with members:",
         members,
         "isVideo:",
         isVideo,

@@ -3,6 +3,7 @@ import { AppState, AppStateStatus } from "react-native";
 import { StreamChat } from "stream-chat";
 import { chatNotificationService } from "../services/chatNotificationService";
 import { getStreamToken } from "../services/stream";
+import { getUserProfile } from "../services/userService";
 import { useAuth } from "./AuthContext";
 
 interface ChatContextType {
@@ -88,14 +89,26 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("Failed to get Stream token - please check your internet connection");
       }
 
+      // Get user profile from Firestore for proper displayName and photoURL
+      let displayName = user.displayName || user.email || "Anonymous";
+      let photoURL = user.photoURL || `https://getstream.io/random_png/?name=${user.displayName || user.email}`;
+      
+      try {
+        const userProfile = await getUserProfile(user.uid);
+        if (userProfile) {
+          displayName = userProfile.displayName || displayName;
+          photoURL = userProfile.photoURL || photoURL;
+        }
+      } catch (profileError) {
+        console.log("Could not fetch user profile, using auth data:", profileError);
+      }
+
       // Connect user to Stream Chat
       await chatClient.connectUser(
         {
           id: user.uid,
-          name: user.displayName || user.email || "Anonymous",
-          image:
-            user.photoURL ||
-            `https://getstream.io/random_png/?name=${user.displayName || user.email}`,
+          name: displayName,
+          image: photoURL,
         },
         token,
       );

@@ -140,15 +140,18 @@ export default function ChannelListScreen() {
         backgroundColor={colors.background}
       />
       
-      {/* Clean Header - No unnecessary icons */}
+      {/* Premium Header */}
       <View style={{ 
         paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 16,
+        paddingTop: 12,
+        paddingBottom: 20,
         backgroundColor: colors.background,
       }}>
-        <Text style={{ fontSize: 32, fontWeight: '700', color: colors.text, letterSpacing: -0.5 }}>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: colors.text, letterSpacing: -0.5 }}>
           Messages
+        </Text>
+        <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4, fontWeight: '500' }}>
+          Your conversations
         </Text>
       </View>
 
@@ -160,10 +163,11 @@ export default function ChannelListScreen() {
         onSelect={handleChannelSelect}
         additionalFlatListProps={{
           style: { backgroundColor: colors.background },
-          contentContainerStyle: { paddingTop: 8, paddingBottom: 20 },
+          contentContainerStyle: { paddingBottom: 20 },
+          showsVerticalScrollIndicator: false,
         }}
         EmptyStateIndicator={() => (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, marginTop: 60 }}>
             <LinearGradient
               colors={[colors.primary, colors.primaryLight]}
               start={{ x: 0, y: 0 }}
@@ -175,16 +179,43 @@ export default function ChannelListScreen() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginBottom: 24,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.3,
+                shadowRadius: 16,
+                elevation: 8,
               }}
             >
-              <Ionicons name="chatbubble-ellipses-outline" size={48} color="#FFFFFF" />
+              <Ionicons name="chatbubbles-outline" size={48} color="#FFFFFF" />
             </LinearGradient>
-            <Text style={{ color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 8 }}>
+            <Text style={{ color: colors.text, fontSize: 22, fontWeight: '700', marginBottom: 12, letterSpacing: -0.3 }}>
               No conversations yet
             </Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
-              Start a conversation with a counselor{'\n'}or connect with someone new
+            <Text style={{ color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 24, paddingHorizontal: 20 }}>
+              Start a conversation with a counselor{'\n'}to begin your wellness journey
             </Text>
+            
+            {/* CTA Button */}
+            <TouchableOpacity
+              onPress={() => router.push("/(main)/counsellors")}
+              style={{
+                marginTop: 28,
+                paddingHorizontal: 28,
+                paddingVertical: 14,
+                backgroundColor: colors.primary,
+                borderRadius: 14,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>
+                Find a Counselor
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       />

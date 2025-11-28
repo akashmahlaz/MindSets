@@ -11,7 +11,7 @@ import {
     useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -40,6 +40,7 @@ export default function CallScreen() {
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isEndingCall = useRef(false); // Track if we're ending the call ourselves
   const client = useStreamVideoClient();
   const { user } = useAuth();
 
@@ -91,47 +92,54 @@ export default function CallScreen() {
     if (!call) return;
 
     const handleCallEnded = () => {
-      console.log("Call ended by someone, navigating back");
-      Alert.alert("Call Ended", "The call has been ended.");
+      console.log("Call ended event received, isEndingCall:", isEndingCall.current);
+      // Don't show any alert - just navigate back silently
+      // The user knows they ended the call
+      if (!isEndingCall.current) {
+        // Only log, don't show alert to avoid confusion
+        console.log("Call ended by remote user");
+      }
       router.back();
     };
 
     const handleCallSessionEnded = () => {
-      console.log("Call session ended, navigating back");
-      Alert.alert("Call Ended", "The call session has ended.");
+      console.log("Call session ended, isEndingCall:", isEndingCall.current);
+      // Navigate back without alert
       router.back();
     };
 
     const handleCallRejected = () => {
       console.log("Call was rejected");
-      Alert.alert("Call Declined", "The call was declined by the other user.");
+      if (!isEndingCall.current) {
+        Alert.alert("Call Declined", "The call was declined.");
+      }
       router.back();
     };
 
     const handleCallMissed = () => {
       console.log("Call was missed");
-      Alert.alert("Call Missed", "The call was not answered.");
+      if (!isEndingCall.current) {
+        Alert.alert("No Answer", "The call was not answered.");
+      }
       router.back();
     };
 
     const handleParticipantLeft = () => {
-      console.log("Participant left the call");
+      console.log("Participant left the call, isEndingCall:", isEndingCall.current);
       // Check if there are still participants in the call
       const participants = call.state.participants;
-      if (participants.length <= 1) {
-        console.log("All participants left, ending call");
-        Alert.alert("Call Ended", "The other participant has left the call.");
+      if (participants.length <= 1 && !isEndingCall.current) {
+        console.log("Other participant left");
+        // Navigate back without confusing alert
         router.back();
       }
     };
 
     const handleCallUpdated = () => {
-      console.log("Call updated, checking state");
-      // Check if call was ended by another participant
+      // Don't show alerts on call updates - just handle state
       const callState = call.state;
-      if (callState.endedAt) {
-        console.log("Call was ended by another participant");
-        Alert.alert("Call Ended", "The call has been ended.");
+      if (callState.endedAt && !isEndingCall.current) {
+        console.log("Call state shows ended");
         router.back();
       }
     };
@@ -160,9 +168,12 @@ export default function CallScreen() {
     };
   }, [call]);
   const handleEndCall = async () => {
+    // Set flag to prevent showing "ended by another user" alerts
+    isEndingCall.current = true;
+    
     try {
       if (call) {
-        console.log("Ending call for all participants");
+        console.log("Ending call for all participants (user initiated)");
         // According to Stream.io documentation:
         // call.endCall() terminates the call for ALL participants
         // This sends call.ended event to all call members

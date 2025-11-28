@@ -27,7 +27,7 @@ export default function ChatLayout() {
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
   };
 
-  // Stream Chat theme that matches our app's design - minimal overrides
+  // Stream Chat theme that matches our app's design - ChatGPT-like input
   const chatTheme: DeepPartial<Theme> = {
     colors: {
       accent_blue: colors.primary,
@@ -69,17 +69,43 @@ export default function ChatLayout() {
     messageInput: {
       container: {
         backgroundColor: colors.background,
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopWidth: 0,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        paddingBottom: 16,
       },
       inputBox: {
-        backgroundColor: colors.surfaceVariant,
-        borderRadius: 20,
+        backgroundColor: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
+        borderRadius: 24,
         color: colors.text,
+        fontSize: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        minHeight: 48,
+        maxHeight: 120,
       },
       inputBoxContainer: {
+        backgroundColor: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
+        borderWidth: 1,
+        borderColor: isDarkColorScheme ? "#334155" : "#E2E8F0",
+        borderRadius: 24,
+        paddingHorizontal: 4,
+        marginHorizontal: 0,
+        alignItems: "center",
+      },
+      sendButton: {
+        backgroundColor: colors.primary,
+        borderRadius: 20,
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+      },
+      attachButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: "transparent",
-        borderWidth: 0,
       },
     },
     channelListMessenger: {
@@ -90,14 +116,71 @@ export default function ChatLayout() {
     channelPreview: {
       container: {
         backgroundColor: colors.background,
-        borderBottomWidth: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: isDarkColorScheme ? "#1F2937" : "#F1F5F9",
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        marginHorizontal: 0,
+      },
+      contentContainer: {
+        flex: 1,
+        marginLeft: 14,
+      },
+      row: {
+        alignItems: "center",
       },
       title: {
         color: colors.text,
         fontWeight: "600",
+        fontSize: 16,
+        letterSpacing: -0.2,
       },
       message: {
         color: colors.textSecondary,
+        fontSize: 14,
+        marginTop: 4,
+        lineHeight: 20,
+      },
+      date: {
+        color: isDarkColorScheme ? "#6B7280" : "#9CA3AF",
+        fontSize: 13,
+        fontWeight: "400",
+      },
+      unreadContainer: {
+        backgroundColor: colors.primary,
+        borderRadius: 12,
+        minWidth: 22,
+        height: 22,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 6,
+      },
+      unreadText: {
+        color: "#FFFFFF",
+        fontSize: 12,
+        fontWeight: "700",
+      },
+    },
+    avatar: {
+      container: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+      },
+      image: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+      },
+      presenceIndicator: {
+        backgroundColor: "#10B981",
+        borderWidth: 2.5,
+        borderColor: colors.background,
+        width: 14,
+        height: 14,
+        borderRadius: 7,
+        bottom: 0,
+        right: 0,
       },
     },
   };
