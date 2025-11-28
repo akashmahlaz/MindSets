@@ -3,7 +3,7 @@ import { useChat } from "@/context/ChatContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Stack } from "expo-router";
 import React from "react";
-import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import { ActivityIndicator, Platform, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Chat, DeepPartial, OverlayProvider, Theme } from "stream-chat-expo";
 
@@ -18,13 +18,17 @@ export default function ChatLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
   
-  // Tab bar height (49) + bottom safe area for proper positioning
-  const bottomInset = insets.bottom + 49;
+  // Tab bar height calculation (matches _layout.tsx)
+  const tabBarHeight = Platform.OS === "ios" ? 52 : 60;
+  
+  // Bottom inset for attachment picker overlay
+  // Include tab bar height so picker appears above it
+  const bottomInset = tabBarHeight + insets.bottom;
 
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    surfaceVariant: isDarkColorScheme ? "#252B3B" : "#F1F5F9",
     primary: "#6366F1",
     primaryLight: "#818CF8",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
@@ -71,16 +75,35 @@ export default function ChatLayout() {
         },
       },
     },
+    // Typing indicator styling
+    typingIndicator: {
+      container: {
+        backgroundColor: "transparent",
+      },
+      text: {
+        color: colors.textSecondary,
+        fontSize: 12,
+      },
+    },
+    // Reply styling
+    reply: {
+      container: {
+        backgroundColor: colors.surfaceVariant,
+        borderRadius: 12,
+      },
+      textContainer: {
+        backgroundColor: "transparent",
+      },
+    },
     messageInput: {
       container: {
         backgroundColor: colors.background,
         borderTopWidth: 0,
-        paddingHorizontal: 8,
-        paddingVertical: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
       },
       inputBox: {
-        backgroundColor: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
-        borderRadius: 20,
+        backgroundColor: "transparent",
         color: colors.text,
         fontSize: 16,
         paddingHorizontal: 12,
@@ -94,21 +117,23 @@ export default function ChatLayout() {
         borderColor: isDarkColorScheme ? "#334155" : "#E2E8F0",
         borderRadius: 20,
         paddingHorizontal: 4,
-        marginHorizontal: 0,
-        alignItems: "center",
+        paddingVertical: 4,
+        marginHorizontal: 4,
+        minHeight: 44,
+        flex: 1,
       },
       sendButton: {
         backgroundColor: colors.primary,
-        borderRadius: 16,
-        width: 32,
-        height: 32,
+        borderRadius: 14,
+        width: 28,
+        height: 28,
         justifyContent: "center",
         alignItems: "center",
       },
       attachButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         backgroundColor: "transparent",
       },
     },
@@ -121,7 +146,7 @@ export default function ChatLayout() {
       container: {
         backgroundColor: colors.background,
         borderBottomWidth: 1,
-        borderBottomColor: isDarkColorScheme ? "#1F2937" : "#F1F5F9",
+        borderBottomColor: colors.border,
         paddingHorizontal: 16,
         paddingVertical: 14,
         marginHorizontal: 0,
@@ -146,7 +171,7 @@ export default function ChatLayout() {
         lineHeight: 20,
       },
       date: {
-        color: isDarkColorScheme ? "#6B7280" : "#9CA3AF",
+        color: colors.textSecondary,
         fontSize: 13,
         fontWeight: "400",
       },

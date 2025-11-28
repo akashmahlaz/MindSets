@@ -15,16 +15,16 @@ export default function ChannelListScreen() {
   const { user } = useAuth();
   const { isDarkColorScheme } = useColorScheme();
 
-  // MD3 Premium Colors
+  // Premium colors - matching app theme
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#232936" : "#F1F5F9",
+    surfaceVariant: isDarkColorScheme ? "#252B3B" : "#F1F5F9",
     primary: "#6366F1",
     primaryLight: "#818CF8",
-    text: isDarkColorScheme ? "#F9FAFB" : "#111827",
-    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
-    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
     error: "#EF4444",
   };
 
@@ -59,6 +59,9 @@ export default function ChannelListScreen() {
         <TouchableOpacity
           onPress={retryConnection}
           disabled={isConnecting}
+          accessibilityLabel="Retry connection"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isConnecting }}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -197,7 +200,9 @@ export default function ChannelListScreen() {
             
             {/* CTA Button */}
             <TouchableOpacity
-              onPress={() => router.push("/(main)/counsellors")}
+              onPress={() => router.push("/(main)/Counselors")}
+              accessibilityLabel="Find a counselor"
+              accessibilityRole="button"
               style={{
                 marginTop: 28,
                 paddingHorizontal: 28,

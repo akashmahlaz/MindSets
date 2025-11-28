@@ -1,0 +1,4770 @@
+Chat Messaging
+/
+Docs
+/
+React Native
+Overview
+Built on top of the Stream Chat API, the Stream Chat React Native SDK components include everything you need to build feature-rich and high-functioning chat user experiences out of the box.
+
+We have component libraries available for both RN CLI and Expo. Each approach includes an extensive set of fast performing and customizable UI components and support which allow you to get started quickly with little to no plumbing required. The libraries support:
+
+Rich media messages
+Reactions
+Threads and quoted replies
+Text input commands (ex: Giphy, emojis and @mentions)
+Image and file uploads
+Video playback
+Read state and typing indicators.
+Channel and message lists
+Push (APN or Firebase)
+Offline storage
+and a lot more.
+Additionally, starting with version 6.0.0 our SDK supports the React Native new architecture as well. You can read more about it here.
+
+Before getting started with our docs, we recommend going through our tutorials for our React Native SDK.
+
+Where to get started?
+If you are new to our SDK, it is best to go through our React Native SDK tutorial.
+
+Architecture
+Stream Chat React Native SDK primarily uses the Stream Chat client to connect to and communicate with the Stream API.
+
+The full JavaScript client docs should be referenced for detailed information on directly using the client.
+
+Do not install the stream-chat dependency externally. This may lead to problems while using our SDK. Our SDK has it as a development dependency, so you need not install it externally.
+
+The Stream Chat React Native SDK is segregated into two separate packages:
+
+stream-chat-react-native for React Native CLI applications.
+stream-chat-expo for Expo CLI applications.
+We recommend using the corresponding package for the respective CLI that the application uses.
+
+Our SDK components are highly customizable for both the interfaces. Unless your UI is completely different from the common industry standard, you should be able to customize the built-in components to match your needs.
+
+The UI SDKs provide both ready-made components that you can directly integrate (and customize) in your apps, or you can build your own, by reacting to the state we expose and re-using our components as building blocks, if needed.
+
+Upgrading and Versioning Strategy
+The Stream Chat React Native SDK adheres to the semantic versioning rules.
+
+Bug fixes and behavior improvements cause patch version bump.
+New features are shipped with an increased minor version.
+Incompatible changes in the API will cause a major version increase.
+Occasionally, the SDK can include visual changes (whitespace, color changes, sizing, etc) in minor versions, as we are continuously improving the default look of our UI components. Bumping the major version for such changes would not be practical.
+
+Platform Compatibilities
+We only support Android and iOS as platforms for the React Native SDK. We do not support Web currently, but this is in our backlog, and we plan to take this up in the future. As an alternative, you can use Stream’s React SDK for Web.
+
+Sample Apps
+We have created some of the sample apps to help understand the usage of the Stream Chat React Native SDK. They can be found in the examples directory of the main repository. Apart from the samples we use for internal development, we also provide some small clone projects like a Slack clone and an iMessage clone. You can check out the code in our repository and even run the apps yourself.
+
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Migration from 6.x to 7.x
+Next
+Installation
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+Installation
+Installation
+Installation and usage of our Stream Chat React Native SDK is simple and involves the following steps:
+
+Prerequisites
+First things first, make sure you have set up the development environment for React Native. You can find the official guide here.
+
+For Expo, you can follow this guide.
+
+Add Stream’s Chat SDK and its peer dependencies
+In order to install the Stream Chat React Native SDK, run the following command in your terminal of choice:
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add stream-chat-react-native
+Stream Chat React Native SDK requires installing some peer dependencies to provide you with a great chat experience. You can run the following command to install them:
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add @react-native-community/netinfo react-native-gesture-handler react-native-reanimated react-native-worklets react-native-svg
+So what did we install precisely?
+
+
+RN CLI
+
+Expo
+@react-native-community/netinfo for SDK to respond to network changes.
+react-native-gesture-handler to handle gestures within the SDK.
+react-native-reanimated to provide high performance animations.
+react-native-worklets required by react-native-reanimated.
+react-native-svg for SVG support.
+Opt-in features
+There are a few features that can be optionally added within the SDK, which would need additional dependencies to be installed. These features are:
+
+Video playing
+Play video attachments within messages in the chat.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-video
+Voice recording and Audio attachments
+Record and send voice messages and play them back within the chat. Also used to play and preview Audio attachments
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-audio-recorder-player react-native-blob-util
+Configuring permissions
+
+RN CLI
+
+Expo
+react-native-audio-recorder-player for microphone access for voice recording.
+An example AndroidManifest.xml would look like this with permissions:
+
+
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+An example Info.plist would look like this with permissions:
+
+
+<key>NSMicrophoneUsageDescription</key>
+<string>$(PRODUCT_NAME) would like to use your microphone for voice recording.</string>
+Attachment sharing
+Share attachments within the message to others.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-blob-util react-native-share
+Haptic feedback
+Provide haptic feedback to the user.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-haptic-feedback
+Copy message
+Copy the text message content to the clipboard.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add @react-native-clipboard/clipboard
+Share file attachments
+Share files from the device within the chat.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add @react-native-documents/picker
+Capture image and upload attachment
+Capture images from the camera and upload them as attachments in the chat.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-image-picker
+Configuring permissions
+
+RN CLI
+
+Expo
+react-native-image-picker for camera access.
+On Android, an example AndroidManifest.xml would look like this with permissions:
+
+
+  <uses-permission android:name="android.permission.CAMERA" />
+On iOS, An example Info.plist would look like this with permissions:
+
+
+<key>NSCameraUsageDescription</key>
+<string>$(PRODUCT_NAME) would like to use your camera to share image in a message.</string>
+Pick image using Native Image Picker
+Pick gallery image using native image picker and upload them as attachments in the chat.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add react-native-image-picker
+Configuring permissions
+
+RN CLI
+
+Expo
+react-native-image-picker for camera access.
+On android, there are no permissions required.
+
+On iOS, An example Info.plist would look like this with permissions:
+
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>$(PRODUCT_NAME) would like access to your photo gallery to share image in a message.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>$(PRODUCT_NAME) would like to save photos to your photo gallery after downloading from a message.</string>
+Built-in image media library
+Pick image using built-in media library and upload them as attachments in the chat.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add @react-native-camera-roll/camera-roll
+Configuring permissions
+
+RN CLI
+
+Expo
+@react-native-camera-roll/camera-roll for gallery/photo library access.
+An example AndroidManifest.xml would look like this with permissions:
+
+
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+An example Info.plist would look like this with permissions:
+
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>$(PRODUCT_NAME) would like access to your photo gallery to share image in a message.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>$(PRODUCT_NAME) would like to save photos to your photo gallery after downloading from a message.</string>
+Offline support
+Enable offline support in the app.
+
+
+RN CLI
+
+Expo
+Terminal
+yarn add @op-engineering/op-sqlite
+The overall installation of the optional dependencies would look like this:
+
+
+RN CLI
+
+Expo
+@react-native-camera-roll/camera-roll for accessing device gallery.
+react-native-video for Video and Audio playback support.
+react-native-audio-recorder-player for Audio recording and async audio messages support.
+react-native-blob-util to perform file operations like save, delete, while sharing or access the cache directory while audio recording.
+react-native-share for Attachment sharing support.
+react-native-haptic-feedback for user haptics feedback.
+@react-native-clipboard/clipboard for Copy message support.
+@react-native-documents/picker (required to use instead of react-native-document-picker for React Native >=0.78.0) to access device media files.
+react-native-image-picker to capture images to attach them in the message.
+@op-engineering/op-sqlite to enable Offline support in the app.
+Please follow along the linked documentation of each optional dependencies so as to support them correctly in your application.
+
+Additional Steps
+Some dependencies require us to make changes to our application for all functionalities to be available.
+
+The most important steps to get started are:
+
+Add the Babel plugin for react-native-reanimated to your babel.config.js file in your application folder:
+
+module.exports = {
+  presets: [
+    ... // don't add it here :)
+  ],
+  plugins: [
+    ...
+    'react-native-reanimated/plugin',
+  ],
+};
+react-native-reanimated/plugin has to be listed last.
+
+If you are using react-native-reanimated version >=4.0.0, you can replace the react-native-reanimated/plugin with react-native-worklets/plugin in your application’s babel.config.js.
+
+
+module.exports = {
+  presets: [
+    ... // don't add it here :)
+  ],
+  plugins: [
+    ...
+    'react-native-worklets/plugin',
+  ],
+};
+Read more here.
+
+After installation, wrap your entry point with <GestureHandlerRootView> or gestureHandlerRootHOC:
+
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* content */}
+    </GestureHandlerRootView>
+  );
+}
+The entry point of your app exists usually either in index.js or App.tsx file. In case of navigation with Expo Router v3.x, the entry point is inside app/_layout.js.
+
+Please also follow the steps mentioned in the links below for corresponding dependencies:
+
+react-native - additional installation steps
+Now you should be able to run the app on simulator by running following command:
+
+
+RN CLI
+
+expo
+
+iOS
+
+Android
+Terminal
+npx pod-install
+yarn ios
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Overview
+Next
+Overview
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+Overview
+Overview
+Adding feature rich chat to a React Native application can be quite challenging when starting from scratch. There are many considerations, states, and edge cases that need accounting for, styling, message grouping, read states, context menus, etc. all add to the complexity of the challenge. Stream Chat for React Native provides an easy to implement flexible solution.
+
+Stream Chat for React Native provides a way to add chat to an existing or new application with very little code. The library was built with flexibility and customization in mind, starting with the out of the box form and function one would expect from a chat app you can modify the UI and UX as desired.
+
+Before starting make sure you have installed stream-chat-react-native as directed in the getting started guide.
+
+Creating a Chat Client
+Stream Chat for React Native uses stream-chat, Stream’s JavaScript client, to interact with Stream’s chat services. stream-chat is a dependency of Stream Chat for React Native so it is can be used once stream-chat-react-native is installed.
+
+You don’t have to explicitly install stream-chat in your project.
+
+To start, you can sign up for a Free subscription and then get your API key.
+
+
+import { StreamChat } from "stream-chat";
+const client = StreamChat.getInstance("api_key");
+Connecting a User
+Tokens are used to authenticate a user. Typically, you send this token from your backend to the client when a user registers or logs in. See the Tokens & Authentication documentation to learn more about creating tokens. You can use a developer token if desired, but for the purpose of this guide it will be assumed you have created and retrieved a user_token.
+
+To connect a user the connectUser function should be called and provided with the user object and user_token. Connecting a user could be done in the login flow or elsewhere in the application after the client is instantiated.
+
+
+await client.connectUser(
+  {
+    id: "jlahey",
+    name: "Jim Lahey",
+    image: "https://i.imgur.com/fR9Jz14.png",
+  },
+  "user_token",
+);
+It is recommended to not repeatedly call connectUser unnecessarily, multiple calls to connectUser will result in warnings, and attempting to call connectUser before disconnecting a current user will throw an Error.
+
+To disconnect a user you can call disconnectUser on the client.
+
+
+await client.disconnectUser();
+Alternatively, you can also use the useCreateChatClient hook from stream-chat-react-native/stream-chat-expo to create a client instance and automatically connect/disconnect a user.
+
+Creating a Channel
+Channels are at the core of Stream Chat, they are where messages are contained, sent, and interacted with. Before delving into the UI components a channel is needed that can be displayed. Let’s start by initializing one.
+
+A channel type is required for creating a channel and controls the settings for a given channel. There are 5 default types of channels.
+
+commerce
+gaming
+livestream
+messaging
+team
+These five options provide you with sensible defaults for the named use cases. You can also define custom channel types if Stream Chat defaults don’t work for your use case.
+
+A channel must be initialized with either an id or a list of members for the channel. If you provide a list of members an id will be auto-generated on backend for the channel.
+
+You can’t add or remove members from channel created using a list of members.
+
+You can also add additional custom data to a channel. You can add as many custom fields as you desire as long as the total size of the custom fields object is less than 5KB.
+
+For the purpose of this guide you should create a channel as you see fit utilizing either a members list that includes your user’s id, or a channel id. This can be done once, then the code removed as this guide will not be covering on the fly channel creation.
+
+
+Channel Id
+
+Members List
+
+/**
+ *  Channel created using a channel id
+ */
+const channel = client.channel("messaging", "the_park", {
+  name: "The Park",
+});
+To create this channel on the server you must call create on the new channel instance.
+
+
+await channel.create();
+For on the fly channel creation you would instead call the watch function on the channel as this both creates the channel and subscribes the client to channel updates.
+
+Configuring UI Components
+Now that you have a client instance, a user set, and a channel created on the server you can setup your project to use the UI components.
+
+All major stream-chat-react-native components rely on contexts to function properly. The UI and functionality are heavily controlled by a number of components that contain Providers to give access to these contexts.
+
+Overlay Provider
+The OverlayProvider is the highest level of the Stream Chat components. The OverlayProvider allows users to interact with messages on long press above the underlying views, use the full screen image viewer, and use the AttachmentPicker as a keyboard-esk view.
+
+The OverlayProvider can be used with no props provided but there are a plethora of props for customizing the components in the overlay.
+
+For additional information on the OverlayProvider check the OverlayProvider docs for detailed usage instructions, including how to properly use the OverlyProvider with React Navigation.
+
+
+import { OverlayProvider } from "stream-chat-react-native";
+export const Screen = () => (
+  <OverlayProvider>{/** App components */}</OverlayProvider>
+);
+Chat
+Chat is the next level down of context component from OverlyProvider that is required for stream-chat-react-native to function as designed. You can choose to wrap your entire application in Chat similar to what is required for the OverlayProvider or you can implement Chat at the screen level. Chat has one required prop, client, which is the instance of StreamChat you created.
+
+For additional information on the Chat component check the Chat component docs for detailed usage instructions, including how to provide theming and translations to the app.
+
+
+App
+
+Screen
+
+import { StreamChat } from "stream-chat";
+import { Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => (
+  <OverlayProvider>
+    <Chat client={client}>{/** App components */}</Chat>
+  </OverlayProvider>
+);
+Channel List
+Stream Chat for React Native provides a ChannelList component out of the box for displaying a list of channels. ChannelList can be used with no props and will return all of the channels the set user has access to. To functionally use the ChannelList an onSelect prop should be provided. The onSelect function is called with the selected Channel instance and can then be used to react to the user interaction, for example to store the Channel in state and navigate to the appropriate channel screen.
+
+For additional information on the ChannelList component check the ChannelList component docs, these include instructions on how to filter and sort the ChannelList.
+
+The ChannelList should be implemented inside of the UI components previously configured to provide the appropriate contexts. For the purpose of this guide the example implementation will continue to be given in a single component with the assumption that the client has already been instantiated, a user connected, and a channel the user has access to exists.
+
+ChannelList
+
+import { StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => (
+  <OverlayProvider>
+    <Chat client={client}>
+      <ChannelList />
+    </Chat>
+  </OverlayProvider>
+);
+These three components in conjunction will provide a FlatList of all channels available to the connected user.
+
+Channel
+When creating a chat screen it is required that the Channel component wrap the stream-chat-react-native components being used. Channel provides multiple contexts to the enclosed components and allows for modification and replacement of many of the components. Channel is the major entry point for modifying the look and feel of your chat application.
+
+For additional information on the Channel component, how to modify various features, adjusting for keyboard offsets, and more, check the Channel component docs.
+
+The Channel component does not require any props, but will not function as desired without the channel prop being provided. The channel prop expects a StreamChat Channel instance. This can be created as you did previously, pulled directly from the client.activeChannels, or conveniently stored when a channel is selected from the ChannelList.
+
+
+import React, { useState } from "react";
+import { Channel as ChannelType, StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => {
+  const [channel, setChannel] = useState<ChannelType>();
+  return (
+    <OverlayProvider>
+      <Chat client={client}>
+        {channel ? (
+          <Channel channel={channel}>{/** App components */}</Channel>
+        ) : (
+          <ChannelList onSelect={setChannel} />
+        )}
+      </Chat>
+    </OverlayProvider>
+  );
+};
+Message List
+The Channel component on it’s own will not provide any UI. For this additional components are required, most notably the MessageList component. MessageList has no required props, and when used in concert with the Channel component should function properly out of the box.
+
+For additional information on the MessageList component, how to pass props to the underlying FlatList, or use the MessageList for threads, check the MessageList component docs.
+
+MessageList
+
+import React, { useState } from "react";
+import { Channel as ChannelType, StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => {
+  const [channel, setChannel] = useState<ChannelType>();
+  return (
+    <OverlayProvider>
+      <Chat client={client}>
+        {channel ? (
+          <Channel channel={channel}>
+            <MessageList />
+          </Channel>
+        ) : (
+          <ChannelList onSelect={setChannel} />
+        )}
+      </Chat>
+    </OverlayProvider>
+  );
+};
+Message Input
+A chat app needs to be able to send messages, and for this Stream Chat for React Native provides a MessageInput component. Similar to the MessageList component MessageInput has no required props. Adding it to the app is as simple as rendering it below the MessageList.
+
+Be sure to set the keyboardVerticalOffset on Channel to the appropriate height based off any header spacing. As there is currently no header the keyboardVerticalOffset can be set to 0.
+
+For additional information on the MessageInput component, how to modify it using context, or designate it for thread use via the threadList prop, check the MessageInput component docs.
+
+MessageInput
+
+import React, { useState } from "react";
+import { Channel as ChannelType, StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => {
+  const [channel, setChannel] = useState<ChannelType>();
+  return (
+    <OverlayProvider>
+      <Chat client={client}>
+        {channel ? (
+          <Channel channel={channel} keyboardVerticalOffset={0}>
+            <MessageList />
+            <MessageInput />
+          </Channel>
+        ) : (
+          <ChannelList onSelect={setChannel} />
+        )}
+      </Chat>
+    </OverlayProvider>
+  );
+};
+This small code snippet is enough to render a list of channels and swap them out for a functional and feature rich message list and input when one is selected.
+
+Thread
+There is one more high level component that Stream Chat for React Native provides out of the box, and that is Thread. Stream Chat supports threaded messages, and the MessageList supplies a UI for threads out of the box. But as a thread on a mobile messaging app generally exists in a separate screen it is up to you to handle thread selection and subsequent navigation in your implementation. Thread has no required props as it relies heavily on context to function. The simple code snippet can be extended to include Thread and keep track of a thread state similarly to channel by utilizing the onThreadSelect prop on the MessageList. The code snippet now has a fully functional ChannelList, MessageList, and threadList, although currently it provides no way to back out of the sudo-navigation.
+
+For additional information on the Thread component, such as how to use onThreadDismount to manage your thread state, check the Thread component docs.
+
+Thread
+
+import React, { useState } from "react";
+import { Channel as ChannelType, LocalMessage, StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => {
+  const [channel, setChannel] = useState<ChannelType>();
+  const [thread, setThread] = useState<LocalMessage | null>();
+  return (
+    <OverlayProvider>
+      <Chat client={client}>
+        {channel ? (
+          <Channel
+            channel={channel}
+            keyboardVerticalOffset={0}
+            thread={thread}
+            threadList={!!thread}
+          >
+            {thread ? (
+              <Thread />
+            ) : (
+              <>
+                <MessageList onThreadSelect={setThread} />
+                <MessageInput />
+              </>
+            )}
+          </Channel>
+        ) : (
+          <ChannelList onSelect={setChannel} />
+        )}
+      </Chat>
+    </OverlayProvider>
+  );
+};
+Summary
+You need a client that is an instance of StreamChat to provide to the UI components so they function correctly.
+
+You need to connect a user via the connectUser call to interact with the backend properly. To do this you need to create tokens as per the Tokens & Authentication docs.
+
+You need to surround your app with the OverlayProvider for the UI to function properly, and your app or chat screen with the Chat component to provide data to the UI components.
+
+ChannelList provides access to the list of available channels in the UI, and using props, can be queried, filtered, and sorted as desired. ChannelList also provides convenient functionality for implementing navigation to a selected Channel.
+
+The Channel component is the functional wrapper of the MessageList, MessageInput, and Thread components. It is the access point for the majority of the customization of the SDK, and controls much of the functionality.
+
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Installation
+Next
+Theme
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+Theme
+Theme
+The majority of components used in stream-chat-react-native can have custom styles applied to them via the theming system.
+
+Setting the theme
+To accurately create a theme, we suggest utilizing our exported types to create your own theme. This will allow you to ensure the keys you are using in your theme object are correct.
+
+When you provide a theme as a prop a deep merge of the theme and default theme is performed so only styles designated in the custom theme overwrite the defaults. We provide a helper type DeepPartial that makes all of the keys at every depth optional, this is to account for the deep merge that is performed.
+
+You can find the default theme object in theme.ts.
+
+Most of the styles are standard React Native styles, but some styles applying to SVG, Markdown, or custom components are numbers, strings, or other specified types. The TypeScript documentation of Theme should help you in this regard. Message text is an instance of an exception as it is rendered using react-native-markdown-package and the MarkdownStyle is added to the theme at key messageSimple -> content -> markdown.
+
+
+import type { DeepPartial, Theme } from 'stream-chat-react-native';
+const theme: DeepPartial<Theme> = {
+  messageSimple: {
+    file: {
+      container: {
+        backgroundColor: 'red',
+      },
+    },
+  },
+};
+Now you can provide this theme object to the style key of the value prop of the OverlayProvider component.
+
+
+import { Chat, ChannelList, OverlayProvider } from "stream-chat-react-native";
+const style = { style: theme };
+export const App = () => (
+  <OverlayProvider value={style}>
+    <Chat client={client}>
+      <ChannelList />
+    </Chat>
+  </OverlayProvider>
+);
+Using the theme
+You can easily access the theme in any custom components you create using the useTheme hook. To ensure any change to the theme is reflected within the UI it is not advised to pass theme variables through custom memoization checks.
+
+
+const {
+  theme: {
+    colors: { black },
+  },
+} = useTheme();
+Dark mode
+If you would like to support dark mode in your application, you can create and apply different themes depending on the current colorScheme provided by React Native. To prevent unnecessary deep merges and re-renders we suggest keeping the current theme in state and only change it when theme colorScheme changes.
+
+
+import { useEffect, useState } from 'react';
+import { useColorScheme } from 'react-native';
+import type { DeepPartial, Theme } from 'stream-chat-react-native';
+const getTheme = (): DeepPartial<Theme> => ({
+  colors: colorScheme === 'dark' ? { black: '#FFFFFF' } : { black: '#000000' },
+});
+export const App = () => {
+  const colorScheme = useColorScheme();
+  const [theme, setTheme] = useState(getTheme());
+  useEffect(() => {
+    setTheme(getTheme());
+  }, [colorScheme]);
+  return (
+    <OverlayProvider value={{ style: theme }}>
+      <Chat client={client}>
+        <ChannelList />
+      </Chat>
+    </OverlayProvider>
+  );
+};
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Overview
+Next
+OverlayProvider
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+OverlayProvider
+OverlayProvider
+The OverlayProvider is the top-level Stream Chat for React Native component and wraps all other components provided by the SDK. The OverlayProvider allows users to interact with messages on long press above the underlying views, use the full screen image viewer.
+
+General Usage
+The OverlayProvider should wrap all other Stream Chat for React Native components and in most cases the majority of your application.
+
+Note: For detailed implementation instructions of the OverlayProvider with navigation please refer to the Navigation guide.
+
+
+import { StreamChat } from "stream-chat";
+import { ChannelList, Chat, OverlayProvider } from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => (
+  <OverlayProvider>
+    <Chat client={client}>
+      <ChannelList />
+    </Chat>
+  </OverlayProvider>
+);
+Context Providers
+OverlayProvider contains providers for the AttachmentPickerContext, ImageGalleryContext, OverlayContext, ThemeContext, and TranslationContext. These can be accessed using the corresponding hooks.
+
+Context	Hook
+| ImageGalleryContext | useImageGalleryContext | | OverlayContext | useOverlayContext | | ThemeContext | useTheme | | TranslationContext | useTranslationContext |
+
+Props
+autoPlayVideo
+Enables or disables auto play of videos in the overlay.
+
+Type	Default
+Boolean	false
+giphyVersion
+The Giphy version to render when viewing a Giphy in the Image Gallery. Check the keys of the Image Object for possible values.
+
+Type	Default
+String	’fixed_height’
+i18nInstance
+Instance of Streami18n class used for internationalization. Please read more in the translation’s docs for details on creation and customization.
+
+Type
+Streami18n
+imageGalleryCustomComponents
+ImageGallery component is used to render the image viewer. This component handler all the gestures for zooming and swiping on images within gallery.
+
+Its not possible to replace this component, given the complexity of it. But you can use imageGalleryCustomComponents prop on OverlayProvider to replace sub-parts of image gallery.
+
+The following object for providing custom components. Each key in the object is spread as props onto its respective component. Each component has a number of sub-components it can receive in this manner.
+
+footer ->ImageGalleryFooter
+grid ->ImageGrid
+gridHandle ->ImageGridHandle
+header ->ImageGalleryHeader
+Type
+Object
+imageGalleryGridHandleHeight
+Height of the image gallery grid bottom sheet handle.
+
+Type	Default
+Number	40
+imageGalleryGridSnapPoints
+The SnapPoints for the image gallery grid bottom sheet.
+
+Type	Default
+Array	[0, (screenHeight * 9) / 10]
+numberOfImageGalleryGridColumns
+Number of columns to render within the image gallery grid.
+
+Type	Default
+Number	3
+value
+Partially overrides the value provided to the OverlayContext. This prop can be used to set the theme via the style key.
+
+
+const theme = {
+  messageSimple: {
+    file: {
+      container: {
+        backgroundColor: "red",
+      },
+    },
+  },
+};
+<OverlayProvider value={{ style: theme }}>...</OverlayProvider>;
+Type
+Object
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Theme
+Next
+OverlayContext
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+OverlayContext
+OverlayContext
+OverlayContext is provided by OverlayProvider component. If you are not familiar with React Context API, please read about it on React docs.
+
+Basic Usage
+OverlayContext can be consumed by any of the child component of OverlayProvider component as following:
+
+
+import { useContext } from "react";
+import { OverlayContext } from "stream-chat-react-native";
+const { setOverlay } = useContext(OverlayContext);
+Alternatively, you can also use useOverlayContext hook provided by library to consume OverlayContext.
+
+
+import { useOverlayContext } from "stream-chat-react-native";
+const { setOverlay } = useOverlayContext();
+Value
+overlay
+Current active overlay. Overlay gets rendered in following cases
+
+‘alert’ - For delete message confirmation alert box
+‘gallery’ - When image viewer/gallery is opened
+‘none’ - Default value
+Type
+enum(‘alert’, ‘gallery’, ‘none’)
+setOverlay
+Setter for overlay. You can use this setter to show the overlay.
+
+Type
+(overlay) => void
+style
+A theme object to customize the styles of SDK components. Detailed information on theming can be found in the customization documentation.
+
+Themes are inherited from parent providers. A theme provided to the OverlayProvider will be the base theme style is merged into. Themes are not hoisted though, therefore a theme provided to Chat will not change overlay components such as the attachment picker.
+
+Type
+Object
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+OverlayProvider
+Next
+Chat
+© Getstream.io, Inc. All Rights Reserved.
+Chat
+Chat provides the ChatContext, TranslationContext, and ThemeContext to its child components. Chat is the second highest level component in the Stream Chat for React Native library with only the OverlayProvider at a higher level.
+
+Chat is also responsible for tracking the health of the WebSocket connection with Stream Chat server. The value isOnline provided by the ChatContext indicates the status of the connection.
+
+General Usage
+Chat should be rendered inside of the OverlayProvider at a high level of your application, similar to the OverlayProvider.
+
+We recommend using only one instance of Chat provider per application unless absolutely needed.
+
+
+import { StreamChat } from "stream-chat";
+import {
+  ChannelList,
+  Chat,
+  OverlayProvider,
+  useCreateChatClient,
+} from "stream-chat-react-native";
+const chatApiKey = "REPLACE_WITH_API_KEY";
+const chatUserId = "REPLACE_WITH_USER_ID";
+const chatUserName = "REPLACE_WITH_USER_NAME";
+const chatUserToken = "REPLACE_WITH_USER_TOKEN";
+const user = {
+  id: chatUserId,
+  name: chatUserName,
+};
+export const App = () => {
+  const chatClient = useCreateChatClient({
+    apiKey: chatApiKey,
+    userData: user,
+    tokenOrProvider: chatUserToken,
+  });
+  return (
+    <OverlayProvider>
+      <Chat client={chatClient}>
+        <ChannelList />
+      </Chat>
+    </OverlayProvider>
+  );
+};
+You can use the useCreateChatClient hook from stream-chat-react-native/stream-chat-expo to create a client instance and automatically connect/disconnect a user as per the example above, for simplicity.
+
+Context Providers
+Chat contains providers for the ChatContext, ThemeContext, and TranslationContext. These can be accessed using the corresponding hooks.
+
+Context	Hook
+ChatContext	useChatContext
+ThemeContext	useTheme
+TranslationContext	useTranslationContext
+Props
+client
+Instance of StreamChat client.
+
+Type
+StreamChat
+closeConnectionOnBackground
+When set to false the WebSocket connection won’t disconnect when sending the app to the background. To receive push notifications it’s necessary that user doesn’t have an active WebSocket connection. By default the WebSocket connection is disconnected when the app goes to the background, and reconnects when app comes to the foreground.
+
+Type	Default
+Boolean	true
+i18nInstance
+Instance of Streami18n class used for internationalization. Please read more in the translations docs for details on creation and customization.
+
+Type
+Streami18n
+style
+A theme object to customize the styles of SDK components. Detailed information on theming can be found in the customization documentation.
+
+Themes are inherited from parent providers. A theme provided to the OverlayProvider will be the base theme style is merged into. Themes are not hoisted though, therefore a theme provided to Chat will not change overlay components such as the attachment picker.
+
+Type
+Object
+UI Component Props
+ImageComponent
+Drop in replacement of all the underlying Image components within SDK. This is useful for the purpose of offline caching of images. Please check the Offline Support Guide for usage.
+
+Type	Default
+ComponentType	Image
+LoadingIndicator
+Custom loading indicator component to be used to represent the loading state of the chat.
+
+This can be used during the phase when db is not initialised.
+
+Type	Default
+ComponentType | null | undefined	null
+isMessageAIGenerated
+A callback function responsible for determining whether a message was AI generated. Default function implementation just returns boolean value false.
+
+Type	Default
+(message: LocalMessage) => boolean	() => false
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+OverlayContext
+Next
+ChatContext
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChatContext
+ChatContext
+ChatContext is provided by Chat component. If you are not familiar with React Context API, please read about it on React docs.
+
+Basic Usage
+ChatContext can be consumed by any of the child component of Chat component as following:
+
+
+import { useContext } from "react";
+import { ChatContext } from "stream-chat-react-native";
+const { client, isOnline } = useContext(ChatContext);
+Alternatively, you can also use useChatContext hook provided by library to consume ChatContext.
+
+
+import { useChatContext } from "stream-chat-react-native";
+const { client, isOnline } = useChatContext();
+Value
+client
+Instance of StreamChat client.
+
+Type
+StreamChat
+connectionRecovering
+The value is true, when connection to WebSocket server is disconnected and is currently being recovered.
+
+Type
+boolean
+isOnline
+The value is true, when current user is connected to chat.
+
+Type
+boolean
+ImageComponent
+Drop in replacement of all the underlying Image components within SDK. This is useful for the purpose of offline caching of images. Please check the Offline Support Guide for usage.
+
+Type	Default
+ComponentType	Image
+mutedUsers
+Array of users muted by current user.
+
+Type
+array
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Chat
+Next
+ChannelList
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChatContext
+ChatContext
+ChatContext is provided by Chat component. If you are not familiar with React Context API, please read about it on React docs.
+
+Basic Usage
+ChatContext can be consumed by any of the child component of Chat component as following:
+
+
+import { useContext } from "react";
+import { ChatContext } from "stream-chat-react-native";
+const { client, isOnline } = useContext(ChatContext);
+Alternatively, you can also use useChatContext hook provided by library to consume ChatContext.
+
+
+import { useChatContext } from "stream-chat-react-native";
+const { client, isOnline } = useChatContext();
+Value
+client
+Instance of StreamChat client.
+
+Type
+StreamChat
+connectionRecovering
+The value is true, when connection to WebSocket server is disconnected and is currently being recovered.
+
+Type
+boolean
+isOnline
+The value is true, when current user is connected to chat.
+
+Type
+boolean
+ImageComponent
+Drop in replacement of all the underlying Image components within SDK. This is useful for the purpose of offline caching of images. Please check the Offline Support Guide for usage.
+
+Type	Default
+ComponentType	Image
+mutedUsers
+Array of users muted by current user.
+
+Type
+array
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+Chat
+Next
+ChannelList
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelAvatar
+ChannelAvatar
+Component to render the avatar of a channel, within the ChannelList component.
+
+General Usage
+You can customize this component and provide it back to the SDK via the PreviewAvatar prop on ChannelList if desired.
+
+In the following sample we add an onPress handler on avatar.
+
+
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { ChannelList, ChannelAvatar } from "stream-chat-react-native";
+<ChannelList
+  PreviewAvatar={({ channel }) => (
+    <TouchableOpacity
+      disallowInterruption={true}
+      onPress={() => {
+        /** Handler for press action */
+      }}
+    >
+      <ChannelAvatar channel={channel} />
+    </TouchableOpacity>
+  )}
+/>;
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+UI Component Props
+ImageComponent
+Drop in replacement of all the underlying Image components within SDK. This is useful for the purpose of offline caching of images. Please check the Offline Support Guide for usage.
+
+Type	Default
+ComponentType	Image
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelList
+Next
+ChannelListMessenger
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelListMessenger
+ChannelListMessenger
+Component to render list of channels, within the ChannelList component. This is the default component provided to the prop List on the ChannelList component.
+
+Props
+additionalFlatListProps
+Additional props provided to the underlying FlatList.
+
+Example
+
+const flatListProps = { bounces: true };
+<ChannelList additionalFlatListProps={flatListProps} />;
+Don’t use additionalFlatListProps to access the FlatList ref, use setFlatListRef instead.
+
+Type
+Object
+channels
+Array of channels currently loaded within the ChannelList component.
+
+Type
+Array
+error
+True if a call to query channels API call within ChannelList component results in error, either during first load or during pagination.
+
+Type
+Error Object | Boolean
+loadingChannels
+True if ChannelList component is loading the first page of channels.
+
+Type
+Boolean
+loadingNextPage
+True if ChannelList component is loading more channels as part of pagination. This will be set to true when user scrolls to bottom of the list and hasNextPage is true.
+
+Type
+Boolean
+loadMoreThreshold
+Sets the onEndReachedThreshold of the underlying FlatList. We recommend using 0.1 as the default value for this prop, as changing it might hit additional channelQuery calls, and you might reach the limit.
+
+Type	Default
+Number	0.1
+loadNextPage
+Function to load next page for the ChannelList component.
+
+Type
+Function
+refreshing
+True if ChannelList component is refreshing the list (using refreshList function call). Refreshing state will be triggered either when user executes pull-to-refresh gesture or if network connection is being recovered. This value is attached to refreshing prop of underlying FlatList component of ChannelList.
+
+Type
+Boolean
+refreshList
+Function to manually re-sync or refresh the channels in ChannelList component.
+
+Calling refreshList will trigger a RefreshControl on underlying FlatList component.
+
+Type
+Function
+reloadList
+Function to manually reload the channels in ChannelList component.
+
+Calling reloadList will wipe out the existing list of channels and show a loading indicator until new results are ready.
+
+Type
+Function
+setFlatListRef
+Callback function to access the underlying FlatList ref.
+
+Example
+
+const flatListRef = useRef();
+<ChannelList setFlatListRef={(ref) => (flatListRef.current = ref)} />;
+Type
+Function
+Parameter	Description
+React ref	FlatList ref
+UI Component Props
+EmptyStateIndicator
+Rendered when the channel list is empty and not loading via the ListEmptyComponent prop on the FlatList.
+
+Type	Default
+ComponentType	EmptyStateIndicator
+FooterLoadingIndicator
+Rendered when loadingNextPage from ChannelsContext is true via the ListFooterComponent prop on the FlatList.
+
+Type	Default
+ComponentType	ChannelListFooterLoadingIndicator
+ListHeaderComponent
+Rendered when provided if the channel list is not empty via the ListHeaderComponent prop on the FlatList.
+
+Type
+ComponentType
+LoadingErrorIndicator
+Rendered when error from ChannelsContext is true, and the channel list is empty and not loading.
+
+Type	Default
+ComponentType	LoadingErrorIndicator
+LoadingIndicator
+Rendered when the channel list is empty and loading via the ListEmptyComponent prop on the FlatList.
+
+Type	Default
+ComponentType	ChannelListLoadingIndicator
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelAvatar
+Next
+ChannelPreviewMessage
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewMessage
+ChannelPreviewMessage
+Component to render a preview of latest message on channel within the ChannelList. This is the default component provided to the prop PreviewMessage on the ChannelList component.
+
+Props
+latestMessagePreview
+Latest message on a channel, formatted for preview.
+
+e.g.
+
+
+{
+ created_at: '' ,
+ messageObject: { ... },
+ previews: {
+   bold: true,
+   text: 'This is the message preview text'
+ },
+ status: 0 | 1 | 2 // read states of latest message.
+}
+Type
+Object
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelListMessenger
+Next
+ChannelPreviewMessenger
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewMessenger
+ChannelPreviewMessenger
+Component to render a list item within the ChannelList. This is the default component provided to the prop Preview on the ChannelList component.
+
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+formatLatestMessageDate
+Formatter function for date of latest message.
+
+Returns a formatted date string. Default today’s date is shown in ‘HH:mm A’ format and other dates are displayed in ‘DD/MM/YY’ format. This default logic is part of ChannelPreview component.
+
+Type
+(date: Date) => string
+latestMessagePreview
+Latest message on a channel, formatted for preview.
+
+e.g.
+
+
+{
+ created_at: '' ,
+ messageObject: { ... },
+ previews: {
+   bold: true,
+   text: 'This is the message preview text'
+ },
+ status: 0 | 1 | 2 // read states of latest message.
+}
+Type
+Object
+maxUnreadCount
+Max number to display within the unread notification badge. The value cannot exceed the backend limit of 255.
+
+Type	Default
+number	255
+onSelect
+Function called when a user presses an item in the ChannelList. The function is called with the Channel instance corresponding to the list item as the only parameter. This callback is often used for navigating to a channel screen.
+
+Example
+
+onSelect={(channel) => { /** navigation logic */ }}
+A Channel instance is not serializable and will therefore raise warnings if passed as a parameter through navigation to another screen.
+
+Type
+function
+Parameter	Description
+channel	Channel instance
+unread
+Number of unread messages on the channel
+
+Type
+number
+UI Component Props
+PreviewAvatar
+Avatar component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelAvatar
+PreviewMessage
+Message component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewMessage
+PreviewStatus
+Status component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewStatus
+PreviewTitle
+Title component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewTitle
+PreviewUnreadCount
+Unread count component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewUnreadCount
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewMessage
+Next
+ChannelPreviewMutedStatus
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewMessenger
+ChannelPreviewMessenger
+Component to render a list item within the ChannelList. This is the default component provided to the prop Preview on the ChannelList component.
+
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+formatLatestMessageDate
+Formatter function for date of latest message.
+
+Returns a formatted date string. Default today’s date is shown in ‘HH:mm A’ format and other dates are displayed in ‘DD/MM/YY’ format. This default logic is part of ChannelPreview component.
+
+Type
+(date: Date) => string
+latestMessagePreview
+Latest message on a channel, formatted for preview.
+
+e.g.
+
+
+{
+ created_at: '' ,
+ messageObject: { ... },
+ previews: {
+   bold: true,
+   text: 'This is the message preview text'
+ },
+ status: 0 | 1 | 2 // read states of latest message.
+}
+Type
+Object
+maxUnreadCount
+Max number to display within the unread notification badge. The value cannot exceed the backend limit of 255.
+
+Type	Default
+number	255
+onSelect
+Function called when a user presses an item in the ChannelList. The function is called with the Channel instance corresponding to the list item as the only parameter. This callback is often used for navigating to a channel screen.
+
+Example
+
+onSelect={(channel) => { /** navigation logic */ }}
+A Channel instance is not serializable and will therefore raise warnings if passed as a parameter through navigation to another screen.
+
+Type
+function
+Parameter	Description
+channel	Channel instance
+unread
+Number of unread messages on the channel
+
+Type
+number
+UI Component Props
+PreviewAvatar
+Avatar component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelAvatar
+PreviewMessage
+Message component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewMessage
+PreviewStatus
+Status component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewStatus
+PreviewTitle
+Title component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewTitle
+PreviewUnreadCount
+Unread count component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewUnreadCount
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewMessage
+Next
+ChannelPreviewMutedStatus
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewMutedStatus
+ChannelPreviewMutedStatus
+Component to render the muted status for a channel, within the ChannelList component. This is the default component provided to the prop PreviewMutedStatus on the ChannelList component.
+
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+muted
+Value which stores the muted status of the Channel.
+
+Type
+Boolean
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewMessenger
+Next
+ChannelPreviewStatus
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewStatus
+ChannelPreviewStatus
+Component to render the status of the latest message on a channel within the ChannelList.
+
+General Usage
+You can customize this component and provide it back to the SDK via the PreviewStatus prop on ChannelList if desired.
+
+In the following sample we display a custom message preview date.
+
+
+import { useMemo } from "react";
+import { ChannelList, ChannelPreviewStatus } from "stream-chat-react-native";
+import { customDateFormatter } from "..."; // your custom date formatter
+const CustomPreviewStatus = ({ latestMessagePreview }) => {
+  // important usage of useMemo once date parsers can perform some computation when re-rendering.
+  const formattedDate = useMemo(
+    () => customDateFormatter(latestMessagePreview),
+    [latestMessagePreview],
+  );
+  return <ChannelPreviewStatus formatLatestMessageDate={formattedDate} />;
+};
+const App = () => {
+  return <ChannelList PreviewStatus={CustomPreviewStatus} />;
+};
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+latestMessagePreview
+Latest message on a channel, formatted for preview.
+
+e.g.
+
+
+{
+ created_at: '' ,
+ messageObject: { ... },
+ previews: {
+   bold: true,
+   text: 'This is the message preview text'
+ },
+ status: 0 | 1 | 2 // read states of latest message.
+}
+Type
+Object
+formatLatestMessageDate
+Formatter function for date of latest message.
+
+Returns a formatted date string. Default today’s date is shown in ‘HH:mm A’ format and other dates are displayed in ‘DD/MM/YY’ format. This default logic is part of ChannelPreview component.
+
+Type
+(date: Date) => string
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewMutedStatus
+Next
+ChannelPreviewTitle
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewTitle
+ChannelPreviewTitle
+Component to render the title for a channel, within the ChannelList component. This is the default component provided to the prop PreviewTitle on the ChannelList component.
+
+Props
+displayName
+Formatted name for the previewed channel.
+
+Type
+String
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewStatus
+Next
+ChannelPreviewUnreadCount
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelPreviewUnreadCount
+ChannelPreviewUnreadCount
+Component to render unread count on a channel, within the ChannelList component. This is the default component provided to the prop PreviewUnreadCount on the ChannelList component.
+
+Props
+channel
+Instance of Channel from stream-chat package.
+
+Type
+Channel
+maxUnreadCount
+Max number to display within the unread notification badge. The value cannot exceed the backend limit of 255.
+
+Type	Default
+number	255
+unread
+Number of unread messages on the channel
+
+Type
+number
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewTitle
+Next
+ChannelsContext
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ChannelsContext
+ChannelsContext
+ChannelsContext is provided by ChannelList component. If you are not familiar with React Context API, please read about it on React docs.
+
+Basic Usage
+ChannelsContext can be consumed by any of the child component of ChannelList component as following:
+
+
+import { useContext } from "react";
+import { ChannelsContext } from "stream-chat-react-native";
+const { channels, reloadList } = useContext(ChannelsContext);
+Alternatively, you can also use useChannelsContext hook provided by library to consume ChannelsContext.
+
+
+import { useChannelsContext } from "stream-chat-react-native";
+const { channels, reloadList } = useChannelsContext();
+Value
+additionalFlatListProps
+Additional props provided to the underlying FlatList.
+
+Example
+
+const flatListProps = { bounces: true };
+<ChannelList additionalFlatListProps={flatListProps} />;
+Don’t use additionalFlatListProps to access the FlatList ref, use setFlatListRef instead.
+
+Type
+Object
+channels
+Array of channels currently loaded within the ChannelList component.
+
+Type
+Array
+error
+True if a call to query channels API call within ChannelList component results in error, either during first load or during pagination.
+
+Type
+Error Object | Boolean
+hasNextPage
+False if ChannelList component has loaded all the channels corresponding to filters.
+
+Type
+Boolean
+ListHeaderComponent
+Rendered when provided if the channel list is not empty via the ListHeaderComponent prop on the FlatList.
+
+Type
+ComponentType
+loadingChannels
+True if ChannelList component is loading the first page of channels.
+
+Type
+Boolean
+loadMoreThreshold
+Sets the onEndReachedThreshold of the underlying FlatList. We recommend using 0.1 as the default value for this prop, as changing it might hit additional channelQuery calls, and you might reach the limit.
+
+Type	Default
+Number	0.1
+loadingNextPage
+True if ChannelList component is loading more channels as part of pagination. This will be set to true when user scrolls to bottom of the list and hasNextPage is true.
+
+Type
+Boolean
+loadNextPage
+Function to load next page for the ChannelList component.
+
+Type
+Function
+maxUnreadCount
+Max number to display within unread notification badge. The value cannot be higher than 255, which is the limit on backend side.
+
+Type	Default
+number	255
+numberOfSkeletons
+The number of Skeleton items to display in the LoadingIndicator.
+
+Type	Default
+number	6
+onSelect
+Function called when a user presses an item in the ChannelList. The function is called with the Channel instance corresponding to the list item as the only parameter. This callback is often used for navigating to a channel screen.
+
+Example
+
+onSelect={(channel) => { /** navigation logic */ }}
+A Channel instance is not serializable and will therefore raise warnings if passed as a parameter through navigation to another screen.
+
+Type
+function
+Parameter	Description
+channel	Channel instance
+refreshing
+True if ChannelList component is refreshing the list (using refreshList function call). Refreshing state will be triggered either when user executes pull-to-refresh gesture or if network connection is being recovered. This value is attached to refreshing prop of underlying FlatList component of ChannelList.
+
+Type
+Boolean
+refreshList
+Function to manually re-sync or refresh the channels in ChannelList component.
+
+Calling refreshList will trigger a RefreshControl on underlying FlatList component.
+
+Type
+Function
+reloadList
+Function to manually reload the channels in ChannelList component.
+
+Calling reloadList will wipe out the existing list of channels and show a loading indicator until new results are ready.
+
+Type
+Function
+setFlatListRef
+Callback function to access the underlying FlatList ref.
+
+Example
+
+const flatListRef = useRef();
+<ChannelList setFlatListRef={(ref) => (flatListRef.current = ref)} />;
+Type
+Function
+Parameter	Description
+React ref	FlatList ref
+EmptyStateIndicator
+Rendered when the channel list is empty and not loading via the ListEmptyComponent prop on the FlatList.
+
+Type	Default
+ComponentType	EmptyStateIndicator
+FooterLoadingIndicator
+Rendered when loadingNextPage from ChannelsContext is true via the ListFooterComponent prop on the FlatList.
+
+Type	Default
+ComponentType	ChannelListFooterLoadingIndicator
+HeaderErrorIndicator
+Rendered when error from ChannelsContext is true.
+
+Type	Default
+ComponentType	ChannelListHeaderErrorIndicator
+HeaderNetworkDownIndicator
+Rendered when isOnline from ChatContext is false.
+
+Type	Default
+ComponentType	ChannelListHeaderNetworkDownIndicator
+LoadingErrorIndicator
+Rendered when error from ChannelsContext is true, and the channel list is empty and not loading.
+
+Type	Default
+ComponentType	LoadingErrorIndicator
+LoadingIndicator
+Rendered when the channel list is empty and loading via the ListEmptyComponent prop on the FlatList.
+
+Type	Default
+ComponentType	ChannelListLoadingIndicator
+Preview
+List item rendered by the underlying FlatList.
+
+Type	Default
+ComponentType	ChannelPreviewMessenger
+PreviewAvatar
+Avatar component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelAvatar
+PreviewMessage
+Message component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewMessage
+PreviewStatus
+Status component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewStatus
+PreviewTitle
+Title component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewTitle
+PreviewUnreadCount
+Unread count component rendered within Preview.
+
+Type	Default
+ComponentType	ChannelPreviewUnreadCount
+Skeleton
+Row item rendered in the LoadingIndicator.
+
+Type	Default
+ComponentType	Skeleton
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelPreviewUnreadCount
+Next
+Channel
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+Channel
+Channel
+The Channel component is the main entry point for many Stream Chat customizations and contains the majority of the content providers and a significant amount of the logic utilized by Stream Chat for React Native. Components, custom and out of the box, channel information, and UI integrated chat functions are disseminated by the contexts contained in Channel. MessageList, MessageInput, and Thread all rely on Channel to function correctly.
+
+Basic Usage
+Channel takes an instance of a StreamChat channel as a prop. You can create a channel, or if you are navigating from the ChannelList, access the selected channel via the parameter passed to the onSelect function.
+
+
+import { StreamChat } from "stream-chat";
+import {
+  Channel,
+  Chat,
+  MessageInput,
+  MessageList,
+  OverlayProvider,
+} from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => {
+  const [channel, setChannel] = useState();
+  useEffect(() => {
+    const createAndWatchChannel = async () => {
+      const newChannel = client.channel("messaging", "channel_id");
+      await newChannel.watch();
+      setChannel(newChannel);
+    };
+    createAndWatchChannel();
+  }, []);
+  return (
+    <OverlayProvider>
+      <Chat client={client}>
+        <Channel channel={channel}>
+          <MessageList />
+          <MessageInput />
+        </Channel>
+      </Chat>
+    </OverlayProvider>
+  );
+};
+Context Providers
+Channel contains providers for the ChannelContext, KeyboardContext, MessageInputContext, MessagesContext, PaginatedMessageListContext, AttachmentPickerContext, MessageComposerContext, ThreadContext, and TypingContext. These can be accessed using the corresponding hooks.
+
+Context	Hook
+ChannelContext	useChannelContext
+KeyboardContext	useKeyboardContext
+MessageInputContext	useMessageInputContext
+MessagesContext	useMessagesContext
+PaginatedMessageListContext	usePaginatedMessageListContext
+AttachmentPickerContext	useAttachmentPickerContext
+MessageComposerContext	useMessageComposerAPIContext
+ThreadContext	useThreadContext
+TypingContext	useTypingContext
+UI Customizations
+Channel is the entry point for customizing the majority of the Stream Chat for React Native SDK. The UI can be tailored to your design by replacing any number of components with custom components. Custom components provided as props to Channel will be utilized throughout the SDK where appropriate.
+
+Customizing the message avatar can be done easily by providing a custom component to the appropriate prop.
+
+
+import { Image } from "react-native";
+import { Channel, useMessageContext } from "stream-chat-react-native";
+const CustomAvatar = () => {
+  const { message } = useMessageContext();
+  return <Image source={{ uri: message.user?.image }} />;
+};
+<Channel MessageAvatar={CustomAvatar} />;
+
+Messages
+
+Attachments
+
+indicators
+
+input
+
+Props
+channel
+Channel instance from the StreamChat client.
+
+Type
+Channel
+keyboardVerticalOffset
+Distance between top of the screen and top of Channel component. This is often the header height.
+
+Type
+number
+additionalKeyboardAvoidingViewProps
+Additional props provided to the underlying KeyboardAvoidingView.
+
+Type
+Object
+additionalTextInputProps
+Additional props provided to the underlying TextInput within MessageInput.
+
+Type
+object
+additionalPressableProps
+Additional props provided to the underlying Pressable used by components within a message such as MessageContent.
+
+Type
+object
+allowThreadMessagesInChannel
+Display the Show thread message in channel button inside the thread MessageInput.
+
+Type	Default
+boolean	true
+ayncMessagesLockDistance
+Controls how many pixels to the top side the user has to scroll in order to lock the recording view and allow the user to lift their finger from the screen without stopping the recording.
+
+Type	Default
+Number	50
+ayncMessagesMinimumPressDuration
+Controls the minimum duration(in milliseconds) that the user has to press on the record button in the composer, in order to start recording a new voice message.
+
+Type	Default
+Number	500
+ayncMessagesMultiSendEnabled
+When it’s enabled, recorded messages won’t be sent immediately. Instead they will “stack up” in the composer allowing the user to send multiple voice recording as part of the same message.
+
+Type	Default
+Boolean	true
+ayncMessagesSlideToCancelDistance
+Controls how many pixels to the leading side the user has to scroll in order to cancel the recording of a voice message.
+
+Type	Default
+Number	100
+audioRecordingEnabled
+Controls whether the feature is enabled.
+
+Type	Default
+Boolean	false
+attachmentPickerErrorText
+Error text for AttachmentPickerError.
+
+Type	Default
+String	”Please enable access to your photos and videos so you can share them.”
+attachmentPickerErrorButtonText
+Text for the button within AttachmentPickerError that opens the apps OS level settings.
+
+Type	Default
+String	”Allow access to your Gallery”
+attachmentPickerBottomSheetHeight
+Height of the image picker bottom sheet when opened.
+
+Type	Default
+Number	40% of Window Height
+attachmentSelectionBarHeight
+Height of the attachment selection bar displayed on the attachment picker.
+
+Type	Default
+Number	52
+attachmentPickerBottomSheetHandleHeight
+Height of the image picker bottom sheet handle.
+
+Type	Default
+Number	20
+bottomInset
+Height of items located below the MessageInput when present. This inset determines the underlying shift to the MessageList when it is opened.
+
+This can also be set via the setBottomInset function provided by the useAttachmentPickerContext hook.
+
+Type	Default
+Number	0
+compressImageQuality
+Image compression quality prior to uploading.
+
+On iOS values of 0.8 and above don’t reduce the quality noticeably in most images. A value of 0.8 will reduce the file size in iOS by approximately half compared to a value of 1.
+
+Type	Default
+number 0 to 1
+(1 is best quality)	iOS: 0.8
+Android: 1
+customMessageSwipeAction
+The custom message swipe action that will be executed when the user swipes a message.
+
+Type	Default
+({channel, message}: {channel: Channel, message: LocalMessage}) => void	The default action is swipe to reply.
+deletedMessagesVisibilityType
+Controls the visibility of the deleted messages within the channel.
+
+always: The deleted messages in the channel will be visible to both the sender and receiver.
+never: The deleted messages will not be visible to anyone.
+sender: The deleted messages in the channel will only be visible to sender.
+receiver: The deleted messages in the channel will only be visible to receiver.
+Type	Default
+enum(‘always’, ‘never’, ‘receiver’, ‘sender’)	‘both’
+disableKeyboardCompatibleView
+Enable or disable the underlying KeyboardAvoidingView.
+
+Type	Default
+boolean	false
+disableTypingIndicator
+Disable typing indicator in MessageList.
+
+Type	Default
+boolean	false
+dismissKeyboardOnMessageTouch
+Dismiss the keyboard when a user touches any of the messages in the list.
+
+Type	Default
+boolean	false
+doFileUploadRequest
+Override of the file upload request when a user selects a file from the file picker. The function must return a Promise.
+
+This can be used to store file attachments in your own custom CDN.
+
+Type
+Function
+This matches the definition of UploadRequestFn from the stream-chat package.
+
+
+export type UploadRequestFn = (
+  fileLike: FileReference | FileLike,
+) => Promise<MinimumUploadRequestResult>;
+doMarkReadRequest
+Override the mark read request.
+
+This prop should only be used for advanced functionality in which you want to conditionally allow mark-read requests.
+
+Don not use this function to disable the read-receipts feature. If you would like to disable read-receipts, this can be done via Read Events on the dashboard.
+
+Example
+
+const doMarkReadRequest = (channel) => {
+  if (/** Some custom logic here */) {
+    channel.markRead();
+  }
+};
+Type
+Function
+Parameter	Description
+channel	channel instance
+setChannelUnreadUiState | undefined	(state) =>void
+doSendMessageRequest
+Override the send message request. This function must return a Promise equivalent to client.sendMessage.
+
+This prop should only be used for advanced functionality in which you want to alter the message object before sending.
+
+Example
+
+const doSendMessageRequest = (channelId, messageObject) => {
+  if (/** Some custom logic here */) {
+    messageObject.isSpecial = true;
+  }
+  return channel.sendMessage(messageObject);
+}
+Type
+function
+Parameter	Description
+channelId	string
+messageObject	object
+options	object | undefined
+doUpdateMessageRequest
+Override the update message request. This function must return a Promise equivalent to client.updateMessage.
+
+This prop should only be used for advanced functionality in which you want to alter the message object before updating it.
+
+
+const doUpdateMessageRequest = (channelId, messageObject) => {
+  const numberOfUpdates = (messageObject.numberOfUpdates ?? 0) + 1;
+  const messageToSend = { ...messageObject, numberOfUpdates };
+  return client.updateMessage(messageToSend);
+};
+Type
+function
+Parameter	Description
+channelId	string
+messageObject	object
+options	object | undefined
+enableMessageGroupingByUser
+Note: This prop is available only in SDK version >= v3.9.0
+
+If false, consecutive messages from same user won’t be grouped together.
+
+Type	Default
+boolean	true
+enableSwipeToReply
+If true, the user can swipe to reply to a message.
+
+Type	Default
+Boolean	true
+enforceUniqueReaction
+Limits reactions to one per user. If a user selects another reaction, their previous reaction will be replaced. This is similar to reaction UX of iMessage.
+
+Type	Default
+boolean	false
+forceAlignMessages
+Forces alignment of messages in the list to either the left or right side of the screen. By default, received messages are aligned on the left side of the screen, and sent messages are aligned on the right.
+
+Type	Default
+’left’ | ‘right’ | false	false
+formatDate
+Format function that returns a string to be used for the date in the message status and delete message component.
+
+Type
+function
+Parameter	Description
+date	date to format provided as a string, Date, or number (Unix Timestamp)
+getMessagesGroupStyles
+Messages with message list are grouped with some smart logic for example avatar of sender only appears for last message of the group. Messages are grouped together on UI if they are sent back to back by a user within certain timeframe (this timeframe can be controlled by a prop MaxTimeBetweenGroupedMessages on Channel component). getMessagesGroupStyles prop can be used to override the logic which determines the position of particular message within a group of messages for example top, bottom, middle, single etc. And depending on value, certain UI elements are hidden or shown on UI e.g, message timestamp, user avatar etc. You can find the default logic in getGroupStyles function.
+
+Group styles returned by this function can be accessed by groupStyles value from MessageContext within custom components.
+
+Type
+function
+globalUnreadCountLimit
+Maximum number of unread messages to show as a count on a channel before adding a +. The max allowable is 255, which when reached displays as 255+.
+
+Type	Default
+number	255
+giphyVersion
+The Giphy version to render - check the keys of the Image Object for possible values.
+
+Type	Default
+string	’fixed_height’
+handleAttachButtonPress
+Function to customize the behaviour when the AttachButton is pressed in the message input.
+
+Type
+() => void
+handleBan
+Function called when the Ban User action is invoked from message actions list. This function does not override the default behavior of the Ban User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleCopy
+Function called when the Copy Message action is invoked from message actions list. This function does not override the default behavior of the Copy Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDelete
+Function called when the Delete Message action is invoked from message actions list. This function does not override the default behavior of the Delete Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDeleteForMe
+Function called when the Delete Message for me action is invoked from message actions list. This function does not override the default behavior of the Delete Message for me action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleEdit
+Function called when the Edit Message action is invoked from message actions list. This function does not override the default behavior of the Edit Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleFlag
+Function called when the Flag Message action is invoked from message actions list. This function does not override the default behavior of the Flag Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleMarkUnread
+Function called when the Mark Unread action is invoked from message actions list. This function does not override the default behavior of the Mark Unread action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleMute
+Function called when the Mute User action is invoked from message actions list. This function does not override the default behavior of the Mute User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handlePinMessage
+Function called when the Pin to Conversation or Unpin from Conversation action is invoked from message actions list. This function does not override the default behavior of the Pin to Conversation or Unpin from Conversation action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleReaction
+Function called when a reaction is selected in the message menu, this is called on both the add and remove action. This function does not override the default behavior of the reaction being selected. Please refer to the guide on customizing message actions for details.
+
+Type
+Function
+Parameter	Description
+message	Message the action is called on.
+reactionType	String designating the type of reaction.
+handleQuotedReply
+Function called when the Reply action is invoked from message actions list. This function does not override the default behavior of the Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleRetry
+Function called when the Retry action is invoked from message actions list. This function does not override the default behavior of the Retry action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleThreadReply
+Function called when the Thread Reply action is invoked from message actions list. This function does not override the default behavior of the Thread Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+hasCameraPicker
+Enable the camera picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasCommands
+Enable commands on the MessageInput component.
+
+Type	Default
+boolean	true
+hasFilePicker
+Enable the file picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasImagePicker
+Enable the image picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hideDateSeparators
+Hide inline date separators in MessageList component.
+
+Type	Default
+boolean	false
+hideStickyDateHeader
+Note: This prop is available only in SDK version >= v3.9.0
+
+Hide sticky date header in MessageList component.
+
+Type	Default
+boolean	false
+initialScrollToFirstUnreadMessage
+Load messages in a channel at the first unread message.
+
+Type	Default
+boolean	false
+isAttachmentEqual
+Function which returns true if passing nextAttachment to render would return the same result as passing prevAttachment to render, otherwise return false.
+
+Type
+function
+Parameter	Description
+prevAttachment	previous message attachment to be compared
+nextAttachment	next message attachment to be compared
+keyboardBehavior
+Behavior for the keyboard passed to the underlying KeyboardAvoidingView.
+
+Type
+’height’ | ‘position’ | ‘padding’
+legacyImageViewerSwipeBehaviour
+Note: This prop is available only in SDK version >= v3.9.0
+
+Enables/disables the legacy image viewer behavior.
+
+When true, within the image viewer you can keep swiping left to scroll through all the images that have been loaded within a channel so far. Be aware that this creates quite a lot of extra work for the JS thread to keep track of image attachments loaded in a channel and pre-populating them in the viewer for smooth transitions.
+
+Type	Default
+boolean	false
+loadingMore
+Override the loadingMore value supplied by the channel query logic.
+
+Type
+Boolean
+loadingMoreRecent
+Override the loadingMoreRecent value supplied by the channel query logic.
+
+Type
+Boolean
+markdownRules
+Object specifying rules defined within simple-markdown.
+
+Type
+object
+markReadOnMount
+Boolean to enable/disable the marking of channel as read when the Channel component is mounted.
+
+Type
+Boolean
+maxMessageLength
+Maximum length of the message text. The default value is supplied by the channel config.
+
+Type
+number
+maxTimeBetweenGroupedMessages
+Maximum time in milliseconds between consecutive messages from the same user to still consider them grouped together.
+
+Type	Default
+number	infinite
+messageId
+Load the channel at a specified message instead of the most recent message.
+
+Type
+string
+messageActions
+An array of, or function that returns and array of, actions that can be performed on a message shown in the message menu. Please refer to the guide on customizing message actions for details.
+
+Type	Default
+Array | Function	messageActions
+Parameter	Description
+actionInfo	An object containing the original actions and relevant message data
+messageContentOrder
+Order in which to render the content of a message.
+
+Type	Default
+array	[‘quoted_reply’, ‘gallery’, ‘files’, ‘text’, ‘attachments’]
+messageSwipeToReplyHitSlop
+The hitSlop prop is used to define the area around the component where the user can interact with it.
+
+This is for the message swipe to reply feature.
+
+Type	Default
+Object{ top: number, left: number, bottom: number, right: number }	{left: screenWidth, right: screenWidth}
+messageTextNumberOfLines
+Number of lines for the message text in the Message Overlay.
+
+Type	Default
+number	5
+myMessageTheme
+Theme applied to messages of the current user.
+
+Type
+object
+Please make sure to memoize or pass static reference for this object.
+
+newMessageStateUpdateThrottleInterval
+Note: This prop is available only in SDK version >= v3.9.0
+
+Throttling interval (in milliseconds) for react state update for channel, when new messages arrive in chat. By default state updates are throttled at 500 ms, but for high concurrency application this prop should be adjusted to 1000 ms to avoid excessive overload on JS thread.
+
+Type	Default
+number	500
+numberOfLines
+Maximum number of lines that underlying TextInput component within MessageInput should expand to.
+
+Type	Default
+number	5
+numberOfAttachmentImagesToLoadPerCall
+Number of images to load per call to CameraRoll.getPhotos.
+
+Type	Default
+Number	60
+numberOfAttachmentPickerImageColumns
+Number of columns to render within the image picker.
+
+Type	Default
+Number	3
+onLongPressMessage
+Function called when a user long presses a message. The default opens the message menu.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+onPressMessage
+Function called when a user presses a message.
+
+The default handler for message press interactions acts differently when pressing on reactions and attachments. You will have to handle these cases when overriding this function.
+
+Type
+function
+Parameter	Description
+payload	{ additionalInfo, actionHandlers, message }
+The additionalInfo prop is handy for getting information from certain click events. A good example of this is getting the user details when a textMention (for example @Enigma-I-am) is clicked.
+
+For example:
+
+
+    <Channel
+      onPressMessage={({ additionalInfo, defaultHandler, emitter }) => {
+          if (emitter === 'textMention') {
+            console.log(additionalInfo?.user);
+            return;
+          }
+          if (emitter === 'card' || emitter === 'textLink') {
+            console.log(additionalInfo?.url);
+            return;
+          }
+          if (emitter === 'fileAttachment') {
+            console.log(additionalInfo?.attachment);
+            return;
+          }
+          defaultHandler?.();
+      }}
+    >
+The additionalInfo prop will change over time as we explore more use-cases for different emitter's.
+
+onPressInMessage
+Function called immediately when a touch is engaged on a message, before onPressMessage.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+overrideOwnCapabilities
+Object to override the capabilities of current user, which are affected by number of factors such as user permissions, channel type configurations and channel settings. These capabilities are used to enable or disable certain UI features within the SDK. To know more about capabilities, please take a look at following documentation:
+
+/chat/docs/javascript/channel_capabilities/
+
+For example:
+
+
+<Channel
+  overrideOwnCapabilities={{
+    uploadFile: false,
+    sendLinks: false
+  }}
+Available keys for the object:
+
+banChannelMembers When false, “Block User” message action won’t be available within message menu.
+deleteAnyMessage When false, “Delete Message” action won’t be available for received message within message menu.
+deleteOwnMessage When false, “Delete Message” action won’t be available for own message within message menu.
+flagMessage When false, “Flag Message” message action won’t be available within message menu.
+pinMessage When false, “Pin Message” action won’t be available within message menu.
+quoteMessage When false, “Reply” message action won’t be available within message menu.
+readEvents When false, read receipts for message won’t be rendered.
+sendLinks When false, user will not be allowed to send URLs in message.
+sendMessage When false, message input component will render SendMessageDisallowedIndicator instead of input box.
+sendReaction When false, reaction selector (OverlayReactionList) component won’t be available within message menu.
+sendReply When false, “Thread Reply” message action won’t be available within message menu.
+sendTypingEvents When false, typing events won’t be sent from current user.
+updateAnyMessage When false, “Edit Message” action won’t be available for received messages within message menu.
+updateOwnMessage When false, “Edit Message” action won’t be available for own messages within message menu.
+uploadFile When false, upload file button (AttachButton) won’t be available within MessageInput component.
+Type
+object
+reactionListPosition
+The position of the reaction list in the message component. By default, the reaction list is positioned on top the message content.
+
+Type	Default value
+top | bottom	’top’
+selectReaction
+Full override of the reaction function on a message. This function must return a function that takes as a parameter the reactionType as a string. Please refer to the guide on customizing message actions for details.
+
+Type
+function | null
+Parameter	Description
+message	message the action is called on
+setInputRef
+Callback function to set the ref on the underlying TextInput in MessageInput.
+
+Type
+function
+Parameter	Description
+ref	ref of the TextInput
+shouldShowUnreadUnderlay
+Boolean to enable/disable the message underlay background when there are unread messages in the Message List.
+
+Type	Default
+boolean|undefined	true
+stateUpdateThrottleInterval
+Note: This prop is available only in SDK version >= v3.9.0
+
+Throttling interval (in milliseconds) for react state update for channel, (except new messages). By default state updates are throttled at 500 ms, but for high concurrency application this prop should be adjusted to 1000 ms to avoid excessive overload on JS thread.
+
+Type	Default
+number	500
+supportedReactions
+List of reactions which can be added on message. Please refer to the guide on customizing reactions for details.
+
+Type	Default
+Array	reactionData
+thread
+Can be either a LocalMessage object or a ThreadType that when set indicates a thread is open. Both of the types may be used interchangeably.
+
+When used with the Thread component this will display the thread. When used with the standard MessageList component this will prevent any singleton components in the OverlayProvider form getting out of sync.
+
+thread should be set on all Channel components when a thread is open.
+
+Type
+object
+threadList
+Tells the Channel component if it is rendering a thread. We use this flag to avoid concurrency problems between a regular channel and a channel containing a thread.
+
+Type
+boolean
+openPollCreationDialog
+Function called immediately when the poll creation button is clicked in the attachment picker. Can be used to override the default behaviour of the poll creation UI appearing as a Modal.
+
+If overridden, a payload is passed containing the sendMessage callback from MessageInputContext is passed, so that CreatePoll
+
+Type
+function
+Parameter	Description
+payload	{ sendMessage }
+closePollCreationDialog
+Function called whenever the close button is pressed on the poll creation modal. Has no effect if PollCreateContent is custom.
+
+Type
+function
+hasCreatePoll
+A boolean value that is responsible for controlling whether the poll creation button is visible or not.
+
+Type
+boolean
+topInset
+Distance from the top of the screen the attachment picker should open to when expanded. This is often set to the header height.
+
+This can also be set via the setTopInset function provided by the useAttachmentPickerContext hook.
+
+Type	Default
+Number	0
+maximumMessageLimit
+This component is available since version 8.6.2 of the SDK.
+
+A prop that controls the number of messages that will be kept in memory at any given time.
+
+It is particularly useful for usages of Channel and MessageList in situations where we have a really high traffic of messages (i.e a livestream) where it is inconvenient (and unnecessary) to keep every single message we’ve received in memory.
+
+Technical caveats:
+
+It will affect how the underlying MessageList works
+Whenever going past the maximumMessageLimit, the oldest messages will be pruned (only in memory)
+Messages will not be pruned if we have scrolled near the current top of the MessageList
+Pagination will still work as normal for messages we’ve removed from memory
+Type
+number
+UI Components Props
+AttachButton
+Component to render the attach button next to input box.
+
+Type	Default
+ComponentType	AttachButton
+Attachment
+Component for rendering attachments in MessageList.
+
+Available props:
+
+attachment {object}
+Type	Default
+ComponentType	Attachment
+AttachmentActions
+Component to render additional actions on attachment. for example send, shuffle, cancel in case of Giphy.
+
+Type	Default
+ComponentType	AttachmentActions
+AudioAttachment
+Component for rendering the Audio Attachment
+
+Type	Default
+ComponentType	AudioAttachment
+AudioAttachmentUploadPreview
+Component prop used to customize the audio attachment upload preview when its uploading/uploaded in the MessageInput.
+
+Type	Default
+ComponentType	AudioAttachmentUploadPreview
+AudioRecorder
+Custom UI component to render audio recorder controls in MessageInput.
+
+Type	Default
+ComponentType	AudioRecorder
+AudioRecordingInProgress
+Custom UI component to render audio recording in progress in MessageInput. It renders the waveform, duration etc, for the recording.
+
+Type	Default
+ComponentType	AudioRecordingInProgress
+AudioRecordingLockIndicator
+Custom UI component to render audio recording lock indicator in MessageInput that can be dragged up to lock the recording start.
+
+Type	Default
+ComponentType	AudioRecordingLockIndicator
+AudioRecordingPreview
+Custom UI component to render audio recording preview in MessageInput that allows playing the recording.
+
+Type	Default
+ComponentType	AudioRecordingPreview
+AudioRecordingWaveform
+Custom UI component to render audio recording waveform in MessageInput.
+
+Type	Default
+ComponentType	AudioRecordingWaveform
+AutoCompleteSuggestionHeader
+Component to render the autocomplete suggestion header.
+
+Type	Default
+ComponentType	AutoCompleteSuggestionHeader
+AutoCompleteSuggestionItem
+Component to render the autocomplete suggestion item.
+
+Type	Default
+ComponentType	AutoCompleteSuggestionItem
+AutoCompleteSuggestionList
+Component to render the autocomplete suggestion list.
+
+Type	Default
+ComponentType	AutoCompleteSuggestionList
+AttachmentPickerBottomSheetHandle
+Bottom sheet handle component for image picker.
+
+Type	Default
+ComponentType	undefined | AttachmentPickerBottomSheetHandle
+AttachmentPickerSelectionBar
+Component to render and customize the attachment picker selection bar that displays the image, file and camera icons._createMdxContent
+
+Type	Default
+ComponentType	undefined | AttachmentPickerSelectionBar
+AttachmentPickerIOSSelectMorePhotos
+Component to render select more photos option for selected gallery access in iOS.
+
+Type	Default
+ComponentType	undefined | AttachmentPickerIOSSelectMorePhotos
+AttachmentPickerError
+Error component displayed when the app doesn’t have permissions to access photos on the device.
+
+Type	Default
+ComponentType	undefined | AttachmentPickerError
+AttachmentPickerErrorImage
+Image component within AttachmentPickerError.
+
+Type	Default
+ComponentType	undefined | AttachmentPickerErrorImage
+AttachmentUploadPreviewList
+Component to render preview of attached files and images, within the MessageInput component.
+
+Type	Default
+ComponentType	AttachmentUploadPreviewList
+AttachmentUploadProgressIndicator
+Component to render progress indicator on the image/files being uploaded in the message input.
+
+Type	Default
+ComponentType	AttachmentUploadProgressIndicator
+CameraSelectorIcon
+Camera selector component displayed in the attachment selector bar.
+
+Type	Default
+ComponentType	undefined | CameraSelectorIcon
+CooldownTimer
+The cooldown timer is a component that displays a countdown timer for message sending cooldowns in the MessageInput. It helps to inform users about the remaining time before they can send another message.
+
+Type	Default
+ComponentType	CooldownTimer
+Card
+Component to render any custom type of attachment. Please check the guides for Custom Attachment
+
+Type	Default
+ComponentType	Card
+CardCover
+Component to render main body for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardFooter
+Component to render footer for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardHeader
+Component to render header for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CommandsButton
+Component to render button next to input box, which when pressed opens commands list.
+
+Type	Default
+ComponentType	CommandsButton
+CommandInput
+Component to render the message input in an active command state.
+
+Type	Default
+ComponentType	CommandInput
+DateHeader
+Component to render sticky date header within enclosed MessageList component.
+
+Type	Default
+ComponentType	DateHeader
+EmptyStateIndicator
+Component to render, when channel has no messages.
+
+Type	Default
+ComponentType	EmptyStateIndicator
+FileAttachmentIcon
+Component to render file icon for file type attachment.
+
+Type	Default
+ComponentType	FileIcon
+FileAttachment
+Component to render ‘file’ type attachment in MessageList.
+
+Type	Default
+ComponentType	FileAttachment
+FileAttachmentGroup
+Component to render group of file type attachments, when there are multiple file type attachments in message.
+
+Type	Default
+ComponentType	FileAttachmentGroup
+FileSelectorIcon
+File selector component displayed in the attachment selector bar.
+
+Type	Default
+ComponentType	undefined | FileSelectorIcon
+ImageSelectorIcon
+Image selector component displayed in the attachment selector bar.
+
+Type	Default
+ComponentType	undefined | ImageSelectorIcon
+VideoRecorderSelectorIcon
+Video recorder selector component displayed in the attachment selector bar.
+
+Type	Default
+ComponentType	undefined | VideoRecorderSelectorIcon
+FileAttachmentUploadPreview
+Component prop used to customize the file attachment upload preview when its uploading/uploaded in the MessageInput.
+
+Type	Default
+ComponentType	FileAttachmentUploadPreview
+ImageAttachmentUploadPreview
+Component prop used to customize the image attachment upload preview when its uploading/uploaded in the MessageInput.
+
+Type	Default
+ComponentType	ImageAttachmentUploadPreview
+VideoAttachmentUploadPreview
+Component prop used to customize the video attachment upload preview when its uploading/uploaded in the MessageInput.
+
+Type	Default
+ComponentType	VideoAttachmentUploadPreview
+ImageOverlaySelectedComponent
+Indicator component used to designate an image as selected in the image picker.
+
+Type	Default
+ComponentType	undefined | ImageOverlaySelectedComponent
+FlatList
+FlatList component for underlying MessageList component.
+
+Type	Default
+ComponentType	flat-list-mvcp
+Gallery
+Component to render ‘image’ type attachments in the MessageList.
+
+Type	Default
+ComponentType	Gallery
+Giphy
+Component to render Giphy type attachments in MessageList.
+
+Type	Default
+ComponentType	Giphy
+ImageLoadingFailedIndicator
+Component to render when image fails to load in Gallery.
+
+Type	Default
+ComponentType	ImageLoadingFailedIndicator
+ImageLoadingIndicator
+Component to render when image is loading in Gallery.
+
+Type	Default
+ComponentType	ImageLoadingIndicator
+InlineDateSeparator
+Component to render inline date separators between messages which were created at a difference of more than a day.
+
+Type	Default
+ComponentType	InlineDateSeparator
+InlineUnreadIndicator
+Component to render inline separator in MessageList, to indicate the position of last read message in list.
+
+Type	Default
+ComponentType	InlineUnreadIndicator
+Input
+Component to render UI part of enclosed MessageInput component. Please read section in guides about Customizing Message Input.
+
+Type
+ComponentType
+InputButtons
+Component to render action buttons (CommandsButton and AttachButton) on left side of input box, within enclosed MessageInput component.
+
+Type	Default
+ComponentType	InputButtons
+InputEditingStateHeader
+Component to render the header when a message is been edited on the message input.
+
+Type	Default
+ComponentType	InputEditingStateHeader
+InputReplyStateHeader
+Component to render the header on the message input when a message is been replied to.
+
+Type	Default
+ComponentType	InputReplyStateHeader
+KeyboardCompatibleView
+Component to override underlying default KeyboardCompatibleView. Generally you won’t need to use this prop at all, you can simply use following props instead:
+
+keyboardVerticalOffset
+disableKeyboardCompatibleView
+Type	Default
+ComponentType	KeyboardCompatibleView
+LoadingErrorIndicator
+Component to render full screen error indicator, when channel fails to load.
+
+Type	Default
+ComponentType	LoadingErrorIndicator
+LoadingIndicator
+Component to render full screen error indicator, when channel fails to load.
+
+Type	Default
+ComponentType	LoadingIndicator
+MessageActionList
+Component for rendering a message action list within the message menu.
+
+Type	Default
+ComponentType	MessageActionList | undefined
+MessageActionListItem
+Component for rendering message action list items within a message action list.
+
+Type	Default
+ComponentType	MessageActionListItem | undefined
+MessageAvatar
+Component to render avatar of sender for message, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageAvatar
+MessageBounce
+Component to render bounce action handler on click or long press of a Bounced message, within MessageList.
+
+Type	Default
+ComponentType	MessageBounce
+MessageContent
+Component to render content of message including status, attachments, reactions etc., within MessageList.
+
+Type	Default
+ComponentType	MessageContent
+MessageDeleted
+Component to render deleted message.
+
+Type	Default
+ComponentType	MessageDeleted
+MessageEditedTimestamp
+Component to render message edited label in message when the message is clicked, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageEditedTimestamp
+MessageError
+Component to customize the message error component.
+
+Type	Default
+ComponentType	MessageError
+MessageFooter
+Component to render footer for message, within MessageList.
+
+Type	Default
+ComponentType	MessageFooter
+MessageHeader
+Component to render header for message, within MessageList.
+
+Type
+ComponentType
+MessageMenu
+Component to customize the message contextual menu which allows users to perform actions on a message and react to messages.
+
+Type	Default
+ComponentType	MessageMenu | undefined
+MessagePinnedHeader
+Component to render pinned message label for message, within MessageList.
+
+Type
+ComponentType
+MessageReplies
+Component to show number of thread replies and avatars of members who replied on message
+
+Type	Default
+ComponentType	MessageReplies
+MessageRepliesAvatars
+Component to show avatars of members who thread replied on message.
+
+Type	Default
+ComponentType	MessageRepliesAvatars
+MessageSimple
+Component to render a message within MessageList.
+
+Please check guides section for Customizing Message UI for details.
+
+Type	Default
+ComponentType	MessageSimple
+MessageStatus
+Component to render status of message, which includes time and read-receipts.
+
+Type	Default
+ComponentType	MessageStatus
+MessageSwipeContent
+Component that renders when the user swipes on a message.
+
+Type	Default
+ComponentType	MessageSwipeContent | undefined
+MessageSystem
+Component to render system type messages. Purpose of system messages is to inform user about changes to channel. System messages are part of message history, and have a property type set as system. You can add system messages within message history in following scenarios:
+
+A user gets added to or removed from channel
+A user accepts invite to join a channel
+Channel is updated
+Type	Default
+ComponentType	MessageSystem
+MessageText
+Component to render text of message. By default, we use Simple Markdown package to render the text content of message. If you decide to use this prop, please be aware that you will need to handle the markdown rendering yourself.
+
+Type	Default
+ComponentType	renderText
+MessageReactionPicker
+Reaction selector component displayed within the message menu when user long presses a message.
+
+Type	Default
+ComponentType	MessageReactionPicker | undefined
+MessageUserReactionsAvatar
+Component for rendering an avatar in the message user reactions in the message menu.
+
+Type	Default
+ComponentType	MessageUserReactionsAvatar | undefined
+MessageUserReactionsItem
+Component prop to customize the individual user reaction item in the MessageUserReactions component of MessageMenu. This includes the avatar, reaction type, and the name of the person who has reacted, etc.
+
+Type	Default
+ComponentType	MessageUserReactionsItem | undefined
+MessageUserReactions
+List of reactions component within the message menu.
+
+Type	Default
+ComponentType	MessageUserReactions | undefined
+MoreOptionsButton
+Component to render a button within enclosed MessageInput, which when pressed shows more options such as AttachButton, CommandsButton.
+
+Type	Default
+ComponentType	MoreOptionsButton
+NetworkDownIndicator
+Component to render an indicator at top of the channel, which shows up when there is some issue with network or connection.
+
+Type	Default
+ComponentType	NetworkDownIndicator
+ReactionListBottom
+Component to render list of reactions at the bottom of the message bubble.
+
+Type	Default
+ComponentType	ReactionListBottom
+ReactionListTop
+Component to render list of reactions at top of the message bubble.
+
+Type	Default
+ComponentType	ReactionListTop
+Reply
+Component to render preview of parent of message for quoted reply.
+
+Type	Default
+ComponentType	Reply
+ScrollToBottomButton
+Component to render a button which when pressed, scrolls the message list to bottom.
+
+Type	Default
+ComponentType	ScrollToBottomButton
+SendButton
+Component to render a send message button, within enclosed MessageInput component.
+
+Type	Default
+ComponentType	SendButton
+SendMessageDisallowedIndicator
+Component to render indicator stating send message feature is not allowed for current user.
+
+Type	Default
+ComponentType	SendMessageDisallowedIndicator
+ShowThreadMessageInChannelButton
+Component to render a checkbox within enclosed Thread component, which when checked sets a show_in_channel property to true on a message.
+
+Type	Default
+ComponentType	ShowThreadMessageInChannelButton
+StartAudioRecordingButton
+Custom UI component for audio recording mic button in MessageInput.
+
+Type	Default
+ComponentType	StartAudioRecordingButton
+TypingIndicator
+Component to render typing indicator within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicator
+TypingIndicatorContainer
+Component to render container in which typing indicator gets rendered within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicatorContainer
+UnreadMessagesNotification
+Component to render the floating unread indicator on the message list when the first unread message is not in the view.
+
+Type	Default
+ComponentType	UnreadMessagesNotification
+UrlPreview
+Component to render preview of URLs in MessageList.
+
+Type	Default
+ComponentType	Card
+CreatePollContent
+A custom UI component used to render the entire poll creation form. It has access to the CreatePollContext values by default through the useCreatePollContext hook.
+
+Type	Default
+ComponentType	CreatePollContent
+PollContent
+A Component prop used to render the content of the Poll component in MessageList.
+
+The component has full access to the entire Poll reactive state through the usePollState hook.
+
+Type	Default
+ComponentType	PollContent
+Props
+PollHeader
+A Component prop used to render the header of the PollContent component.
+
+Type	Default
+ComponentType	PollHeader
+PollButtons
+A Component prop used to render the buttons of the PollContent component.
+
+Type	Default
+ComponentType	PollButtons
+StreamingMessageView
+Custom UI component to display an AI generated message.
+
+Type	Default
+component	StreamingMessageView
+StopMessageStreamingButton
+Custom UI component to display the button to stop AI generation instead of the SendButton one in MessageInput.
+
+Type	Default
+component	StopMessageStreamingButton
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ChannelsContext
+Next
+ChannelContext
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+ScrollToBottomButton
+ScrollToBottomButton
+Component to render the floating button, which when pressed scrolls the MessageList to the most recent message.
+
+General Usage
+You can replace this default UI component using the ScrollToBottomButton prop on Channel component.
+
+
+<Channel ScrollToBottomButton={CustomScrollToBottomButton} />
+Props
+onPress
+onPress handler for the button.
+
+Type
+Function
+showNotification
+When false, button won’t be rendered.
+
+Type
+Boolean
+unreadCount
+Unread count on current channel.
+
+Type
+Number
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+MessageList
+Next
+TypingIndicator
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+TypingIndicator
+TypingIndicator
+TypingIndicator is a default UI component for rendering typing indicator within MessageList. This component doesn’t accept any props. useTypingString hook provides the exact text content for rendering within this component.
+
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+ScrollToBottomButton
+Next
+MessagesContext
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+MessagesContext
+MessagesContext
+Value
+additionalPressableProps
+Additional props provided to the underlying Pressable used by components within a message such as MessageContent.
+
+Type
+object
+channelId
+Id of current channel.
+
+Type
+string
+deletedMessagesVisibilityType
+Controls the visibility of the deleted messages within the channel.
+
+always: The deleted messages in the channel will be visible to both the sender and receiver.
+never: The deleted messages will not be visible to anyone.
+sender: The deleted messages in the channel will only be visible to sender.
+receiver: The deleted messages in the channel will only be visible to receiver.
+Type	Default
+enum(‘always’, ‘never’, ‘receiver’, ‘sender’)	‘both’
+disableTypingIndicator
+Disable typing indicator in MessageList.
+
+Type	Default
+boolean	false
+dismissKeyboardOnMessageTouch
+Dismiss the keyboard when a user touches any of the messages in the list.
+
+Type	Default
+boolean	false
+enableMessageGroupingByUser
+Note: This prop is available only in SDK version >= v3.9.0
+
+If false, consecutive messages from same user won’t be grouped together.
+
+Type	Default
+boolean	true
+enableSwipeToReply
+If true, the user can swipe to reply to a message.
+
+Type	Default
+Boolean	true
+forceAlignMessages
+Forces alignment of messages in the list to either the left or right side of the screen. By default, received messages are aligned on the left side of the screen, and sent messages are aligned on the right.
+
+Type	Default
+’left’ | ‘right’ | false	false
+formatDate
+Format function that returns a string to be used for the date in the message status and delete message component.
+
+Type
+function
+Parameter	Description
+date	date to format provided as a string, Date, or number (Unix Timestamp)
+handleBan
+Function called when the Ban User action is invoked from message actions list. This function does not override the default behavior of the Ban User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleCopy
+Function called when the Copy Message action is invoked from message actions list. This function does not override the default behavior of the Copy Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDelete
+Function called when the Delete Message action is invoked from message actions list. This function does not override the default behavior of the Delete Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDeleteForMe
+Function called when the Delete Message for me action is invoked from message actions list. This function does not override the default behavior of the Delete Message for me action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleEdit
+Function called when the Edit Message action is invoked from message actions list. This function does not override the default behavior of the Edit Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleFlag
+Function called when the Flag Message action is invoked from message actions list. This function does not override the default behavior of the Flag Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleMute
+Function called when the Mute User action is invoked from message actions list. This function does not override the default behavior of the Mute User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleQuotedReply
+Function called when the Reply action is invoked from message actions list. This function does not override the default behavior of the Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleReaction
+Function called when a reaction is selected in the message menu, this is called on both the add and remove action. This function does not override the default behavior of the reaction being selected. Please refer to the guide on customizing message actions for details.
+
+Type
+Function
+Parameter	Description
+message	Message the action is called on.
+reactionType	String designating the type of reaction.
+handleRetry
+Function called when the Retry action is invoked from message actions list. This function does not override the default behavior of the Retry action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleThreadReply
+Function called when the Thread Reply action is invoked from message actions list. This function does not override the default behavior of the Thread Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+initialScrollToFirstUnreadMessage
+Load messages in a channel at the first unread message.
+
+Type	Default
+boolean	false
+isAttachmentEqual
+Function which returns true if passing nextAttachment to render would return the same result as passing prevAttachment to render, otherwise return false.
+
+Type
+function
+Parameter	Description
+prevAttachment	previous message attachment to be compared
+nextAttachment	next message attachment to be compared
+legacyImageViewerSwipeBehaviour
+markdownRules
+Object specifying rules defined within simple-markdown.
+
+Type
+object
+messageActions
+An array of, or function that returns and array of, actions that can be performed on a message shown in the message menu. Please refer to the guide on customizing message actions for details.
+
+Type	Default
+Array | Function	messageActions
+Parameter	Description
+actionInfo	An object containing the original actions and relevant message data
+messageContentOrder
+Order in which to render the content of a message.
+
+Type	Default
+array	[‘quoted_reply’, ‘gallery’, ‘files’, ‘text’, ‘attachments’]
+myMessageTheme
+Theme applied to messages of the current user.
+
+Type
+object
+Please make sure to memoize or pass static reference for this object.
+
+messageSwipeToReplyHitSlop
+The hitSlop prop is used to define the area around the component where the user can interact with it.
+
+This is for the message swipe to reply feature.
+
+Type	Default
+Object{ top: number, left: number, bottom: number, right: number }	{left: screenWidth, right: screenWidth}
+messageTextNumberOfLines
+Number of lines for the message text in the Message Overlay.
+
+Type	Default
+number	5
+onLongPressMessage
+Function called when a user long presses a message. The default opens the message menu.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+onPressInMessage
+Function called immediately when a touch is engaged on a message, before onPressMessage.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+onPressMessage
+Function called when a user presses a message.
+
+The default handler for message press interactions acts differently when pressing on reactions and attachments. You will have to handle these cases when overriding this function.
+
+Type
+function
+Parameter	Description
+payload	{ additionalInfo, actionHandlers, message }
+The additionalInfo prop is handy for getting information from certain click events. A good example of this is getting the user details when a textMention (for example @Enigma-I-am) is clicked.
+
+For example:
+
+
+    <Channel
+      onPressMessage={({ additionalInfo, defaultHandler, emitter }) => {
+          if (emitter === 'textMention') {
+            console.log(additionalInfo?.user);
+            return;
+          }
+          if (emitter === 'card' || emitter === 'textLink') {
+            console.log(additionalInfo?.url);
+            return;
+          }
+          if (emitter === 'fileAttachment') {
+            console.log(additionalInfo?.attachment);
+            return;
+          }
+          defaultHandler?.();
+      }}
+    >
+The additionalInfo prop will change over time as we explore more use-cases for different emitter's.
+
+reactionListPosition
+The position of the reaction list in the message component. By default, the reaction list is positioned on top the message content.
+
+Type	Default value
+top | bottom	’top’
+removeMessage
+Function to remove message from local channel state. Please note that this function is only for updating the local state, it doesn’t call the API for deleting message (channel.deleteMessage).
+
+Type
+(message) => void
+Reply
+Component to render preview of parent of message for quoted reply.
+
+Type	Default
+ComponentType	Reply
+retrySendMessage
+Function to re-attempt sending failed message.
+
+Type
+(message) => void
+selectReaction
+Full override of the reaction function on a message. This function must return a function that takes as a parameter the reactionType as a string. Please refer to the guide on customizing message actions for details.
+
+Type
+function | null
+Parameter	Description
+message	message the action is called on
+setEditingState
+Enables editing state for given message.
+
+Type
+(message) => void
+setQuotedMessageState
+Enables quoted-reply state on given message.
+
+Type
+(message) => void
+shouldShowUnreadUnderlay
+Boolean to enable/disable the message underlay background when there are unread messages in the Message List.
+
+Type	Default
+boolean|undefined	true
+supportedReactions
+List of reactions which can be added on message. Please refer to the guide on customizing reactions for details.
+
+Type	Default
+Array	reactionData
+targetedMessage
+Has the message id of the message which is to be highlighted. By default the value is undefined. As soon as the highlight time is out this is set to undefined.
+
+Type
+string
+updateMessage
+Upserts a given message in local channel state. Please note that this function doesn’t call channel.sendMessage. Channel component uses this function for optimistic updates to message.
+
+Type
+(message) => void
+openPollCreationDialog
+Function called immediately when the poll creation button is clicked in the attachment picker. Can be used to override the default behaviour of the poll creation UI appearing as a Modal.
+
+If overridden, a payload is passed containing the sendMessage callback from MessageInputContext is passed, so that CreatePoll
+
+Type
+function
+Parameter	Description
+payload	{ sendMessage }
+hasCreatePoll
+A boolean value that is responsible for controlling whether the poll creation button is visible or not.
+
+Type
+boolean
+Attachment
+Component for rendering attachments in MessageList.
+
+Available props:
+
+attachment {object}
+Type	Default
+ComponentType	Attachment
+AttachmentActions
+Component to render additional actions on attachment. for example send, shuffle, cancel in case of Giphy.
+
+Type	Default
+ComponentType	AttachmentActions
+AudioAttachment
+Component for rendering the Audio Attachment
+
+Type	Default
+ComponentType	AudioAttachment
+Card
+Component to render any custom type of attachment. Please check the guides for Custom Attachment
+
+Type	Default
+ComponentType	Card
+CardCover
+Component to render main body for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardFooter
+Component to render footer for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardHeader
+Component to render header for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+DateHeader
+Component to render sticky date header within enclosed MessageList component.
+
+Type	Default
+ComponentType	DateHeader
+FileAttachment
+Component to render ‘file’ type attachment in MessageList.
+
+Type	Default
+ComponentType	FileAttachment
+FileAttachmentGroup
+Component to render group of file type attachments, when there are multiple file type attachments in message.
+
+Type	Default
+ComponentType	FileAttachmentGroup
+FileAttachmentIcon
+Component to render file icon for file type attachment.
+
+Type	Default
+ComponentType	FileIcon
+FlatList
+FlatList component for underlying MessageList component.
+
+Type	Default
+ComponentType	flat-list-mvcp
+Gallery
+Component to render ‘image’ type attachments in the MessageList.
+
+Type	Default
+ComponentType	Gallery
+Giphy
+Component to render Giphy type attachments in MessageList.
+
+Type	Default
+ComponentType	Giphy
+giphyVersion
+The Giphy version to render - check the keys of the Image Object for possible values.
+
+Type	Default
+string	’fixed_height’
+InlineDateSeparator
+Component to render inline date separators between messages which were created at a difference of more than a day.
+
+Type	Default
+ComponentType	InlineDateSeparator
+InlineUnreadIndicator
+Component to render inline separator in MessageList, to indicate the position of last read message in list.
+
+Type	Default
+ComponentType	InlineUnreadIndicator
+MessageActionList
+Component for rendering a message action list within the message menu.
+
+Type	Default
+ComponentType	MessageActionList | undefined
+MessageActionListItem
+Component for rendering message action list items within a message action list.
+
+Type	Default
+ComponentType	MessageActionListItem | undefined
+MessageAvatar
+Component to render avatar of sender for message, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageAvatar
+MessageBounce
+Component to render bounce action handler on click or long press of a Bounced message, within MessageList.
+
+Type	Default
+ComponentType	MessageBounce
+MessageContent
+Component to render content of message including status, attachments, reactions etc., within MessageList.
+
+Type	Default
+ComponentType	MessageContent
+MessageDeleted
+Component to render deleted message.
+
+Type	Default
+ComponentType	MessageDeleted
+MessageEditedTimestamp
+Component to render message edited label in message when the message is clicked, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageEditedTimestamp
+MessageError
+Component to customize the message error component.
+
+Type	Default
+ComponentType	MessageError
+MessageFooter
+Component to render footer for message, within MessageList.
+
+Type	Default
+ComponentType	MessageFooter
+MessageHeader
+Component to render header for message, within MessageList.
+
+Type
+ComponentType
+MessageMenu
+Component to customize the message contextual menu which allows users to perform actions on a message and react to messages.
+
+Type	Default
+ComponentType	MessageMenu | undefined
+MessageReplies
+Component to show number of thread replies and avatars of members who replied on message
+
+Type	Default
+ComponentType	MessageReplies
+MessageRepliesAvatars
+Component to show avatars of members who thread replied on message.
+
+Type	Default
+ComponentType	MessageRepliesAvatars
+MessageSimple
+Component to render a message within MessageList.
+
+Please check guides section for Customizing Message UI for details.
+
+Type	Default
+ComponentType	MessageSimple
+MessageStatus
+Component to render status of message, which includes time and read-receipts.
+
+Type	Default
+ComponentType	MessageStatus
+MessageSwipeContent
+Component that renders when the user swipes on a message.
+
+Type	Default
+ComponentType	MessageSwipeContent | undefined
+MessageSystem
+Component to render system type messages. Purpose of system messages is to inform user about changes to channel. System messages are part of message history, and have a property type set as system. You can add system messages within message history in following scenarios:
+
+A user gets added to or removed from channel
+A user accepts invite to join a channel
+Channel is updated
+Type	Default
+ComponentType	MessageSystem
+MessageText
+Component to render text of message. By default, we use Simple Markdown package to render the text content of message. If you decide to use this prop, please be aware that you will need to handle the markdown rendering yourself.
+
+Type	Default
+ComponentType	renderText
+MessageReactionPicker
+Reaction selector component displayed within the message menu when user long presses a message.
+
+Type	Default
+ComponentType	MessageReactionPicker | undefined
+MessageUserReactionsAvatar
+Component for rendering an avatar in the message user reactions in the message menu.
+
+Type	Default
+ComponentType	MessageUserReactionsAvatar | undefined
+MessageUserReactionsItem
+Component prop to customize the individual user reaction item in the MessageUserReactions component of MessageMenu. This includes the avatar, reaction type, and the name of the person who has reacted, etc.
+
+Type	Default
+ComponentType	MessageUserReactionsItem | undefined
+MessageUserReactions
+List of reactions component within the message menu.
+
+Type	Default
+ComponentType	MessageUserReactions | undefined
+MessageUserReactionsAvatar
+Component for rendering an avatar in the message user reactions in the message menu.
+
+Type	Default
+ComponentType	MessageUserReactionsAvatar | undefined
+MessageUserReactionsItem
+Component prop to customize the individual user reaction item in the MessageUserReactions component of MessageMenu. This includes the avatar, reaction type, and the name of the person who has reacted, etc.
+
+Type	Default
+ComponentType	MessageUserReactionsItem | undefined
+MessageUserReactions
+List of reactions component within the message menu.
+
+Type	Default
+ComponentType	MessageUserReactions | undefined
+ReactionListBottom
+Component to render list of reactions at the bottom of the message bubble.
+
+Type	Default
+ComponentType	ReactionListBottom
+ReactionListTop
+Component to render list of reactions at top of the message bubble.
+
+Type	Default
+ComponentType	ReactionListTop
+ScrollToBottomButton
+Component to render a button which when pressed, scrolls the message list to bottom.
+
+Type	Default
+ComponentType	ScrollToBottomButton
+TypingIndicator
+Component to render typing indicator within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicator
+TypingIndicatorContainer
+Component to render container in which typing indicator gets rendered within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicatorContainer
+UrlPreview
+Component to render preview of URLs in MessageList.
+
+Type	Default
+ComponentType	Card
+VideoThumbnail
+Component to render the video thumbnail for video attachments in MessageList.
+
+Type	Default
+ComponentType	VideoThumbnail
+PollContent
+A Component prop used to render the content of the Poll component in MessageList.
+
+The component has full access to the entire Poll reactive state through the usePollState hook.
+
+Type	Default
+ComponentType	PollContent
+Props
+PollHeader
+A Component prop used to render the header of the PollContent component.
+
+Type	Default
+ComponentType	PollHeader
+PollButtons
+A Component prop used to render the buttons of the PollContent component.
+
+Type	Default
+ComponentType	PollButtons
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+TypingIndicator
+Next
+MessageInput
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+MessagesContext
+MessagesContext
+Value
+additionalPressableProps
+Additional props provided to the underlying Pressable used by components within a message such as MessageContent.
+
+Type
+object
+channelId
+Id of current channel.
+
+Type
+string
+deletedMessagesVisibilityType
+Controls the visibility of the deleted messages within the channel.
+
+always: The deleted messages in the channel will be visible to both the sender and receiver.
+never: The deleted messages will not be visible to anyone.
+sender: The deleted messages in the channel will only be visible to sender.
+receiver: The deleted messages in the channel will only be visible to receiver.
+Type	Default
+enum(‘always’, ‘never’, ‘receiver’, ‘sender’)	‘both’
+disableTypingIndicator
+Disable typing indicator in MessageList.
+
+Type	Default
+boolean	false
+dismissKeyboardOnMessageTouch
+Dismiss the keyboard when a user touches any of the messages in the list.
+
+Type	Default
+boolean	false
+enableMessageGroupingByUser
+Note: This prop is available only in SDK version >= v3.9.0
+
+If false, consecutive messages from same user won’t be grouped together.
+
+Type	Default
+boolean	true
+enableSwipeToReply
+If true, the user can swipe to reply to a message.
+
+Type	Default
+Boolean	true
+forceAlignMessages
+Forces alignment of messages in the list to either the left or right side of the screen. By default, received messages are aligned on the left side of the screen, and sent messages are aligned on the right.
+
+Type	Default
+’left’ | ‘right’ | false	false
+formatDate
+Format function that returns a string to be used for the date in the message status and delete message component.
+
+Type
+function
+Parameter	Description
+date	date to format provided as a string, Date, or number (Unix Timestamp)
+handleBan
+Function called when the Ban User action is invoked from message actions list. This function does not override the default behavior of the Ban User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleCopy
+Function called when the Copy Message action is invoked from message actions list. This function does not override the default behavior of the Copy Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDelete
+Function called when the Delete Message action is invoked from message actions list. This function does not override the default behavior of the Delete Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleDeleteForMe
+Function called when the Delete Message for me action is invoked from message actions list. This function does not override the default behavior of the Delete Message for me action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleEdit
+Function called when the Edit Message action is invoked from message actions list. This function does not override the default behavior of the Edit Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleFlag
+Function called when the Flag Message action is invoked from message actions list. This function does not override the default behavior of the Flag Message action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleMute
+Function called when the Mute User action is invoked from message actions list. This function does not override the default behavior of the Mute User action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleQuotedReply
+Function called when the Reply action is invoked from message actions list. This function does not override the default behavior of the Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleReaction
+Function called when a reaction is selected in the message menu, this is called on both the add and remove action. This function does not override the default behavior of the reaction being selected. Please refer to the guide on customizing message actions for details.
+
+Type
+Function
+Parameter	Description
+message	Message the action is called on.
+reactionType	String designating the type of reaction.
+handleRetry
+Function called when the Retry action is invoked from message actions list. This function does not override the default behavior of the Retry action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+handleThreadReply
+Function called when the Thread Reply action is invoked from message actions list. This function does not override the default behavior of the Thread Reply action. Please refer to the guide on customizing message actions for details.
+
+Type
+function
+Parameter	Description
+message	message the action is called on
+initialScrollToFirstUnreadMessage
+Load messages in a channel at the first unread message.
+
+Type	Default
+boolean	false
+isAttachmentEqual
+Function which returns true if passing nextAttachment to render would return the same result as passing prevAttachment to render, otherwise return false.
+
+Type
+function
+Parameter	Description
+prevAttachment	previous message attachment to be compared
+nextAttachment	next message attachment to be compared
+legacyImageViewerSwipeBehaviour
+markdownRules
+Object specifying rules defined within simple-markdown.
+
+Type
+object
+messageActions
+An array of, or function that returns and array of, actions that can be performed on a message shown in the message menu. Please refer to the guide on customizing message actions for details.
+
+Type	Default
+Array | Function	messageActions
+Parameter	Description
+actionInfo	An object containing the original actions and relevant message data
+messageContentOrder
+Order in which to render the content of a message.
+
+Type	Default
+array	[‘quoted_reply’, ‘gallery’, ‘files’, ‘text’, ‘attachments’]
+myMessageTheme
+Theme applied to messages of the current user.
+
+Type
+object
+Please make sure to memoize or pass static reference for this object.
+
+messageSwipeToReplyHitSlop
+The hitSlop prop is used to define the area around the component where the user can interact with it.
+
+This is for the message swipe to reply feature.
+
+Type	Default
+Object{ top: number, left: number, bottom: number, right: number }	{left: screenWidth, right: screenWidth}
+messageTextNumberOfLines
+Number of lines for the message text in the Message Overlay.
+
+Type	Default
+number	5
+onLongPressMessage
+Function called when a user long presses a message. The default opens the message menu.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+onPressInMessage
+Function called immediately when a touch is engaged on a message, before onPressMessage.
+
+Type
+function
+Parameter	Description
+payload	{ actionHandlers, message }
+onPressMessage
+Function called when a user presses a message.
+
+The default handler for message press interactions acts differently when pressing on reactions and attachments. You will have to handle these cases when overriding this function.
+
+Type
+function
+Parameter	Description
+payload	{ additionalInfo, actionHandlers, message }
+The additionalInfo prop is handy for getting information from certain click events. A good example of this is getting the user details when a textMention (for example @Enigma-I-am) is clicked.
+
+For example:
+
+
+    <Channel
+      onPressMessage={({ additionalInfo, defaultHandler, emitter }) => {
+          if (emitter === 'textMention') {
+            console.log(additionalInfo?.user);
+            return;
+          }
+          if (emitter === 'card' || emitter === 'textLink') {
+            console.log(additionalInfo?.url);
+            return;
+          }
+          if (emitter === 'fileAttachment') {
+            console.log(additionalInfo?.attachment);
+            return;
+          }
+          defaultHandler?.();
+      }}
+    >
+The additionalInfo prop will change over time as we explore more use-cases for different emitter's.
+
+reactionListPosition
+The position of the reaction list in the message component. By default, the reaction list is positioned on top the message content.
+
+Type	Default value
+top | bottom	’top’
+removeMessage
+Function to remove message from local channel state. Please note that this function is only for updating the local state, it doesn’t call the API for deleting message (channel.deleteMessage).
+
+Type
+(message) => void
+Reply
+Component to render preview of parent of message for quoted reply.
+
+Type	Default
+ComponentType	Reply
+retrySendMessage
+Function to re-attempt sending failed message.
+
+Type
+(message) => void
+selectReaction
+Full override of the reaction function on a message. This function must return a function that takes as a parameter the reactionType as a string. Please refer to the guide on customizing message actions for details.
+
+Type
+function | null
+Parameter	Description
+message	message the action is called on
+setEditingState
+Enables editing state for given message.
+
+Type
+(message) => void
+setQuotedMessageState
+Enables quoted-reply state on given message.
+
+Type
+(message) => void
+shouldShowUnreadUnderlay
+Boolean to enable/disable the message underlay background when there are unread messages in the Message List.
+
+Type	Default
+boolean|undefined	true
+supportedReactions
+List of reactions which can be added on message. Please refer to the guide on customizing reactions for details.
+
+Type	Default
+Array	reactionData
+targetedMessage
+Has the message id of the message which is to be highlighted. By default the value is undefined. As soon as the highlight time is out this is set to undefined.
+
+Type
+string
+updateMessage
+Upserts a given message in local channel state. Please note that this function doesn’t call channel.sendMessage. Channel component uses this function for optimistic updates to message.
+
+Type
+(message) => void
+openPollCreationDialog
+Function called immediately when the poll creation button is clicked in the attachment picker. Can be used to override the default behaviour of the poll creation UI appearing as a Modal.
+
+If overridden, a payload is passed containing the sendMessage callback from MessageInputContext is passed, so that CreatePoll
+
+Type
+function
+Parameter	Description
+payload	{ sendMessage }
+hasCreatePoll
+A boolean value that is responsible for controlling whether the poll creation button is visible or not.
+
+Type
+boolean
+Attachment
+Component for rendering attachments in MessageList.
+
+Available props:
+
+attachment {object}
+Type	Default
+ComponentType	Attachment
+AttachmentActions
+Component to render additional actions on attachment. for example send, shuffle, cancel in case of Giphy.
+
+Type	Default
+ComponentType	AttachmentActions
+AudioAttachment
+Component for rendering the Audio Attachment
+
+Type	Default
+ComponentType	AudioAttachment
+Card
+Component to render any custom type of attachment. Please check the guides for Custom Attachment
+
+Type	Default
+ComponentType	Card
+CardCover
+Component to render main body for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardFooter
+Component to render footer for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+CardHeader
+Component to render header for Card component which renders custom type of attachment. Please check the guides for Custom Attachment.
+
+Type
+ComponentType
+DateHeader
+Component to render sticky date header within enclosed MessageList component.
+
+Type	Default
+ComponentType	DateHeader
+FileAttachment
+Component to render ‘file’ type attachment in MessageList.
+
+Type	Default
+ComponentType	FileAttachment
+FileAttachmentGroup
+Component to render group of file type attachments, when there are multiple file type attachments in message.
+
+Type	Default
+ComponentType	FileAttachmentGroup
+FileAttachmentIcon
+Component to render file icon for file type attachment.
+
+Type	Default
+ComponentType	FileIcon
+FlatList
+FlatList component for underlying MessageList component.
+
+Type	Default
+ComponentType	flat-list-mvcp
+Gallery
+Component to render ‘image’ type attachments in the MessageList.
+
+Type	Default
+ComponentType	Gallery
+Giphy
+Component to render Giphy type attachments in MessageList.
+
+Type	Default
+ComponentType	Giphy
+giphyVersion
+The Giphy version to render - check the keys of the Image Object for possible values.
+
+Type	Default
+string	’fixed_height’
+InlineDateSeparator
+Component to render inline date separators between messages which were created at a difference of more than a day.
+
+Type	Default
+ComponentType	InlineDateSeparator
+InlineUnreadIndicator
+Component to render inline separator in MessageList, to indicate the position of last read message in list.
+
+Type	Default
+ComponentType	InlineUnreadIndicator
+MessageActionList
+Component for rendering a message action list within the message menu.
+
+Type	Default
+ComponentType	MessageActionList | undefined
+MessageActionListItem
+Component for rendering message action list items within a message action list.
+
+Type	Default
+ComponentType	MessageActionListItem | undefined
+MessageAvatar
+Component to render avatar of sender for message, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageAvatar
+MessageBounce
+Component to render bounce action handler on click or long press of a Bounced message, within MessageList.
+
+Type	Default
+ComponentType	MessageBounce
+MessageContent
+Component to render content of message including status, attachments, reactions etc., within MessageList.
+
+Type	Default
+ComponentType	MessageContent
+MessageDeleted
+Component to render deleted message.
+
+Type	Default
+ComponentType	MessageDeleted
+MessageEditedTimestamp
+Component to render message edited label in message when the message is clicked, within MessageList. This component is only rendered for messages from other users.
+
+Type	Default
+ComponentType	MessageEditedTimestamp
+MessageError
+Component to customize the message error component.
+
+Type	Default
+ComponentType	MessageError
+MessageFooter
+Component to render footer for message, within MessageList.
+
+Type	Default
+ComponentType	MessageFooter
+MessageHeader
+Component to render header for message, within MessageList.
+
+Type
+ComponentType
+MessageMenu
+Component to customize the message contextual menu which allows users to perform actions on a message and react to messages.
+
+Type	Default
+ComponentType	MessageMenu | undefined
+MessageReplies
+Component to show number of thread replies and avatars of members who replied on message
+
+Type	Default
+ComponentType	MessageReplies
+MessageRepliesAvatars
+Component to show avatars of members who thread replied on message.
+
+Type	Default
+ComponentType	MessageRepliesAvatars
+MessageSimple
+Component to render a message within MessageList.
+
+Please check guides section for Customizing Message UI for details.
+
+Type	Default
+ComponentType	MessageSimple
+MessageStatus
+Component to render status of message, which includes time and read-receipts.
+
+Type	Default
+ComponentType	MessageStatus
+MessageSwipeContent
+Component that renders when the user swipes on a message.
+
+Type	Default
+ComponentType	MessageSwipeContent | undefined
+MessageSystem
+Component to render system type messages. Purpose of system messages is to inform user about changes to channel. System messages are part of message history, and have a property type set as system. You can add system messages within message history in following scenarios:
+
+A user gets added to or removed from channel
+A user accepts invite to join a channel
+Channel is updated
+Type	Default
+ComponentType	MessageSystem
+MessageText
+Component to render text of message. By default, we use Simple Markdown package to render the text content of message. If you decide to use this prop, please be aware that you will need to handle the markdown rendering yourself.
+
+Type	Default
+ComponentType	renderText
+MessageReactionPicker
+Reaction selector component displayed within the message menu when user long presses a message.
+
+Type	Default
+ComponentType	MessageReactionPicker | undefined
+MessageUserReactionsAvatar
+Component for rendering an avatar in the message user reactions in the message menu.
+
+Type	Default
+ComponentType	MessageUserReactionsAvatar | undefined
+MessageUserReactionsItem
+Component prop to customize the individual user reaction item in the MessageUserReactions component of MessageMenu. This includes the avatar, reaction type, and the name of the person who has reacted, etc.
+
+Type	Default
+ComponentType	MessageUserReactionsItem | undefined
+MessageUserReactions
+List of reactions component within the message menu.
+
+Type	Default
+ComponentType	MessageUserReactions | undefined
+MessageUserReactionsAvatar
+Component for rendering an avatar in the message user reactions in the message menu.
+
+Type	Default
+ComponentType	MessageUserReactionsAvatar | undefined
+MessageUserReactionsItem
+Component prop to customize the individual user reaction item in the MessageUserReactions component of MessageMenu. This includes the avatar, reaction type, and the name of the person who has reacted, etc.
+
+Type	Default
+ComponentType	MessageUserReactionsItem | undefined
+MessageUserReactions
+List of reactions component within the message menu.
+
+Type	Default
+ComponentType	MessageUserReactions | undefined
+ReactionListBottom
+Component to render list of reactions at the bottom of the message bubble.
+
+Type	Default
+ComponentType	ReactionListBottom
+ReactionListTop
+Component to render list of reactions at top of the message bubble.
+
+Type	Default
+ComponentType	ReactionListTop
+ScrollToBottomButton
+Component to render a button which when pressed, scrolls the message list to bottom.
+
+Type	Default
+ComponentType	ScrollToBottomButton
+TypingIndicator
+Component to render typing indicator within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicator
+TypingIndicatorContainer
+Component to render container in which typing indicator gets rendered within enclosed MessageList component.
+
+Type	Default
+ComponentType	TypingIndicatorContainer
+UrlPreview
+Component to render preview of URLs in MessageList.
+
+Type	Default
+ComponentType	Card
+VideoThumbnail
+Component to render the video thumbnail for video attachments in MessageList.
+
+Type	Default
+ComponentType	VideoThumbnail
+PollContent
+A Component prop used to render the content of the Poll component in MessageList.
+
+The component has full access to the entire Poll reactive state through the usePollState hook.
+
+Type	Default
+ComponentType	PollContent
+Props
+PollHeader
+A Component prop used to render the header of the PollContent component.
+
+Type	Default
+ComponentType	PollHeader
+PollButtons
+A Component prop used to render the buttons of the PollContent component.
+
+Type	Default
+ComponentType	PollButtons
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+TypingIndicator
+Next
+MessageInput
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+MessageInput
+MessageInput
+MessageInput component provides all the UI and necessary functionality (e.g, attachment picker, commands, mentions autocomplete etc.) for composing a message. This component must be used as child of Channel component.
+
+General Usage
+
+import { StreamChat } from "stream-chat";
+import {
+  Chat,
+  Channel,
+  MessageList,
+  MessageInput,
+  OverlayProvider,
+} from "stream-chat-react-native";
+const client = StreamChat.getInstance("api_key");
+export const App = () => (
+  <OverlayProvider>
+    <Chat client={client}>
+      <Channel channel={channel}>
+        <MessageList />
+        <MessageInput />
+      </Channel>
+    </Chat>
+  </OverlayProvider>
+);
+TypeScript
+File type
+The File type is now exported from the stream-chat-react-native package and extends the FileReference type from the stream-chat package. It looks like this:
+
+
+import { FileReference } from "stream-chat";
+export type File = FileReference;
+Props
+All the configuration for MessageInput can be done on Channel component. Additionally please take a look at our Guide Section on how to customize MessageInput UI
+
+attachmentPickerBottomSheetHeight
+Height of the image picker bottom sheet when opened.
+
+Type	Default
+Number	40% of Window Height
+attachmentSelectionBarHeight
+Height of the attachment selection bar displayed on the attachment picker.
+
+Type	Default
+Number	52
+bottomInset
+The inset determines the underlying shift to the MessageList when it is opened. This prop should be used in cases when bottomInset from AttachmentPickerContext needs to be overwritten.
+
+Type
+Number | undefined
+additionalTextInputProps
+Additional props provided to the underlying TextInput within MessageInput.
+
+Type
+object
+asyncMessagesLockDistance
+Controls how many pixels to the top side the user has to scroll in order to lock the recording view and allow the user to lift their finger from the screen without stopping the recording.
+
+Type	Default
+Number	50
+asyncMessagesMinimumPressDuration
+Controls the minimum duration(in milliseconds) that the user has to press on the record button in the composer, in order to start recording a new voice message.
+
+Type	Default
+Number	500
+AsyncMessagesMultiSendEnabled
+When it’s enabled, recorded messages won’t be sent immediately. Instead they will “stack up” in the composer allowing the user to send multiple voice recording as part of the same message.
+
+Type	Default
+Boolean	true
+asyncMessagesSlideToCancelDistance
+Controls how many pixels to the leading side the user has to scroll in order to cancel the recording of a voice message.
+
+Type	Default
+Number	100
+audioRecordingEnabled
+Controls whether the feature is enabled.
+
+Type	Default
+Boolean	false
+channel
+Channel instance from the StreamChat client.
+
+Type
+Channel
+closeAttachmentPicker
+Dismiss the attachment picker, if its already open.
+
+Type
+Function
+closePollCreationDialog
+Function called whenever the close button is pressed on the poll creation modal. Has no effect if PollCreateContent is custom.
+
+Type
+function
+cooldownEndsAt
+The time at which the active cool-down will end.
+
+Type
+Date
+editing
+inputBoxRef
+Ref for TextInput component within MessageInput
+
+Type
+React ref
+isOnline
+The value is true, when current user is connected to chat.
+
+Type
+boolean
+members
+Members of current channel. This value is received from backend when you query a channel, either using client.queryChannels() or channel.watch() API call.
+
+client.queryChannels() or channel.watch() returns only up to 100 members of channel. So if you expect total number of members to be > 100, its better to use client.queryMembers() API endpoint separately to get the list of members.
+
+
+Record<
+  string, // userId
+  {
+    banned?: boolean;
+    created_at?: string;
+    invite_accepted_at?: string;
+    invite_rejected_at?: string;
+    invited?: boolean;
+    is_moderator?: boolean;
+    role?: string;
+    shadow_banned?: boolean;
+    updated_at?: string;
+    user?: UserResponse<UserType>;
+    user_id?: string;
+  }
+>;
+Type
+object
+selectedPicker
+Value is images (string), when image attachment picker is open else undefined.
+
+Type
+’images’ | undefined
+sendMessage
+Sends a composed message within MessageInput component to channel. This function is attached to onPress handler of SendButton. The message optimistically gets added to message list UI first, before actually making API call to server. During this intermediate stage, MessageStatus component will display an indicator for “pending” state.
+
+Type
+Function
+The function takes an object as a parameter with the following properties:
+
+Parameter	Description
+localMessage	Contains the message data that will be shown in the UI immediately
+message	Contains the data that will be sent to the backend
+options	Contains options for sending/updating the message
+showPollCreationDialog
+A boolean signifying whether the poll creation dialog is shown or not. Will always be false if PollCreateContent is custom.
+
+Type
+boolean
+threadList
+Tells the Channel component if it is rendering a thread. We use this flag to avoid concurrency problems between a regular channel and a channel containing a thread.
+
+Type
+boolean
+watchers
+Watchers of current channel. This value is received from backend when you query a channel, either using client.queryChannels() or channel.watch() API call.
+
+client.queryChannels() or channel.watch() returns only up to 100 watchers for channel. So if you expect total number of watchers to be > 100, you should request them explicitly using Channel Pagination
+
+
+Record<
+  string, // string
+  UserResponse<UserType>
+>;
+Type
+object
+UI Component Props
+AttachmentUploadPreviewList
+Component to render preview of attached files and images, within the MessageInput component.
+
+Type	Default
+ComponentType	AttachmentUploadPreviewList
+AttachmentPickerSelectionBar
+Component to render and customize the attachment picker selection bar that displays the image, file and camera icons._createMdxContent
+
+Type	Default
+ComponentType	undefined | AttachmentPickerSelectionBar
+AudioRecorder
+Custom UI component to render audio recorder controls in MessageInput.
+
+Type	Default
+ComponentType	AudioRecorder
+AudioRecordingInProgress
+Custom UI component to render audio recording in progress in MessageInput. It renders the waveform, duration etc, for the recording.
+
+Type	Default
+ComponentType	AudioRecordingInProgress
+AudioRecordingLockIndicator
+Custom UI component to render audio recording lock indicator in MessageInput that can be dragged up to lock the recording start.
+
+Type	Default
+ComponentType	AudioRecordingLockIndicator
+AudioRecordingPreview
+Custom UI component to render audio recording preview in MessageInput that allows playing the recording.
+
+Type	Default
+ComponentType	AudioRecordingPreview
+AudioRecordingWaveform
+Custom UI component to render audio recording waveform in MessageInput.
+
+Type	Default
+ComponentType	AudioRecordingWaveform
+AutoCompleteSuggestionList
+Component to render the autocomplete suggestion list.
+
+Type	Default
+ComponentType	AutoCompleteSuggestionList
+CommandInput
+Component to render the message input in an active command state.
+
+Type	Default
+ComponentType	CommandInput
+CooldownTimer
+The cooldown timer is a component that displays a countdown timer for message sending cooldowns in the MessageInput. It helps to inform users about the remaining time before they can send another message.
+
+Type	Default
+ComponentType	CooldownTimer
+CreatePollContent
+A custom UI component used to render the entire poll creation form. It has access to the CreatePollContext values by default through the useCreatePollContext hook.
+
+Type	Default
+ComponentType	CreatePollContent
+Input
+Component to render UI part of enclosed MessageInput component. Please read section in guides about Customizing Message Input.
+
+Type
+ComponentType
+InputButtons
+Component to render action buttons (CommandsButton and AttachButton) on left side of input box, within enclosed MessageInput component.
+
+Type	Default
+ComponentType	InputButtons
+InputEditingStateHeader
+Component to render the header when a message is been edited on the message input.
+
+Type	Default
+ComponentType	InputEditingStateHeader
+InputReplyStateHeader
+Component to render the header on the message input when a message is been replied to.
+
+Type	Default
+ComponentType	InputReplyStateHeader
+Reply
+Component to render preview of parent of message for quoted reply.
+
+Type	Default
+ComponentType	Reply
+SendButton
+Component to render a send message button, within enclosed MessageInput component.
+
+Type	Default
+ComponentType	SendButton
+ShowThreadMessageInChannelButton
+Component to render a checkbox within enclosed Thread component, which when checked sets a show_in_channel property to true on a message.
+
+Type	Default
+ComponentType	ShowThreadMessageInChannelButton
+StartAudioRecordingButton
+Custom UI component for audio recording mic button in MessageInput.
+
+Type	Default
+ComponentType	StartAudioRecordingButton
+StopMessageStreamingButton
+Custom UI component to display the button to stop AI generation instead of the SendButton one in MessageInput.
+
+Type	Default
+component	StopMessageStreamingButton
+TextInputComponent
+The component prop to override the default TextInput component used in the message input’s AutoCompleteInput.
+
+Type	Default
+ComponentType	Default React Native’s TextInput
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+MessagesContext
+Next
+AttachButton
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+InputButtons
+InputButtons
+Component to render the AttachButton and the CommandsButton on the left side of the input box within MessageInput.
+
+This is the default component provided to the prop InputButtons on the Channel component.
+
+Props
+hasCommands
+Enable commands on the MessageInput component.
+
+Type	Default
+boolean	true
+hasCameraPicker
+Enable the camera picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasFilePicker
+Enable the file picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasImagePicker
+Enable the image picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+selectedPicker
+Value is images (string), when image attachment picker is open else undefined.
+
+Type
+’images’ | undefined
+toggleAttachmentPicker
+Function to toggle attachment picker. By default, this function is attached to onPress handler for AttachButton.
+
+Type
+Function
+uploadFile
+Boolean to determine if the file upload capability is present in the channel.
+
+Type
+Boolean
+UI Component Props
+AttachButton
+Component to render the attach button next to input box.
+
+Type	Default
+ComponentType	AttachButton
+CommandsButton
+Component to render button next to input box, which when pressed opens commands list.
+
+Type	Default
+ComponentType	CommandsButton
+MoreOptionsButton
+Component to render a button within enclosed MessageInput, which when pressed shows more options such as AttachButton, CommandsButton.
+
+Type	Default
+ComponentType	MoreOptionsButton
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+CommandsButton
+Next
+InputEditingStateHeader
+© Getstream.io, Inc. All Rights Reserved.
+Chat Messaging
+/
+Docs
+/
+React Native
+/
+InputButtons
+InputButtons
+Component to render the AttachButton and the CommandsButton on the left side of the input box within MessageInput.
+
+This is the default component provided to the prop InputButtons on the Channel component.
+
+Props
+hasCommands
+Enable commands on the MessageInput component.
+
+Type	Default
+boolean	true
+hasCameraPicker
+Enable the camera picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasFilePicker
+Enable the file picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+hasImagePicker
+Enable the image picker on the MessageInput component.
+
+Type	Default
+Boolean	true
+selectedPicker
+Value is images (string), when image attachment picker is open else undefined.
+
+Type
+’images’ | undefined
+toggleAttachmentPicker
+Function to toggle attachment picker. By default, this function is attached to onPress handler for AttachButton.
+
+Type
+Function
+uploadFile
+Boolean to determine if the file upload capability is present in the channel.
+
+Type
+Boolean
+UI Component Props
+AttachButton
+Component to render the attach button next to input box.
+
+Type	Default
+ComponentType	AttachButton
+CommandsButton
+Component to render button next to input box, which when pressed opens commands list.
+
+Type	Default
+ComponentType	CommandsButton
+MoreOptionsButton
+Component to render a button within enclosed MessageInput, which when pressed shows more options such as AttachButton, CommandsButton.
+
+Type	Default
+ComponentType	MoreOptionsButton
+Did you find this page helpful?
+It was helpful
+It was not helpful
+I have feedback
+Previous
+CommandsButton
+Next
+InputEditingStateHeader
+© Getstream.io, Inc. All Rights Reserved.

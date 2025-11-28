@@ -50,14 +50,15 @@ export default function ChatScreen() {
     primaryLight: "#818CF8",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
     online: "#10B981",
-    myMessageBg: "#6366F1",
-    otherMessageBg: isDarkColorScheme ? "#1A1F2E" : "#F1F5F9",
   };
 
   useEffect(() => {
+    let isMounted = true;
+    let watchedChannel: StreamChannel | null = null;
+    
     const fetchChannel = async () => {
       if (!chatClient || !isChatConnected || !user || !channelId) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       try {
@@ -85,15 +86,26 @@ export default function ChatScreen() {
           members,
         });
         await channelObj.watch();
-        setChannel(channelObj);
+        watchedChannel = channelObj;
+        if (isMounted) setChannel(channelObj);
       } catch (error) {
         console.error("Error fetching channel:", error);
-        Alert.alert("Error", "Failed to load chat channel.");
+        if (isMounted) Alert.alert("Error", "Failed to load chat channel.");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchChannel();
+    
+    // Cleanup: stop watching channel on unmount to prevent memory leaks
+    return () => {
+      isMounted = false;
+      if (watchedChannel) {
+        watchedChannel.stopWatching().catch((err) => 
+          console.log("Error stopping channel watch:", err)
+        );
+      }
+    };
   }, [chatClient, isChatConnected, user, channelId]);
 
   // Handle back navigation - go back to chat list
@@ -241,6 +253,8 @@ export default function ChatScreen() {
       }}>
         <Pressable
           onPress={handleBack}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
           style={({ pressed }) => ({
             width: 38,
             height: 38,
@@ -338,6 +352,9 @@ export default function ChatScreen() {
             }
           }}
           disabled={isCreatingCall}
+          accessibilityLabel="Start a call"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isCreatingCall }}
           style={({ pressed }) => ({
             width: 38,
             height: 38,
@@ -356,10 +373,11 @@ export default function ChatScreen() {
         <View style={{ flex: 1 }}>
           <Channel
             channel={channel}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 60}
+            enforceUniqueReaction={true}
           >
             <MessageList />
-            <MessageInput additionalTextInputContainerProps={{ style: { marginBottom: insets.bottom + 49 } }} />
+            <MessageInput />
           </Channel>
         </View>
       </SafeAreaView>
