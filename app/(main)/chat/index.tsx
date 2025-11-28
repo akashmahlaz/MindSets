@@ -70,6 +70,11 @@ export default function ChannelListScreen() {
     limit: 30,
   };
 
+  const handleChannelSelect = (channel: any) => {
+    // Navigate within the (main) tab group to keep tabs visible during transition
+    router.push(`/(main)/chat/${channel.id}`);
+  };
+
   return (
     <SafeAreaView
       edges={["top"]}
@@ -115,9 +120,7 @@ export default function ChannelListScreen() {
         filters={filters}
         sort={sort}
         options={options}
-        onSelect={(channel) => {
-          router.push(`/chat/${channel.id}`);
-        }}
+        onSelect={handleChannelSelect}
         additionalFlatListProps={{
           style: { backgroundColor: colors.background },
           contentContainerStyle: { paddingTop: 8, paddingBottom: 20 },
@@ -143,7 +146,7 @@ export default function ChannelListScreen() {
               No conversations yet
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
-              Start a conversation with a counsellor{'\n'}or connect with someone new
+              Start a conversation with a counselor{'\n'}or connect with someone new
             </Text>
           </View>
         )}
