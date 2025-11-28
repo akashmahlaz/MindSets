@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
-import { StreamChat } from "stream-chat";
+import { Event, StreamChat } from "stream-chat";
 import { chatNotificationService } from "../services/chatNotificationService";
 import { getStreamToken } from "../services/stream";
 import { getUserProfile } from "../services/userService";
@@ -19,7 +19,7 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | null>(null);
 
 // Initialize Stream Chat client
-const STREAM_API_KEY = "egq2n55kb4yn";
+const STREAM_API_KEY = process.env.EXPO_PUBLIC_STREAM_API_KEY || "egq2n55kb4yn";
 const chatClient = StreamChat.getInstance(STREAM_API_KEY);
 
 // Configure client options
@@ -37,18 +37,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Store event handler references for cleanup
   const eventHandlers = useRef({
-    onMessage: (event: any) => {
-      console.log("New message event received:", event.message?.text);
+    onMessage: (event: Event) => {
       chatNotificationService.handleNewMessage(event);
     },
-    onTyping: (event: any) => {
+    onTyping: (event: Event) => {
       chatNotificationService.handleTypingStart(event);
     },
-    onMemberAdded: (event: any) => {
+    onMemberAdded: (event: Event) => {
       chatNotificationService.handleMemberAdded(event);
     },
-    onConnectionChanged: (event: any) => {
-      console.log("Connection changed:", event.online);
+    onConnectionChanged: (event: Event) => {
       if (!event.online) {
         setIsChatConnected(false);
       }
@@ -57,31 +55,26 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const connectToChat = useCallback(async () => {
     if (!user) {
-      console.log("Cannot connect to chat: No user");
       return;
     }
 
     // Check if already connected with same user
     if (chatClient.userID === user.uid && isChatConnected) {
-      console.log("Already connected to chat with same user");
       return;
     }
 
     // If connected with different user, disconnect first
     if (chatClient.userID && chatClient.userID !== user.uid) {
-      console.log("Disconnecting from chat (different user)");
       await chatClient.disconnectUser();
     }
 
     if (isConnecting) {
-      console.log("Already connecting to chat");
       return;
     }
 
     try {
       setIsConnecting(true);
       setConnectionError(null);
-      console.log("Connecting to Stream Chat for user:", user.uid);
 
       // Get Stream token
       const token = await getStreamToken(user.uid);
@@ -99,8 +92,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           displayName = userProfile.displayName || displayName;
           photoURL = userProfile.photoURL || photoURL;
         }
-      } catch (profileError) {
-        console.log("Could not fetch user profile, using auth data:", profileError);
+      } catch {
+        // Use auth data if profile fetch fails
       }
 
       // Connect user to Stream Chat
@@ -115,14 +108,13 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       
       setIsChatConnected(true);
       reconnectAttempts.current = 0;
-      console.log("✅ Successfully connected to Stream Chat");
 
       // Set up message event listeners for push notifications
       setupMessageEventListeners();
-    } catch (error: any) {
-      console.error("Error connecting to Stream Chat:", error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to connect to chat";
       setIsChatConnected(false);
-      setConnectionError(error.message || "Failed to connect to chat");
+      setConnectionError(errorMessage);
       throw error;
     } finally {
       setIsConnecting(false);
@@ -131,13 +123,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const retryConnection = useCallback(async () => {
     if (reconnectAttempts.current >= maxReconnectAttempts) {
-      console.log("Max reconnect attempts reached");
       setConnectionError("Unable to connect after multiple attempts. Please check your internet connection.");
       return;
     }
 
     reconnectAttempts.current += 1;
-    console.log(`Retry attempt ${reconnectAttempts.current}/${maxReconnectAttempts}`);
     
     // Exponential backoff
     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000);
@@ -145,8 +135,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     
     try {
       await connectToChat();
-    } catch (error) {
-      console.error("Retry failed:", error);
+    } catch {
+      // Retry failed silently
     }
   }, [connectToChat]);
 
@@ -154,22 +144,17 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const setupMessageEventListeners = useCallback(() => {
     if (!chatClient) return;
 
-    console.log("Setting up chat message event listeners for push notifications");
-
     // Listen for new messages
     chatClient.on("message.new", eventHandlers.current.onMessage);
     chatClient.on("typing.start", eventHandlers.current.onTyping);
     chatClient.on("member.added", eventHandlers.current.onMemberAdded);
     chatClient.on("connection.changed", eventHandlers.current.onConnectionChanged);
-
-    console.log("✅ Chat event listeners set up successfully");
   }, []);
 
   // Clean up event listeners
   const removeMessageEventListeners = useCallback(() => {
     if (!chatClient) return;
 
-    console.log("Removing chat message event listeners");
     chatClient.off("message.new", eventHandlers.current.onMessage);
     chatClient.off("typing.start", eventHandlers.current.onTyping);
     chatClient.off("member.added", eventHandlers.current.onMemberAdded);
@@ -179,14 +164,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const disconnectFromChat = useCallback(async () => {
     if (chatClient.userID && isChatConnected) {
       try {
-        console.log("Disconnecting from Stream Chat");
         removeMessageEventListeners();
         await chatClient.disconnectUser();
         setIsChatConnected(false);
         setConnectionError(null);
-        console.log("Successfully disconnected from Stream Chat");
-      } catch (error) {
-        console.error("Error disconnecting from Stream Chat:", error);
+      } catch {
+        // Disconnect failed silently
       }
     }
   }, [isChatConnected, removeMessageEventListeners]);
@@ -195,12 +178,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const subscription = AppState.addEventListener("change", async (nextAppState: AppStateStatus) => {
       if (appState.current.match(/inactive|background/) && nextAppState === "active") {
-        console.log("App came to foreground - checking chat connection");
         if (user && !isChatConnected && !isConnecting) {
           try {
             await connectToChat();
-          } catch (error) {
-            console.error("Reconnect on foreground failed:", error);
+          } catch {
+            // Reconnect failed silently
           }
         }
       }
@@ -215,8 +197,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   // Auto-connect when user is available
   useEffect(() => {
     if (user && !isChatConnected && !isConnecting) {
-      connectToChat().catch((error) => {
-        console.error("Auto-connect to chat failed:", error);
+      connectToChat().catch(() => {
         // Auto retry on failure
         retryConnection();
       });

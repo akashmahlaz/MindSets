@@ -270,7 +270,10 @@ export default function ChatScreen() {
         </Pressable>
         
         {/* Avatar */}
-        <View style={{ position: 'relative', marginRight: 10 }}>
+        <View 
+          style={{ position: 'relative', marginRight: 10 }}
+          accessibilityLabel={`${getDisplayName()}'s profile picture${isOnline ? ', online' : ', offline'}`}
+        >
           <View style={{
             width: 42,
             height: 42,
@@ -282,6 +285,7 @@ export default function ChatScreen() {
               <Image
                 source={{ uri: getAvatarUrl() }}
                 style={{ width: 42, height: 42 }}
+                accessibilityIgnoresInvertColors
               />
             ) : (
               <View style={{
@@ -297,7 +301,8 @@ export default function ChatScreen() {
           </View>
           {/* Online indicator */}
           {isOnline && (
-            <View style={{
+            <View 
+              style={{
               position: 'absolute',
               bottom: 0,
               right: 0,

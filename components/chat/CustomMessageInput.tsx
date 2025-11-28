@@ -65,6 +65,8 @@ export const CustomMessageInput = () => {
         {/* Attachment Button */}
         <Pressable
           onPress={openAttachmentPicker}
+          accessibilityLabel="Add attachment"
+          accessibilityRole="button"
           style={{
             width: 40,
             height: 40,
@@ -84,6 +86,8 @@ export const CustomMessageInput = () => {
           placeholder="Message..."
           placeholderTextColor={colors.textSecondary}
           multiline
+          accessibilityLabel="Message input"
+          accessibilityHint="Type your message here"
           style={{
             flex: 1,
             fontSize: 16,
@@ -99,6 +103,9 @@ export const CustomMessageInput = () => {
         <Pressable
           onPress={handleSend}
           disabled={!text.trim()}
+          accessibilityLabel="Send message"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !text.trim() }}
           style={{
             width: 40,
             height: 40,
