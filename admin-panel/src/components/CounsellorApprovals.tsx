@@ -61,6 +61,8 @@ export default function CounsellorApprovals() {
         verificationStatus: status,
         verificationNotes: notes || "",
         verifiedAt: new Date(),
+        // CRITICAL: Also set isApproved flag - mobile app checks both fields
+        isApproved: status === "verified" ? true : false,
       });
       await fetchCounsellors();
       setSelectedCounsellor(null);

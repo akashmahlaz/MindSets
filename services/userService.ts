@@ -1,21 +1,21 @@
 import { User } from "firebase/auth";
 import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import {
-  BaseUserProfile,
-  CounsellorProfileData,
-  UserProfile,
-  UserRole,
+    BaseUserProfile,
+    CounsellorProfileData,
+    UserProfile,
+    UserRole,
 } from "../types/user";
 
 // Legacy interface for backward compatibility
@@ -316,11 +316,13 @@ export const getCounsellors = async (filters?: {
         return false;
       }
 
-      // Only show verified counsellors (approved by admin)
-      return (
-        c.isApproved === true &&
-        counsellorData.verificationStatus === "verified"
-      );
+      // Show counsellors that are verified by admin
+      // Either verificationStatus is "verified" OR isApproved is true (backward compatibility)
+      const isVerified = counsellorData.verificationStatus === "verified";
+      const isApproved = c.isApproved === true;
+      
+      // Return true if either condition is met (verified OR approved)
+      return isVerified || isApproved;
     });
     console.log(
       "✅ Filtered counsellors by approval status:",

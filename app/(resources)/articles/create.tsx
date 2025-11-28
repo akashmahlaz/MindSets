@@ -6,32 +6,33 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    useColorScheme,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useColorScheme,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Perplexity-inspired color tokens
+// Dark theme colors matching the design
 const getColors = (isDark: boolean) => ({
-  background: isDark ? "#0D0D0D" : "#FFFFFF",
-  surface: isDark ? "#171717" : "#F9FAFB",
-  surfaceHover: isDark ? "#1F1F1F" : "#F3F4F6",
-  text: isDark ? "#FAFAFA" : "#111827",
-  textSecondary: isDark ? "#A3A3A3" : "#6B7280",
-  textMuted: isDark ? "#737373" : "#9CA3AF",
-  border: isDark ? "#262626" : "#E5E7EB",
-  borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
-  primary: "#6366F1",
-  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+  background: isDark ? "#000000" : "#FFFFFF",
+  surface: isDark ? "#1A1A1A" : "#F5F5F5",
+  surfaceHover: isDark ? "#2A2A2A" : "#EBEBEB",
+  surfaceActive: isDark ? "#333333" : "#E0E0E0",
+  text: isDark ? "#FFFFFF" : "#000000",
+  textSecondary: isDark ? "#999999" : "#666666",
+  textMuted: isDark ? "#666666" : "#999999",
+  border: isDark ? "#333333" : "#E0E0E0",
+  borderSubtle: isDark ? "#222222" : "#F0F0F0",
+  primary: "#FFFFFF",
+  accent: "#20B2AA",
   danger: "#EF4444",
   success: "#10B981",
 });
@@ -204,42 +205,30 @@ export default function CreateStory() {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.borderSubtle,
       }}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={{
             width: 40,
             height: 40,
-            borderRadius: 12,
-            backgroundColor: colors.surface,
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <Ionicons name="close" size={20} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>
-          Write Story
-        </Text>
-
         <TouchableOpacity
-          onPress={handleSaveDraft}
-          disabled={loading}
           style={{
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            borderRadius: 10,
-            backgroundColor: colors.surface,
+            width: 40,
+            height: 40,
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textSecondary }}>
-            Draft
-          </Text>
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -249,406 +238,338 @@ export default function CreateStory() {
       >
         <ScrollView 
           style={{ flex: 1 }} 
-          contentContainerStyle={{ padding: 20 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Title */}
-          <View style={{ marginBottom: 24 }}>
+          {/* Title Section */}
+          <View style={{ marginBottom: 8, marginTop: 8 }}>
             <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
+              fontSize: 28, 
+              fontWeight: "700", 
+              color: colors.text,
+              letterSpacing: -0.5,
               marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
             }}>
-              Title *
+              Share Your Story
             </Text>
-            <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Enter story title..."
-              placeholderTextColor={colors.textMuted}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 17,
-                fontWeight: "600",
-                color: colors.text,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
-              }}
-              multiline
-            />
+            <Text style={{ 
+              fontSize: 16, 
+              color: colors.textSecondary,
+              lineHeight: 22,
+            }}>
+              Share your experience to help and inspire others in their journey
+            </Text>
           </View>
 
-          {/* Description */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              Description *
-            </Text>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Brief description of your story..."
-              placeholderTextColor={colors.textMuted}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
-                minHeight: 80,
-              }}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
-
-          {/* Category */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 12,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              Category
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8 }}
-            >
-              {categories.map((cat) => (
+          {/* Story Card Preview */}
+          <View style={{
+            backgroundColor: colors.surface,
+            borderRadius: 20,
+            padding: 16,
+            marginTop: 24,
+            marginBottom: 20,
+          }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+              <View style={{
+                backgroundColor: colors.surfaceHover,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 12,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                  {Math.ceil(content.length / 1000) || 1} min read
+                </Text>
+              </View>
+            </View>
+            
+            {/* Image Preview or Upload */}
+            {imageUrl ? (
+              <View style={{ position: "relative", borderRadius: 16, overflow: "hidden", marginBottom: 16 }}>
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={{ width: "100%", height: 160 }}
+                  resizeMode="cover"
+                />
                 <TouchableOpacity
-                  key={cat}
-                  onPress={() => setCategory(cat)}
+                  onPress={removeImage}
                   style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 20,
-                    backgroundColor: category === cat ? colors.primary : colors.surface,
-                    borderWidth: 1,
-                    borderColor: category === cat ? colors.primary : colors.borderSubtle,
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  <Text style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: category === cat ? "#FFF" : colors.text,
-                  }}>
-                    {cat}
-                  </Text>
+                  <Ionicons name="close" size={18} color="#FFF" />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Tags */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              Tags (comma separated)
-            </Text>
-            <TextInput
-              value={tags}
-              onChangeText={setTags}
-              placeholder="anxiety, mindfulness, self-care..."
-              placeholderTextColor={colors.textMuted}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
-              }}
-            />
-          </View>
-
-          {/* Featured Image */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 12,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              Featured Image
-            </Text>
-            
-            {imageUrl ? (
-              <View style={{ marginBottom: 12 }}>
-                <View style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={{ width: "100%", height: 180 }}
-                    resizeMode="cover"
-                  />
-                  <TouchableOpacity
-                    onPress={removeImage}
-                    style={{
-                      position: "absolute",
-                      top: 12,
-                      right: 12,
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      backgroundColor: colors.danger,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Ionicons name="close" size={16} color="#FFF" />
-                  </TouchableOpacity>
-                </View>
               </View>
             ) : (
               <TouchableOpacity
                 onPress={handleImageUpload}
                 disabled={uploadingImage}
                 style={{
-                  borderWidth: 2,
-                  borderStyle: "dashed",
-                  borderColor: colors.border,
+                  backgroundColor: colors.surfaceHover,
                   borderRadius: 16,
-                  padding: 32,
-                  alignItems: "center",
+                  height: 120,
                   justifyContent: "center",
-                  backgroundColor: colors.surface,
+                  alignItems: "center",
+                  marginBottom: 16,
                 }}
               >
                 {uploadingImage ? (
-                  <View style={{ alignItems: "center" }}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={{ color: colors.textSecondary, marginTop: 12, fontSize: 14 }}>
-                      Uploading...
-                    </Text>
-                  </View>
+                  <ActivityIndicator size="small" color={colors.text} />
                 ) : (
-                  <View style={{ alignItems: "center" }}>
-                    <View style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 28,
-                      backgroundColor: colors.primarySoft,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginBottom: 12,
-                    }}>
-                      <Ionicons name="camera-outline" size={28} color={colors.primary} />
-                    </View>
-                    <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 }}>
-                      Upload Image
+                  <>
+                    <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+                    <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: 8 }}>
+                      Add cover image
                     </Text>
-                    <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: "center" }}>
-                      Tap to take a photo or choose from gallery
-                    </Text>
-                  </View>
+                  </>
                 )}
               </TouchableOpacity>
             )}
-            
-            {/* Alternative: Image URL input */}
-            <View style={{ marginTop: 12 }}>
-              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 8 }}>
-                Or enter image URL:
-              </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TextInput
-                  value={imageUrl}
-                  onChangeText={(text) => {
-                    setImageUrl(text);
-                    if (text.trim()) {
-                      setImagePath("");
-                    }
-                  }}
-                  placeholder="https://example.com/image.jpg"
-                  placeholderTextColor={colors.textMuted}
-                  style={{
-                    flex: 1,
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    paddingHorizontal: 14,
-                    paddingVertical: 12,
-                    fontSize: 14,
-                    color: colors.text,
-                    borderWidth: 1,
-                    borderColor: colors.borderSubtle,
-                  }}
-                  autoCapitalize="none"
-                  keyboardType="url"
-                />
-                {imageUrl && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setImageUrl("");
-                      setImagePath("");
-                    }}
-                    style={{ marginLeft: 8, padding: 8 }}
-                  >
-                    <Ionicons name="close-circle" size={22} color={colors.danger} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          </View>
 
-          {/* Read Time */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
+            {/* Title Preview */}
+            <Text style={{
+              fontSize: 22,
+              fontWeight: "700",
+              color: title ? colors.text : colors.textMuted,
+              marginBottom: 4,
             }}>
-              Estimated Read Time (minutes)
-            </Text>
-            <TextInput
-              value={readTime}
-              onChangeText={setReadTime}
-              placeholder="5"
-              placeholderTextColor={colors.textMuted}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
-                width: 100,
-              }}
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* Content */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 13, 
-              fontWeight: "600", 
-              color: colors.textMuted, 
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              Content *
-            </Text>
-            <TextInput
-              value={content}
-              onChangeText={handleContentChange}
-              placeholder="Write your story here..."
-              placeholderTextColor={colors.textMuted}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 16,
-                color: colors.text,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
-                minHeight: 200,
-                lineHeight: 24,
-              }}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8 }}>
-              Word count: {content.split(/\s+/).filter((word) => word.length > 0).length}
+              {title || "Your story title"}
             </Text>
           </View>
 
-          {/* Publish Toggle */}
-          <View style={{ marginBottom: 32 }}>
+          {/* Form Steps */}
+          <View style={{ gap: 0 }}>
+            {/* Step 1: Title */}
             <TouchableOpacity
-              onPress={() => setIsPublished(!isPublished)}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                padding: 16,
-                borderWidth: 1,
-                borderColor: colors.borderSubtle,
+                paddingVertical: 18,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderSubtle,
               }}
             >
-              <View>
-                <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>
-                  Publish immediately
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text, marginBottom: 4 }}>
+                  Title
                 </Text>
-                <Text style={{ fontSize: 13, color: colors.textMuted, marginTop: 2 }}>
-                  Make story visible to all users
-                </Text>
+                <TextInput
+                  value={title}
+                  onChangeText={setTitle}
+                  placeholder="Give your story a title..."
+                  placeholderTextColor={colors.textMuted}
+                  style={{
+                    fontSize: 15,
+                    color: colors.text,
+                    padding: 0,
+                  }}
+                />
               </View>
               <View style={{
-                width: 52,
-                height: 28,
-                borderRadius: 14,
-                backgroundColor: isPublished ? colors.success : colors.surfaceHover,
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: title.trim() ? colors.success : colors.border,
+                backgroundColor: title.trim() ? colors.success : "transparent",
                 justifyContent: "center",
-                padding: 2,
+                alignItems: "center",
               }}>
+                {title.trim() && <Ionicons name="checkmark" size={14} color="#FFF" />}
+              </View>
+            </TouchableOpacity>
+
+            {/* Step 2: Description */}
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 18,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderSubtle,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text, marginBottom: 4 }}>
+                  Brief description
+                </Text>
+                <TextInput
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="What's your story about?..."
+                  placeholderTextColor={colors.textMuted}
+                  style={{
+                    fontSize: 15,
+                    color: colors.text,
+                    padding: 0,
+                  }}
+                  multiline
+                />
+              </View>
+              <View style={{
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: description.trim() ? colors.success : colors.border,
+                backgroundColor: description.trim() ? colors.success : "transparent",
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
+                {description.trim() && <Ionicons name="checkmark" size={14} color="#FFF" />}
+              </View>
+            </TouchableOpacity>
+
+            {/* Step 3: Content */}
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                paddingVertical: 18,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderSubtle,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text, marginBottom: 4 }}>
+                  Your story
+                </Text>
+                <TextInput
+                  value={content}
+                  onChangeText={handleContentChange}
+                  placeholder="Share your experience, thoughts, or journey..."
+                  placeholderTextColor={colors.textMuted}
+                  style={{
+                    fontSize: 15,
+                    color: colors.text,
+                    padding: 0,
+                    minHeight: 100,
+                  }}
+                  multiline
+                  textAlignVertical="top"
+                />
+                {content.length > 0 && (
+                  <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8 }}>
+                    {content.split(/\s+/).filter((w) => w.length > 0).length} words
+                  </Text>
+                )}
+              </View>
+              <View style={{
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: content.trim().length > 50 ? colors.success : colors.border,
+                backgroundColor: content.trim().length > 50 ? colors.success : "transparent",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: 4,
+              }}>
+                {content.trim().length > 50 && <Ionicons name="checkmark" size={14} color="#FFF" />}
+              </View>
+            </TouchableOpacity>
+
+            {/* Step 4: Category */}
+            <View style={{
+              paddingVertical: 18,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.borderSubtle,
+            }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>
+                  Category
+                </Text>
                 <View style={{
                   width: 24,
                   height: 24,
                   borderRadius: 12,
-                  backgroundColor: "#FFF",
-                  transform: [{ translateX: isPublished ? 24 : 0 }],
-                  ...Platform.select({
-                    ios: {
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 2,
-                    },
-                    android: { elevation: 2 },
-                  }),
+                  borderWidth: 2,
+                  borderColor: colors.success,
+                  backgroundColor: colors.success,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}>
+                  <Ionicons name="checkmark" size={14} color="#FFF" />
+                </View>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  {categories.map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      onPress={() => setCategory(cat)}
+                      style={{
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
+                        borderRadius: 16,
+                        backgroundColor: category === cat ? colors.text : colors.surface,
+                      }}
+                    >
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: "500",
+                        color: category === cat ? colors.background : colors.text,
+                      }}>
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Step 5: Tags (Optional) */}
+            <View style={{
+              paddingVertical: 18,
+            }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>
+                  Tags (optional)
+                </Text>
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: colors.border,
+                  justifyContent: "center",
+                  alignItems: "center",
                 }} />
               </View>
-            </TouchableOpacity>
+              <TextInput
+                value={tags}
+                onChangeText={setTags}
+                placeholder="anxiety, mindfulness, self-care..."
+                placeholderTextColor={colors.textMuted}
+                style={{
+                  fontSize: 15,
+                  color: colors.text,
+                  padding: 0,
+                }}
+              />
+            </View>
           </View>
-
-          {/* Bottom spacing */}
-          <View style={{ height: 100 }} />
         </ScrollView>
 
-        {/* Submit Button */}
+        {/* Bottom Button - Like the design */}
         <View style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
           paddingHorizontal: 20,
-          paddingVertical: 16,
-          borderTopWidth: 1,
-          borderTopColor: colors.borderSubtle,
+          paddingVertical: 20,
+          paddingBottom: Platform.OS === "ios" ? 34 : 20,
           backgroundColor: colors.background,
         }}>
           <TouchableOpacity
@@ -657,23 +578,23 @@ export default function CreateStory() {
             style={{
               backgroundColor: (loading || !title.trim() || !description.trim() || !content.trim()) 
                 ? colors.surfaceHover 
-                : colors.primary,
-              paddingVertical: 16,
-              borderRadius: 14,
+                : colors.text,
+              paddingVertical: 18,
+              borderRadius: 30,
               alignItems: "center",
             }}
           >
             {loading ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color={colors.background} />
             ) : (
               <Text style={{
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: "600",
                 color: (loading || !title.trim() || !description.trim() || !content.trim()) 
                   ? colors.textMuted 
-                  : "#FFF",
+                  : colors.background,
               }}>
-                {isPublished ? "Publish Story" : "Save Draft"}
+                Publish
               </Text>
             )}
           </TouchableOpacity>
