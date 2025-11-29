@@ -3,34 +3,465 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
 import {
-    CounsellorProfileData,
-    UserProfile,
-    UserProfileData,
+  CounsellorProfileData,
+  UserProfile,
 } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Animated,
+  Dimensions,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width cards for professional layout
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const CARD_WIDTH = SCREEN_WIDTH - 40;
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.58; // Taller cards to show more photo
+
+// Gradient color sets for cards without photos
+const gradientSets = [
+  ["#0D9488", "#2AA79D", "#14B8A6"],
+  ["#2AA79D", "#0F766E", "#0D9488"],
+  ["#14B8A6", "#2AA79D", "#0D9488"],
+  ["#0F766E", "#14B8A6", "#2AA79D"],
+];
+
+// Story Card Component - Separate to properly use hooks
+function StoryCard({ 
+  counsellor, 
+  index, 
+  colors, 
+  onPress 
+}: { 
+  counsellor: CounsellorProfileData; 
+  index: number; 
+  colors: Record<string, string>;
+  onPress: (c: CounsellorProfileData) => void;
+}) {
+  const cardAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
+  
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(cardAnim, {
+        toValue: 1,
+        duration: 500,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 50,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [cardAnim, scaleAnim, index]);
+
+  const gradientColors = gradientSets[index % gradientSets.length];
+
+  return (
+    <Animated.View
+      style={{
+        opacity: cardAnim,
+        transform: [
+          { scale: scaleAnim },
+          {
+            translateY: cardAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [40, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => onPress(counsellor)}
+        activeOpacity={0.95}
+        style={{ marginBottom: 20, paddingHorizontal: 20 }}
+      >
+        <View 
+          style={{
+            width: CARD_WIDTH,
+            height: CARD_HEIGHT,
+            borderRadius: 24,
+            overflow: "hidden",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.2,
+            shadowRadius: 16,
+            elevation: 10,
+          }}
+        >
+          {/* Background - Photo or Gradient */}
+          {counsellor.photoURL ? (
+            <Image
+              source={{ uri: counsellor.photoURL }}
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <LinearGradient
+              colors={gradientColors as any}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          )}
+          
+          {/* Lighter Gradient Overlay - Shows More Photo */}
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.1)", "rgba(0,0,0,0.7)"]}
+            locations={[0, 0.6, 1]}
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+          
+          {/* Top Section - Status & Verified - Compact */}
+          <View style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            right: 12,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}>
+            {/* Online Status Pill - Smaller */}
+            <View style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "rgba(34, 197, 94, 0.85)",
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 12,
+            }}>
+              <View style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: "#FFF",
+                marginRight: 4,
+              }} />
+              <Text style={{ color: "#FFF", fontSize: 10, fontWeight: "600" }}>Available</Text>
+            </View>
+            
+            {/* Verified & Rating Row */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              {/* Rating */}
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 12,
+              }}>
+                <Ionicons name="star" size={12} color="#FBBF24" />
+                <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "700", marginLeft: 3 }}>
+                  {counsellor.averageRating?.toFixed(1) || "4.9"}
+                </Text>
+              </View>
+              
+              {/* Verified Badge */}
+              {counsellor.verificationStatus === "verified" && (
+                <View style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                }}>
+                  <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontSize: 10, fontWeight: "700", marginLeft: 2 }}>Verified</Text>
+                </View>
+              )}
+            </View>
+          </View>
+          
+          {/* Bottom Content Overlay - Compact */}
+          <View style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: 14,
+          }}>
+            {/* Name & Title - Compact */}
+            <View style={{ marginBottom: 6 }}>
+              <Text style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#FFF",
+                letterSpacing: -0.3,
+                marginBottom: 2,
+                textShadowColor: "rgba(0,0,0,0.5)",
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 3,
+              }}>
+                Dr. {counsellor.displayName}
+              </Text>
+              <Text style={{
+                fontSize: 11,
+                color: "rgba(255,255,255,0.8)",
+                fontWeight: "500",
+              }}>
+                {counsellor.licenseType || "Licensed Therapist"} • {counsellor.yearsExperience || 5}+ yrs
+              </Text>
+            </View>
+            
+            {/* Specialization Tags - Smaller */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+              {counsellor.specializations?.slice(0, 3).map((spec, idx) => (
+                <View key={idx} style={{
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 10,
+                }}>
+                  <Text style={{ fontSize: 9, color: "#FFF", fontWeight: "600" }}>
+                    {spec.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </Text>
+                </View>
+              ))}
+              {(!counsellor.specializations || counsellor.specializations.length === 0) && (
+                <View style={{
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 10,
+                }}>
+                  <Text style={{ fontSize: 9, color: "#FFF", fontWeight: "600" }}>
+                    Mental Health
+                  </Text>
+                </View>
+              )}
+            </View>
+            
+            {/* Price & CTA Row - Compact */}
+            <View style={{ 
+              flexDirection: "row", 
+              alignItems: "center", 
+              justifyContent: "space-between",
+            }}>
+              <View>
+                <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>
+                  Starting from
+                </Text>
+                <Text style={{ fontSize: 20, fontWeight: "800", color: "#FFF" }}>
+                  ${counsellor.hourlyRate || 80}
+                  <Text style={{ fontSize: 11, fontWeight: "500", color: "rgba(255,255,255,0.7)" }}>/hr</Text>
+                </Text>
+              </View>
+              
+              <TouchableOpacity 
+                onPress={() => onPress(counsellor)} 
+                activeOpacity={0.9}
+              >
+                <View
+                  style={{
+                    backgroundColor: "#FFF",
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 10,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }}
+                >
+                  <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Book Now</Text>
+                  <Ionicons name="arrow-forward" size={14} color={colors.primary} style={{ marginLeft: 4 }} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Decorative Elements - Floating Icons */}
+          {!counsellor.photoURL && (
+            <>
+              <View style={{
+                position: "absolute",
+                top: "30%",
+                left: "10%",
+                opacity: 0.15,
+              }}>
+                <Ionicons name="heart" size={60} color="#FFF" />
+              </View>
+              <View style={{
+                position: "absolute",
+                top: "20%",
+                right: "15%",
+                opacity: 0.1,
+              }}>
+                <Ionicons name="leaf" size={80} color="#FFF" />
+              </View>
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+// Skeleton Loader Component
+function StorySkeleton({ colors }: { colors: Record<string, string> }) {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [shimmerAnim]);
+
+  return (
+    <Animated.View
+      style={{
+        marginBottom: 20,
+        paddingHorizontal: 20,
+        opacity: shimmerAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.4, 0.8],
+        }),
+      }}
+    >
+      <View 
+        style={{
+          width: CARD_WIDTH,
+          height: CARD_HEIGHT,
+          borderRadius: 24,
+          overflow: "hidden",
+          backgroundColor: colors.surfaceVariant,
+        }}
+      >
+        <LinearGradient
+          colors={[colors.surfaceVariant, colors.surfaceElevated, colors.surfaceVariant]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+          }}
+        />
+        
+        {/* Skeleton top badges */}
+        <View style={{
+          position: "absolute",
+          top: 12,
+          left: 12,
+          right: 12,
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}>
+          <View style={{
+            width: 80,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+          }} />
+          <View style={{
+            width: 60,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+          }} />
+        </View>
+        
+        {/* Skeleton bottom content */}
+        <View style={{
+          position: "absolute",
+          bottom: 14,
+          left: 14,
+          right: 14,
+        }}>
+          <View style={{
+            width: "60%",
+            height: 20,
+            borderRadius: 6,
+            backgroundColor: colors.surface,
+            marginBottom: 6,
+          }} />
+          <View style={{
+            width: "40%",
+            height: 12,
+            borderRadius: 4,
+            backgroundColor: colors.surface,
+            marginBottom: 10,
+          }} />
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
+            <View style={{
+              width: 60,
+              height: 20,
+              borderRadius: 10,
+              backgroundColor: colors.surface,
+            }} />
+            <View style={{
+              width: 60,
+              height: 20,
+              borderRadius: 10,
+              backgroundColor: colors.surface,
+            }} />
+          </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View style={{
+              width: 70,
+              height: 26,
+              borderRadius: 6,
+              backgroundColor: colors.surface,
+            }} />
+            <View style={{
+              width: 90,
+              height: 32,
+              borderRadius: 10,
+              backgroundColor: colors.surface,
+            }} />
+          </View>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
 
 export default function CounselorsScreen() {
-  const { userProfile } = useAuth();
+  useAuth(); // Check auth state
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
@@ -42,6 +473,7 @@ export default function CounselorsScreen() {
 
   // Premium animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -51,22 +483,24 @@ export default function CounselorsScreen() {
     }).start();
   }, [fadeAnim]);
 
-  const userProfileData = userProfile as UserProfileData;
-
-  // Premium Material Design 3 colors
+  // Perplexity-inspired colors with depth
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
-    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
-    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    background: isDarkColorScheme ? "#0A0A0B" : "#FAFAFA",
+    surface: isDarkColorScheme ? "#18181B" : "#FFFFFF",
+    surfaceElevated: isDarkColorScheme ? "#27272A" : "#F4F4F5",
+    surfaceVariant: isDarkColorScheme ? "#3F3F46" : "#E4E4E7",
+    text: isDarkColorScheme ? "#FAFAFA" : "#09090B",
+    textSecondary: isDarkColorScheme ? "#A1A1AA" : "#71717A",
+    textMuted: isDarkColorScheme ? "#71717A" : "#A1A1AA",
     primary: "#2AA79D",
+    primaryLight: isDarkColorScheme ? "rgba(42, 167, 157, 0.2)" : "rgba(42, 167, 157, 0.1)",
     primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
     secondary: "#3A9C94",
-    secondaryContainer: isDarkColorScheme ? "rgba(58, 156, 148, 0.15)" : "rgba(58, 156, 148, 0.08)",
-    purple: "#3A9C94",
+    accent: "#14B8A6",
     warning: "#F59E0B",
-    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    success: "#22C55E",
+    border: isDarkColorScheme ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.08)",
   };
 
   const filters = [
@@ -106,17 +540,6 @@ export default function CounselorsScreen() {
     });
   };
 
-  const getSpecializationLabel = (spec: string | undefined) => {
-    const labels: Record<string, string> = {
-      anxiety: "Anxiety & Stress",
-      depression: "Depression",
-      relationship: "Relationships",
-      trauma: "Trauma & PTSD",
-      "stress-management": "Stress Management",
-    };
-    return spec ? labels[spec] || spec.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase()) : "General Counseling";
-  };
-
   const filteredCounsellors = counsellors.filter((counsellor) => {
     const matchesSearch = 
       counsellor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -132,300 +555,6 @@ export default function CounselorsScreen() {
     return matchesSearch && matchesFilter;
   });
 
-  const renderCounsellorCard = ({ item: counsellor }: { item: UserProfile }) => {
-    const c = counsellor as CounsellorProfileData;
-    
-    return (
-      <TouchableOpacity
-        onPress={() => handleCounsellorPress(c)}
-        activeOpacity={0.95}
-        style={{
-          width: CARD_WIDTH,
-          marginBottom: 16,
-        }}
-      >
-        <View 
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 20,
-            overflow: "hidden",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: isDarkColorScheme ? 0.3 : 0.08,
-            shadowRadius: 12,
-            elevation: 4,
-            borderWidth: 1,
-            borderColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-          }}
-        >
-          {/* Horizontal Layout Container */}
-          <View style={{ flexDirection: "row", padding: 16 }}>
-            {/* Left: Profile Image Section */}
-            <View style={{ marginRight: 16 }}>
-              <View style={{ position: "relative" }}>
-                {c.photoURL ? (
-                  <Image
-                    source={{ uri: c.photoURL }}
-                    style={{
-                      width: 100,
-                      height: 100,
-                      borderRadius: 16,
-                    }}
-                  />
-                ) : (
-                  <LinearGradient
-                    colors={["#2AA79D", "#248F87"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 100,
-                      height: 100,
-                      borderRadius: 16,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ color: "#FFF", fontSize: 36, fontWeight: "700" }}>
-                      {c.displayName?.charAt(0) || "C"}
-                    </Text>
-                  </LinearGradient>
-                )}
-                
-                {/* Online Indicator */}
-                <View style={{
-                  position: "absolute",
-                  bottom: 4,
-                  right: 4,
-                  width: 14,
-                  height: 14,
-                  borderRadius: 7,
-                  backgroundColor: "#22C55E",
-                  borderWidth: 2,
-                  borderColor: colors.surface,
-                }} />
-              </View>
-              
-              {/* Rating Badge Below Image */}
-              <View style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: isDarkColorScheme ? "rgba(251,191,36,0.15)" : "rgba(251,191,36,0.1)",
-                borderRadius: 10,
-                paddingVertical: 6,
-                marginTop: 8,
-              }}>
-                <Ionicons name="star" size={14} color="#FBBF24" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, marginLeft: 4 }}>
-                  {c.averageRating?.toFixed(1) || "4.9"}
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.textSecondary, marginLeft: 2 }}>
-                  ({c.totalReviews || 128})
-                </Text>
-              </View>
-            </View>
-            
-            {/* Right: Info Section */}
-            <View style={{ flex: 1, justifyContent: "space-between" }}>
-              {/* Top Row: Name & Verified */}
-              <View>
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: "700",
-                      color: colors.text,
-                      flex: 1,
-                    }}
-                    numberOfLines={1}
-                  >
-                    Dr. {c.displayName}
-                  </Text>
-                  {c.verificationStatus === "verified" && (
-                    <View style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      backgroundColor: colors.primary,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginLeft: 6,
-                    }}>
-                      <Ionicons name="checkmark" size={14} color="#FFF" />
-                    </View>
-                  )}
-                </View>
-                
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: colors.textSecondary,
-                    marginBottom: 8,
-                  }}
-                  numberOfLines={1}
-                >
-                  {c.licenseType || "Licensed Therapist"} • {c.yearsExperience || 5}+ yrs
-                </Text>
-                
-                {/* Specialization Tags */}
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                  {c.specializations?.slice(0, 2).map((spec, idx) => (
-                    <View key={idx} style={{
-                      backgroundColor: colors.primaryContainer,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                    }}>
-                      <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>
-                        {spec.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                      </Text>
-                    </View>
-                  ))}
-                  {(!c.specializations || c.specializations.length === 0) && (
-                    <View style={{
-                      backgroundColor: colors.primaryContainer,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                    }}>
-                      <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>
-                        General Counseling
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              
-              {/* Bottom: Price & Book Button */}
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>Starting from</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "800", color: colors.primary }}>
-                    ${c.hourlyRate || 80}<Text style={{ fontSize: 12, fontWeight: "500", color: colors.textSecondary }}>/hr</Text>
-                  </Text>
-                </View>
-                
-                <TouchableOpacity 
-                  onPress={() => handleCounsellorPress(c)} 
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={["#2AA79D", "#248F87"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{
-                      paddingVertical: 10,
-                      paddingHorizontal: 20,
-                      borderRadius: 12,
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={{ color: "#FFF", fontSize: 13, fontWeight: "700" }}>Book Now</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#FFF" style={{ marginLeft: 4 }} />
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          
-          {/* Bottom Action Bar */}
-          <View style={{
-            flexDirection: "row",
-            borderTopWidth: 1,
-            borderTopColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-          }}>
-            <TouchableOpacity 
-              onPress={() => handleCounsellorPress(c)}
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 12,
-                borderRightWidth: 1,
-                borderRightColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              }}
-            >
-              <Ionicons name="chatbubble-outline" size={18} color={colors.primary} />
-              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Message</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => handleCounsellorPress(c)}
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 12,
-                borderRightWidth: 1,
-                borderRightColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              }}
-            >
-              <Ionicons name="videocam-outline" size={18} color={colors.textSecondary} />
-              <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Video</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => handleCounsellorPress(c)}
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 12,
-              }}
-            >
-              <Ionicons name="heart-outline" size={18} color={colors.textSecondary} />
-              <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderSkeleton = () => (
-    <View style={{ width: CARD_WIDTH, marginBottom: 16 }}>
-      <View 
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: 20,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-        }}
-      >
-        <View style={{ flexDirection: "row", padding: 16 }}>
-          {/* Left skeleton */}
-          <View style={{ marginRight: 16 }}>
-            <View style={{ width: 100, height: 100, borderRadius: 16, backgroundColor: colors.surfaceVariant }} />
-            <View style={{ height: 28, borderRadius: 10, backgroundColor: colors.surfaceVariant, marginTop: 8 }} />
-          </View>
-          {/* Right skeleton */}
-          <View style={{ flex: 1 }}>
-            <View style={{ height: 20, backgroundColor: colors.surfaceVariant, borderRadius: 8, marginBottom: 8, width: "80%" }} />
-            <View style={{ height: 14, backgroundColor: colors.surfaceVariant, borderRadius: 6, marginBottom: 10, width: "60%" }} />
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 16 }}>
-              <View style={{ height: 24, width: 70, backgroundColor: colors.surfaceVariant, borderRadius: 8 }} />
-              <View style={{ height: 24, width: 80, backgroundColor: colors.surfaceVariant, borderRadius: 8 }} />
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <View style={{ height: 28, width: 60, backgroundColor: colors.surfaceVariant, borderRadius: 6 }} />
-              <View style={{ height: 40, width: 100, backgroundColor: colors.surfaceVariant, borderRadius: 12 }} />
-            </View>
-          </View>
-        </View>
-        {/* Bottom bar skeleton */}
-        <View style={{ 
-          height: 48, 
-          backgroundColor: colors.surfaceVariant, 
-          borderTopWidth: 1,
-          borderTopColor: isDarkColorScheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-        }} />
-      </View>
-    </View>
-  );
-
   return (
     <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
@@ -434,51 +563,58 @@ export default function CounselorsScreen() {
           backgroundColor={colors.background}
         />
 
-        {/* Premium Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
-          <Text style={{ fontSize: 26, fontWeight: "700", color: colors.text, letterSpacing: -0.5, marginBottom: 4 }}>
-            Find Your Counselor
+        {/* Perplexity-Style Header */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
+          <Text style={{ 
+            fontSize: 28, 
+            fontWeight: "800", 
+            color: colors.text, 
+            letterSpacing: -0.5,
+          }}>
+            Discover
           </Text>
-          <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-            Connect with licensed professionals who can help
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
+            Find your perfect counselor match
           </Text>
         </View>
 
-        {/* Premium Search Bar */}
-        <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+        {/* Search Bar - Perplexity Style */}
+        <View style={{ paddingHorizontal: 20, paddingVertical: 12 }}>
           <View 
             style={{
-              backgroundColor: colors.surfaceVariant,
-              borderRadius: 16,
+              backgroundColor: colors.surfaceElevated,
+              borderRadius: 14,
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 16,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: colors.border,
             }}
           >
-            <Ionicons name="search" size={20} color={colors.textSecondary} />
+            <Ionicons name="search" size={20} color={colors.textMuted} />
             <TextInput
-              placeholder="Search by name or specialty..."
-              placeholderTextColor={colors.textSecondary}
+              placeholder="Search counselors..."
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               style={{
                 flex: 1,
-                paddingVertical: 14,
-                paddingHorizontal: 12,
+                paddingVertical: 12,
+                paddingHorizontal: 10,
                 fontSize: 15,
                 color: colors.text,
               }}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                <Ionicons name="close-circle" size={20} color={colors.textMuted} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Premium Filter Chips */}
-        <View style={{ paddingBottom: 16 }}>
+        {/* Filter Chips - Horizontal Scroll */}
+        <View style={{ paddingBottom: 12 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -494,18 +630,18 @@ export default function CounselorsScreen() {
                 >
                   {isActive ? (
                     <LinearGradient
-                      colors={['#2AA79D', '#3A9C94']}
+                      colors={['#2AA79D', '#0D9488']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
                         borderRadius: 20,
                       }}
                     >
-                      <Ionicons name={filter.icon as any} size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Ionicons name={filter.icon as any} size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
                       <Text style={{ fontSize: 13, fontWeight: "600", color: "#FFFFFF" }}>{filter.label}</Text>
                     </LinearGradient>
                   ) : (
@@ -513,15 +649,15 @@ export default function CounselorsScreen() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        backgroundColor: colors.surface,
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
+                        backgroundColor: colors.surfaceElevated,
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
                         borderRadius: 20,
                         borderWidth: 1,
                         borderColor: colors.border,
                       }}
                     >
-                      <Ionicons name={filter.icon as any} size={16} color={colors.textSecondary} style={{ marginRight: 6 }} />
+                      <Ionicons name={filter.icon as any} size={15} color={colors.textSecondary} style={{ marginRight: 5 }} />
                       <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>{filter.label}</Text>
                     </View>
                   )}
@@ -532,33 +668,30 @@ export default function CounselorsScreen() {
         </View>
 
         {/* Results Count */}
-        <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
-          <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-            {loading ? "Loading..." : `${filteredCounsellors.length} counselors found`}
+        <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
+          <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: "500" }}>
+            {loading ? "Finding counselors..." : `${filteredCounsellors.length} counselors available`}
           </Text>
         </View>
 
-        {/* Counselors List */}
+        {/* Counselors Feed - Story Style */}
         {loading ? (
-          <ScrollView
-            contentContainerStyle={{ 
-              paddingHorizontal: 20,
-              paddingTop: 8,
-            }}
+          <Animated.ScrollView
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}
           >
-            {[1, 2, 3].map((i) => (
-              <View key={i}>{renderSkeleton()}</View>
+            {[0, 1, 2].map((i) => (
+              <StorySkeleton key={i} colors={colors} />
             ))}
-          </ScrollView>
+          </Animated.ScrollView>
         ) : filteredCounsellors.length === 0 ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 40 }}>
             <View 
               style={{
                 width: 80,
                 height: 80,
-                borderRadius: 40,
-                backgroundColor: colors.primaryContainer,
+                borderRadius: 24,
+                backgroundColor: colors.primaryLight,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 16,
@@ -574,16 +707,33 @@ export default function CounselorsScreen() {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={filteredCounsellors}
-            renderItem={renderCounsellorCard}
-            keyExtractor={(item) => item.uid}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24 }}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-            }
+          <Animated.ScrollView
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-          />
+            contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}
+            refreshControl={
+              <RefreshControl 
+                refreshing={refreshing} 
+                onRefresh={onRefresh} 
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+          >
+            {filteredCounsellors.map((counsellor, index) => (
+              <StoryCard 
+                key={counsellor.uid} 
+                counsellor={counsellor as CounsellorProfileData} 
+                index={index} 
+                colors={colors}
+                onPress={handleCounsellorPress}
+              />
+            ))}
+          </Animated.ScrollView>
         )}
       </SafeAreaView>
     </Animated.View>
