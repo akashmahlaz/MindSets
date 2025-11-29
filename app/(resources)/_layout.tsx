@@ -10,6 +10,9 @@ export default function ResourcesLayout() {
       }}
     >
       <Stack.Screen name="journal" />
+      <Stack.Screen name="meditation" />
+      <Stack.Screen name="breathing" />
+      <Stack.Screen name="sleep" />
       <Stack.Screen name="articles/index" />
       <Stack.Screen name="articles/[articleId]" />
       <Stack.Screen name="articles/create" />

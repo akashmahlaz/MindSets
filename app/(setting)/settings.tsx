@@ -57,19 +57,19 @@ export default function SettingsScreen() {
     }).start();
   }, [fadeAnim]);
 
-  // Premium Material Design 3 colors
+  // Premium Material Design 3 colors - desaturated for mental health
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
-    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
-    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    error: "#EF4444",
-    errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
-    success: "#10B981",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    primary: "#2AA79D",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    error: "#E57373",
+    errorContainer: isDarkColorScheme ? "rgba(229, 115, 115, 0.15)" : "rgba(229, 115, 115, 0.08)",
+    success: "#48A9A6",
   };
 
   const userProfileData = userProfile as UserProfileData;
@@ -708,9 +708,9 @@ export default function SettingsScreen() {
 
               <View style={{ gap: 12 }}>
                 {[
-                  { icon: "chatbubbles-outline", label: "My Conversations", route: "/chat", color: "#6366F1" },
-                  { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#8B5CF6" },
-                  { icon: "add-circle-outline", label: "Book New Session", route: "/(session)/book-session", color: "#10B981" },
+                  { icon: "chatbubbles-outline", label: "My Conversations", route: "/chat", color: "#2AA79D" },
+                  { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#3A9C94" },
+                  { icon: "add-circle-outline", label: "Book New Session", route: "/(session)/book-session", color: "#248F87" },
                 ].map((action, index) => (
                   <TouchableOpacity
                     key={index}
@@ -752,7 +752,7 @@ export default function SettingsScreen() {
                 style={{ marginBottom: 16, overflow: 'hidden', borderRadius: 16 }}
               >
                 <LinearGradient
-                  colors={['#6366F1', '#8B5CF6']}
+                  colors={['#2AA79D', '#3A9C94']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -861,7 +861,7 @@ export default function SettingsScreen() {
                   style={{ overflow: 'hidden', borderRadius: 14 }}
                 >
                   <LinearGradient
-                    colors={['#6366F1', '#8B5CF6']}
+                    colors={['#2AA79D', '#3A9C94']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{

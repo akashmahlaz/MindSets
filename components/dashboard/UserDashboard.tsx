@@ -43,25 +43,25 @@ export default function UserDashboard() {
 
   // Colors - Dark theme primary (matching tab bar)
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceElevated: isDarkColorScheme ? "#334155" : "#F1F5F9",
-    text: isDarkColorScheme ? "#F8FAFC" : "#0F172A",
-    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
-    primary: "#8B5CF6",
-    primaryLight: "#A78BFA",
-    secondary: "#10B981",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
+    surfaceElevated: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    textMuted: isDarkColorScheme ? "#6B7280" : "#9CA3AF",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
+    secondary: "#248F87",
     accent: "#EC4899",
-    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    cardBg: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    inputBg: isDarkColorScheme ? "#334155" : "#F1F5F9",
+    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    cardBg: isDarkColorScheme ? "#151923" : "#FFFFFF",
+    inputBg: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
   };
 
-  // Quick action colors
+  // Quick action colors - desaturated for mental health
   const quickActionColors = {
-    booking: ["#8B5CF6", "#7C3AED"],
-    messages: ["#10B981", "#059669"],
+    booking: ["#2AA79D", "#3A9C94"],
+    messages: ["#248F87", "#1E7771"],
     journal: ["#EC4899", "#DB2777"],
   };
 
@@ -148,6 +148,8 @@ export default function UserDashboard() {
 
   // Counselor card component
   const renderCounsellorCard = (counsellor: CounsellorProfileData, index: number) => {
+    const specialization = counsellor.specializations?.[0]?.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health";
+    
     return (
       <Pressable
         key={counsellor.uid}
@@ -160,133 +162,235 @@ export default function UserDashboard() {
         <View
           style={{
             backgroundColor: colors.cardBg,
-            borderRadius: 20,
+            borderRadius: 24,
             overflow: "hidden",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: isDarkColorScheme ? 0.3 : 0.1,
-            shadowRadius: 12,
-            elevation: 5,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: isDarkColorScheme ? 0.2 : 0.12,
+            shadowRadius: 20,
+            elevation: 8,
           }}
         >
-          {/* Top gradient section */}
-          <LinearGradient
-            colors={["#8B5CF6", "#EC4899"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ height: 80, position: "relative" }}
-          >
+          {/* Header with Organic Background */}
+          <View style={{ 
+            height: 100, 
+            position: "relative",
+            backgroundColor: isDarkColorScheme ? "#1C2128" : "#E8F5F3",
+          }}>
+            {/* Organic blob shapes */}
+            <View style={{
+              position: "absolute",
+              top: -20,
+              left: -20,
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: `${colors.primary}30`,
+            }} />
+            <View style={{
+              position: "absolute",
+              top: 20,
+              right: -30,
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: `${colors.secondary}25`,
+            }} />
+            <View style={{
+              position: "absolute",
+              bottom: -10,
+              left: 60,
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: `${colors.primary}20`,
+            }} />
+            
+            {/* Status Badge */}
             <View
               style={{
                 position: "absolute",
                 top: 12,
                 right: 12,
-                backgroundColor: "rgba(255,255,255,0.25)",
+                backgroundColor: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.9)",
                 paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 12,
+                paddingVertical: 5,
+                borderRadius: 20,
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#4ADE80", marginRight: 6 }} />
-              <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "600" }}>Available</Text>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#22C55E", marginRight: 6 }} />
+              <Text style={{ color: isDarkColorScheme ? "#FFF" : "#1F2937", fontSize: 11, fontWeight: "600" }}>Available</Text>
             </View>
-          </LinearGradient>
+          </View>
 
-          {/* Profile image */}
-          <View style={{ alignItems: "center", marginTop: -40 }}>
-            {counsellor.photoURL ? (
-              <Image
-                source={{ uri: counsellor.photoURL }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  borderWidth: 3,
-                  borderColor: colors.cardBg,
-                }}
-              />
-            ) : (
-              <View
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  borderWidth: 3,
-                  borderColor: colors.cardBg,
-                  backgroundColor: colors.surfaceElevated,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Ionicons name="person" size={36} color={colors.textSecondary} />
+          {/* Profile Photo - Overlapping */}
+          <View style={{ alignItems: "center", marginTop: -50 }}>
+            <View style={{
+              padding: 4,
+              borderRadius: 52,
+              backgroundColor: colors.cardBg,
+            }}>
+              {counsellor.photoURL ? (
+                <Image
+                  source={{ uri: counsellor.photoURL }}
+                  style={{
+                    width: 88,
+                    height: 88,
+                    borderRadius: 44,
+                  }}
+                />
+              ) : (
+                <LinearGradient
+                  colors={["#2AA79D", "#3A9C94"]}
+                  style={{
+                    width: 88,
+                    height: 88,
+                    borderRadius: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ color: "#FFF", fontSize: 32, fontWeight: "700" }}>
+                    {counsellor.displayName?.charAt(0) || "C"}
+                  </Text>
+                </LinearGradient>
+              )}
+            </View>
+            
+            {/* Verified Badge */}
+            {counsellor.verificationStatus === "verified" && (
+              <View style={{
+                position: "absolute",
+                bottom: 0,
+                right: "35%",
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 3,
+                borderColor: colors.cardBg,
+              }}>
+                <Ionicons name="checkmark" size={14} color="#FFF" />
               </View>
             )}
           </View>
 
           {/* Content */}
-          <View style={{ padding: 16, paddingTop: 12 }}>
+          <View style={{ padding: 18, paddingTop: 14 }}>
+            {/* Name & Title */}
             <Text
               style={{
                 fontSize: 18,
                 fontWeight: "700",
                 color: colors.text,
                 textAlign: "center",
-                marginBottom: 4,
+                marginBottom: 2,
               }}
               numberOfLines={1}
             >
               Dr. {counsellor.displayName}
             </Text>
-
             <Text
               style={{
                 fontSize: 13,
-                color: colors.textSecondary,
+                color: colors.primary,
                 textAlign: "center",
+                fontWeight: "500",
                 marginBottom: 12,
               }}
             >
-              {counsellor.specializations?.[0]?.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health Expert"}
+              {counsellor.licenseType || "Licensed Therapist"}
             </Text>
 
-            {/* Stats */}
-            <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 14 }}>
-              <View style={{ alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Ionicons name="star" size={14} color="#FBBF24" />
-                  <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text, marginLeft: 4 }}>4.9</Text>
+            {/* Specialization Tags */}
+            <View style={{ flexDirection: "row", justifyContent: "center", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {counsellor.specializations?.slice(0, 2).map((spec, idx) => (
+                <View key={idx} style={{
+                  backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 12,
+                }}>
+                  <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>
+                    {spec.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </Text>
                 </View>
-                <Text style={{ fontSize: 11, color: colors.textMuted }}>Rating</Text>
+              ))}
+            </View>
+
+            {/* Stats Row */}
+            <View style={{ 
+              flexDirection: "row", 
+              justifyContent: "space-between",
+              backgroundColor: isDarkColorScheme ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+              borderRadius: 14,
+              padding: 12,
+              marginBottom: 14,
+            }}>
+              <View style={{ alignItems: "center", flex: 1 }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="star" size={16} color="#FBBF24" />
+                  <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 4 }}>
+                    {counsellor.averageRating?.toFixed(1) || "4.9"}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>Rating</Text>
               </View>
               <View style={{ width: 1, backgroundColor: colors.border }} />
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>{counsellor.yearsExperience || 5}+</Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted }}>Years</Text>
+              <View style={{ alignItems: "center", flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+                  {counsellor.yearsExperience || 5}+
+                </Text>
+                <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>Years Exp</Text>
               </View>
               <View style={{ width: 1, backgroundColor: colors.border }} />
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary }}>${counsellor.hourlyRate || 80}</Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted }}>Per hr</Text>
+              <View style={{ alignItems: "center", flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary }}>
+                  ${counsellor.hourlyRate || 80}
+                </Text>
+                <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>Per hour</Text>
               </View>
             </View>
 
-            {/* Connect button */}
-            <Pressable onPress={() => handleCounsellorPress(counsellor)}>
-              <LinearGradient
-                colors={["#8B5CF6", "#7C3AED"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            {/* Action Buttons */}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Pressable 
+                onPress={() => handleCounsellorPress(counsellor)}
                 style={{
+                  flex: 1,
                   paddingVertical: 12,
                   borderRadius: 12,
+                  backgroundColor: isDarkColorScheme ? "rgba(255,255,255,0.1)" : "rgba(42,167,157,0.1)",
                   alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "600" }}>Connect</Text>
-              </LinearGradient>
-            </Pressable>
+                <Ionicons name="chatbubble-outline" size={16} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Message</Text>
+              </Pressable>
+              <Pressable onPress={() => handleCounsellorPress(counsellor)} style={{ flex: 1 }}>
+                <LinearGradient
+                  colors={["#2AA79D", "#3A9C94"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="calendar-outline" size={16} color="#FFF" />
+                  <Text style={{ color: "#FFF", fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Book</Text>
+                </LinearGradient>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Pressable>
@@ -601,8 +705,12 @@ export default function UserDashboard() {
               ))}
             </View>
           ) : featuredArticles.length > 0 ? (
-            <View style={{ gap: 12 }}>
-              {featuredArticles.slice(0, 3).map((article) => (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 20 }}
+            >
+              {featuredArticles.slice(0, 5).map((article, index) => (
                 <Pressable
                   key={article.id}
                   onPress={() =>
@@ -611,36 +719,68 @@ export default function UserDashboard() {
                       params: { articleId: article.id },
                     })
                   }
+                  style={{ marginRight: 14, width: 200 }}
                 >
                   <View
                     style={{
                       backgroundColor: colors.cardBg,
                       borderRadius: 16,
-                      padding: 14,
-                      flexDirection: "row",
-                      alignItems: "center",
+                      overflow: "hidden",
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 8,
+                      elevation: 3,
                     }}
                   >
-                    <View
-                      style={{
-                        width: 72,
-                        height: 72,
-                        borderRadius: 14,
-                        backgroundColor: colors.surfaceElevated,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 14,
-                      }}
-                    >
-                      <Ionicons name="document-text" size={28} color={colors.primary} />
+                    {/* Story Image */}
+                    {article.imageUrl ? (
+                      <Image
+                        source={{ uri: article.imageUrl }}
+                        style={{
+                          width: "100%",
+                          height: 120,
+                          backgroundColor: colors.surfaceElevated,
+                        }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <LinearGradient
+                        colors={index % 2 === 0 ? ["#2AA79D", "#3A9C94"] : ["#3A9C94", "#248F87"]}
+                        style={{
+                          width: "100%",
+                          height: 120,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Ionicons name="document-text" size={40} color="rgba(255,255,255,0.8)" />
+                      </LinearGradient>
+                    )}
+                    
+                    {/* Category Badge */}
+                    <View style={{
+                      position: "absolute",
+                      top: 10,
+                      left: 10,
+                      backgroundColor: "rgba(0,0,0,0.6)",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                    }}>
+                      <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "600" }}>
+                        {article.category || "Wellness"}
+                      </Text>
                     </View>
-                    <View style={{ flex: 1 }}>
+                    
+                    {/* Content */}
+                    <View style={{ padding: 14 }}>
                       <Text
                         style={{
-                          fontSize: 15,
-                          fontWeight: "600",
+                          fontSize: 14,
+                          fontWeight: "700",
                           color: colors.text,
-                          marginBottom: 4,
+                          marginBottom: 8,
                           lineHeight: 20,
                         }}
                         numberOfLines={2}
@@ -648,21 +788,16 @@ export default function UserDashboard() {
                         {article.title}
                       </Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Ionicons name="time-outline" size={14} color={colors.textMuted} />
-                        <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>
+                        <Ionicons name="time-outline" size={12} color={colors.textMuted} />
+                        <Text style={{ fontSize: 11, color: colors.textMuted, marginLeft: 4 }}>
                           {article.readTime || 5} min read
-                        </Text>
-                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textMuted, marginHorizontal: 8 }} />
-                        <Text style={{ fontSize: 12, color: colors.primary, fontWeight: "500" }}>
-                          {article.category || "Wellness"}
                         </Text>
                       </View>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                   </View>
                 </Pressable>
               ))}
-            </View>
+            </ScrollView>
           ) : (
             <View
               style={{
@@ -681,7 +816,7 @@ export default function UserDashboard() {
                 style={{ marginTop: 16 }}
               >
                 <LinearGradient
-                  colors={["#8B5CF6", "#7C3AED"]}
+                  colors={["#2AA79D", "#3A9C94"]}
                   style={{
                     paddingHorizontal: 20,
                     paddingVertical: 10,
@@ -702,9 +837,9 @@ export default function UserDashboard() {
           </Text>
           <View style={{ gap: 12 }}>
             {[
-              { icon: "leaf-outline", label: "Meditation", desc: "Calm your mind", color: "#10B981", route: "/(resources)/meditation" },
-              { icon: "fitness-outline", label: "Breathing", desc: "Reduce stress", color: "#06B6D4", route: "/(resources)/breathing" },
-              { icon: "moon-outline", label: "Sleep", desc: "Better rest", color: "#8B5CF6", route: "/(resources)/sleep" },
+              { icon: "leaf-outline", label: "Meditation", desc: "Calm your mind", color: "#2AA79D", route: "/(resources)/meditation" },
+              { icon: "fitness-outline", label: "Breathing", desc: "Reduce stress", color: "#3A9C94", route: "/(resources)/breathing" },
+              { icon: "moon-outline", label: "Sleep", desc: "Better rest", color: "#248F87", route: "/(resources)/sleep" },
             ].map((item, index) => (
               <Pressable
                 key={index}

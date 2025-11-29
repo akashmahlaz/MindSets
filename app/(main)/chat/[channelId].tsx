@@ -46,10 +46,10 @@ export default function ChatScreen() {
     surfaceVariant: isDarkColorScheme ? "#252B3B" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryLight: "#818CF8",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    online: "#10B981",
+    online: "#2AA79D",
   };
 
   useEffect(() => {

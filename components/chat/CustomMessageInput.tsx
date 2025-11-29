@@ -23,13 +23,13 @@ export const CustomMessageInput = () => {
   } = useMessageInputContext();
 
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    inputBg: isDarkColorScheme ? "#1E293B" : "#F1F5F9",
-    inputBorder: isDarkColorScheme ? "#334155" : "#E2E8F0",
-    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
-    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    sendButton: "#6366F1",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    inputBg: isDarkColorScheme ? "#151923" : "#F9FBFB",
+    inputBorder: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    primary: "#2AA79D",
+    sendButton: "#2AA79D",
   };
 
   const handleSend = async () => {

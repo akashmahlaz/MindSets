@@ -17,7 +17,7 @@ export default function TabLayout() {
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surfaceContainer: isDarkColorScheme ? "#0C0F14" : "#FAFBFC", // Match background for seamless look
-    primary: "#6366F1",
+    primary: "#2AA79D",
     onSurfaceVariant: isDarkColorScheme ? "#94A3B8" : "#64748B",
     outline: isDarkColorScheme ? "#1A1F2E" : "#E5E7EB",
   };

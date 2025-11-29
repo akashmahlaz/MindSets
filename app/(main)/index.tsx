@@ -7,10 +7,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
-  Animated,
-  StatusBar,
-  Text
+    ActivityIndicator,
+    Animated,
+    StatusBar,
+    Text
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -42,8 +42,8 @@ export default function HomeScreen() {
   const colors = {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
-    primary: "#6366F1",
-    primaryLight: "#818CF8",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
     text: isDarkColorScheme ? "#F9FAFB" : "#111827",
     textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
   };

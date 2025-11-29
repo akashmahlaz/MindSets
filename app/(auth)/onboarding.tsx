@@ -37,7 +37,7 @@ const slides: OnboardingSlide[] = [
     subtitle: "Your Mental Wellness Journey",
     description:
       "Take the first step towards a healthier mind. Connect with licensed therapists who truly understand you.",
-    gradient: ["#6366F1", "#8B5CF6"],
+    gradient: ["#2AA79D", "#3A9C94"],
     features: ["Professional Support", "Safe & Confidential", "24/7 Available"],
   },
   {
@@ -47,7 +47,7 @@ const slides: OnboardingSlide[] = [
     subtitle: "Therapy That Fits Your Life",
     description:
       "Chat, call, or video session with your therapist from the comfort of your home. No commute, no waiting rooms.",
-    gradient: ["#10B981", "#059669"],
+    gradient: ["#2AA79D", "#248F87"],
     features: ["Video Sessions", "Secure Chat", "Voice Calls"],
   },
   {

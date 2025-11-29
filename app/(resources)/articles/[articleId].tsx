@@ -42,9 +42,9 @@ const getColors = (isDark: boolean) => ({
   textMuted: isDark ? "#737373" : "#9CA3AF",
   border: isDark ? "#262626" : "#E5E7EB",
   borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
-  primary: "#6366F1",
-  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-  accent: isDark ? "#818CF8" : "#4F46E5",
+  primary: "#2AA79D",
+  primarySoft: isDark ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+  accent: isDark ? "#3A9C94" : "#248F87",
   danger: "#EF4444",
   dangerSoft: isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
 });

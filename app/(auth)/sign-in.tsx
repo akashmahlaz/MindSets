@@ -5,26 +5,26 @@ import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-  GoogleAuthProvider,
-  OAuthProvider,
-  signInWithCredential,
-  signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    OAuthProvider,
+    signInWithCredential,
+    signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Animated,
-  Easing,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Animated,
+    Easing,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "../../firebaseConfig";
@@ -83,13 +83,13 @@ export default function SignInScreen() {
     textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
     
     // Primary gradient
-    primaryGradient: ["#6366F1", "#8B5CF6"] as const,
-    primary: "#6366F1",
+    primaryGradient: ["#2AA79D", "#3A9C94"] as const,
+    primary: "#2AA79D",
     
     // Inputs
     inputBg: isDarkColorScheme ? "rgba(30, 35, 50, 0.6)" : "rgba(255, 255, 255, 0.8)",
     inputBorder: isDarkColorScheme ? "rgba(148, 163, 184, 0.15)" : "rgba(15, 23, 42, 0.08)",
-    inputFocusBorder: "#6366F1",
+    inputFocusBorder: "#2AA79D",
     
     // Borders
     border: isDarkColorScheme ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)",
@@ -101,6 +101,7 @@ export default function SignInScreen() {
 
   // Google Auth
   const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
     clientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
     iosClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
     androidClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
@@ -258,7 +259,7 @@ export default function SignInScreen() {
               {/* Logo with gradient ring */}
               <View style={{ marginBottom: 24 }}>
                 <LinearGradient
-                  colors={["#6366F1", "#8B5CF6", "#EC4899"]}
+                  colors={["#2AA79D", "#3A9C94", "#248F87"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -362,7 +363,7 @@ export default function SignInScreen() {
                         width: 36,
                         height: 36,
                         borderRadius: 10,
-                        backgroundColor: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.1)",
+                        backgroundColor: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
@@ -418,7 +419,7 @@ export default function SignInScreen() {
                         width: 36,
                         height: 36,
                         borderRadius: 10,
-                        backgroundColor: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.1)",
+                        backgroundColor: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
                         alignItems: "center",
                         justifyContent: "center",
                       }}

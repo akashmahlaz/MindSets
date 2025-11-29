@@ -29,8 +29,8 @@ export default function ChatLayout() {
     background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
     surface: isDarkColorScheme ? "#1A1F2E" : "#FFFFFF",
     surfaceVariant: isDarkColorScheme ? "#252B3B" : "#F1F5F9",
-    primary: "#6366F1",
-    primaryLight: "#818CF8",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
@@ -40,7 +40,7 @@ export default function ChatLayout() {
   const chatTheme: DeepPartial<Theme> = {
     colors: {
       accent_blue: colors.primary,
-      accent_green: "#10B981",
+      accent_green: "#2AA79D",
       accent_red: "#EF4444",
       bg_gradient_end: colors.background,
       bg_gradient_start: colors.background,
@@ -202,7 +202,7 @@ export default function ChatLayout() {
         borderRadius: 26,
       },
       presenceIndicator: {
-        backgroundColor: "#10B981",
+        backgroundColor: "#2AA79D",
         borderWidth: 2.5,
         borderColor: colors.background,
         width: 14,

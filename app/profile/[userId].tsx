@@ -58,25 +58,25 @@ export default function ProfileScreen() {
     }).start();
   }, [fadeAnim]);
 
-  // Premium Material Design 3 colors
+  // Premium Material Design 3 colors - desaturated for mental health
   const colors = {
-    background: isDarkColorScheme ? "#0F172A" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
-    text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
-    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryLight: "#818CF8",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-    secondary: "#10B981",
-    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
-    accent: "#8B5CF6",
-    accentContainer: isDarkColorScheme ? "rgba(139, 92, 246, 0.15)" : "rgba(139, 92, 246, 0.08)",
-    purple: "#8B5CF6",
-    warning: "#F59E0B",
-    warningContainer: isDarkColorScheme ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)",
-    error: "#EF4444",
-    border: isDarkColorScheme ? "#334155" : "#E2E8F0",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    secondary: "#3A9C94",
+    secondaryContainer: isDarkColorScheme ? "rgba(58, 156, 148, 0.15)" : "rgba(58, 156, 148, 0.08)",
+    accent: "#248F87",
+    accentContainer: isDarkColorScheme ? "rgba(36, 143, 135, 0.15)" : "rgba(36, 143, 135, 0.08)",
+    purple: "#3A9C94",
+    warning: "#F5B945",
+    warningContainer: isDarkColorScheme ? "rgba(245, 185, 69, 0.15)" : "rgba(245, 185, 69, 0.08)",
+    error: "#E57373",
+    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
   };
 
   useEffect(() => {
@@ -455,7 +455,7 @@ export default function ProfileScreen() {
                   </Avatar>
                 ) : (
                   <LinearGradient
-                    colors={['#6366F1', '#8B5CF6']}
+                    colors={['#2AA79D', '#3A9C94']}
                     style={{
                       width: 96,
                       height: 96,

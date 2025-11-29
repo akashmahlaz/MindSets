@@ -334,17 +334,38 @@ export const getCounsellors = async (filters?: {
       const originalCount = counsellors.length;
 
       if (filters.specializations && filters.specializations.length > 0) {
-        counsellors = counsellors.filter((counsellor) => {
+        // Normalize filter specializations for comparison
+        const normalizedFilters = filters.specializations.map((s) => 
+          s.toLowerCase().replace(/-/g, " ").replace(/_/g, " ")
+        );
+        
+        const filteredCounsellors = counsellors.filter((counsellor) => {
           const hasSpecializations =
             "specializations" in counsellor &&
             Array.isArray(counsellor.specializations);
           if (!hasSpecializations) return false;
 
-          const matches = filters.specializations!.some((spec) =>
-            counsellor.specializations.includes(spec),
+          // Normalize counsellor specializations for comparison
+          const counsellorSpecs = counsellor.specializations.map((s: string) =>
+            s.toLowerCase().replace(/-/g, " ").replace(/_/g, " ")
+          );
+
+          // Check if any filter matches any counsellor specialization
+          const matches = normalizedFilters.some((filterSpec) =>
+            counsellorSpecs.some((counsellorSpec: string) => 
+              counsellorSpec.includes(filterSpec) || filterSpec.includes(counsellorSpec)
+            )
           );
           return matches;
         });
+        
+        // Only apply filter if it doesn't eliminate all counsellors
+        if (filteredCounsellors.length > 0) {
+          counsellors = filteredCounsellors;
+        } else {
+          console.log("⚠️ Specialization filter would eliminate all counsellors, showing all available");
+        }
+        
         console.log(
           `🎯 Filtered by specializations: ${originalCount} → ${counsellors.length}`,
         );

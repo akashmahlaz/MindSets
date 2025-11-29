@@ -5,7 +5,7 @@ import { VideoProvider } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { setupVideoPushConfig } from "@/lib/videoPushConfig";
 import { Slot, useRootNavigationState, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Animated, AppRegistry, StatusBar, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,6 +13,9 @@ import "./global.css";
 
 // Initialize push notifications using the new service
 import { PushNotificationInitializer } from "@/hooks/usePushNotifications";
+
+
+import { OverlayProvider } from "stream-chat-react-native";
 
 // Initialize video push configuration on app start
 setupVideoPushConfig();
@@ -49,54 +52,51 @@ console.warn = (...args) => {
   originalWarn.apply(console, args);
 };
 
-import React from "react";
-import { OverlayProvider } from "stream-chat-react-native";
-
 function StreamChatWrapper({ children }: { children: React.ReactNode }) {
   const { isDarkColorScheme } = useColorScheme();
 
   // Premium dark theme matching app design
   const darkTheme = {
     colors: {
-      accent_blue: "#6366F1",
-      accent_green: "#10B981",
-      accent_red: "#EF4444",
-      bg_gradient_end: "#0C0F14",
-      bg_gradient_start: "#0C0F14",
-      black: "#FFFFFF",
-      blue_alice: "#1A1F2E",
-      border: "#334155",
-      grey: "#94A3B8",
-      grey_gainsboro: "#252B3B",
-      grey_whisper: "#1A1F2E",
-      icon_background: "#252B3B",
-      icon: "#F1F5F9",
+      accent_blue: "#2AA79D",
+      accent_green: "#2AA79D",
+      accent_red: "#E57373",
+      bg_gradient_end: "#0F1117",
+      bg_gradient_start: "#0F1117",
+      black: "#E5E7EB",
+      blue_alice: "#151923",
+      border: "#374151",
+      grey: "#9CA3AF",
+      grey_gainsboro: "#1C2128",
+      grey_whisper: "#151923",
+      icon_background: "#1C2128",
+      icon: "#E5E7EB",
       modal_shadow: "#00000080",
-      modal: "#1A1F2E",
-      overlay: "#0C0F14E6",
-      shadow_icon: "#94A3B8",
-      targetedMessageBackground: "#252B3B",
+      modal: "#151923",
+      overlay: "#0F1117E6",
+      shadow_icon: "#9CA3AF",
+      targetedMessageBackground: "#1C2128",
       transparent: "transparent",
-      text: "#F1F5F9",
-      white: "#1A1F2E",
-      white_smoke: "#252B3B",
-      white_snow: "#1A1F2E",
+      text: "#E5E7EB",
+      white: "#151923",
+      white_smoke: "#1C2128",
+      white_snow: "#151923",
     },
   };
 
   // Premium light theme
   const lightTheme = {
     colors: {
-      accent_blue: "#6366F1",
-      accent_green: "#10B981",
-      accent_red: "#EF4444",
-      bg_gradient_end: "#FAFBFC",
-      bg_gradient_start: "#FAFBFC",
-      black: "#0F172A",
-      blue_alice: "#F1F5F9",
-      border: "#E2E8F0",
-      grey: "#64748B",
-      grey_gainsboro: "#F1F5F9",
+      accent_blue: "#2AA79D",
+      accent_green: "#2AA79D",
+      accent_red: "#E57373",
+      bg_gradient_end: "#FFFFFF",
+      bg_gradient_start: "#FFFFFF",
+      black: "#1F2937",
+      blue_alice: "#F9FBFB",
+      border: "#E5E7EB",
+      grey: "#6B7280",
+      grey_gainsboro: "#F9FBFB",
       grey_whisper: "#FFFFFF",
       icon_background: "#F1F5F9",
       icon: "#0F172A",
@@ -145,10 +145,10 @@ function SplashScreen() {
   }, []);
 
   const colors = {
-    background: isDarkColorScheme ? "#0A0A0F" : "#FAFBFC",
-    primary: "#6366F1",
-    text: isDarkColorScheme ? "#FFFFFF" : "#1E2530",
-    textSecondary: isDarkColorScheme ? "#8B95A5" : "#747B8A",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    primary: "#2AA79D",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
   };
 
   return (

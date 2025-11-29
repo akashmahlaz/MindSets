@@ -32,10 +32,10 @@ const getColors = (isDark: boolean) => ({
   textMuted: isDark ? "#737373" : "#9CA3AF",
   border: isDark ? "#262626" : "#E5E7EB",
   borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
-  primary: "#6366F1",
-  primarySoft: isDark ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
+  primary: "#2AA79D",
+  primarySoft: isDark ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
   danger: "#EF4444",
-  success: "#10B981",
+  success: "#2AA79D",
 });
 
 export default function EditStory() {

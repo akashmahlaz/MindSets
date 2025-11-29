@@ -99,13 +99,13 @@ export default function RoleSelectionScreen() {
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
     textMuted: isDarkColorScheme ? "#64748B" : "#94A3B8",
     
-    // Accent gradients - Vibrant, modern
-    primaryGradient: ["#6366F1", "#8B5CF6"] as const, // Indigo to Purple
-    secondaryGradient: ["#10B981", "#06B6D4"] as const, // Emerald to Cyan
+    // Accent gradients - Desaturated for mental health
+    primaryGradient: ["#2AA79D", "#3A9C94"] as const, // Desaturated teal
+    secondaryGradient: ["#2AA79D", "#248F87"] as const, // Desaturated teal secondary
     
     // Borders
     border: isDarkColorScheme ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)",
-    borderSelected: isDarkColorScheme ? "rgba(99, 102, 241, 0.5)" : "rgba(99, 102, 241, 0.3)",
+    borderSelected: isDarkColorScheme ? "rgba(42, 167, 157, 0.5)" : "rgba(42, 167, 157, 0.3)",
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -129,7 +129,7 @@ export default function RoleSelectionScreen() {
       description: "Connect with licensed therapists who understand your unique needs",
       features: ["Personalized matching", "Secure video sessions", "24/7 messaging"],
       gradient: colors.primaryGradient,
-      iconBg: isDarkColorScheme ? "rgba(99, 102, 241, 0.2)" : "rgba(99, 102, 241, 0.1)",
+      iconBg: isDarkColorScheme ? "rgba(42, 167, 157, 0.2)" : "rgba(42, 167, 157, 0.1)",
       anim: card1Anim,
     },
     {
@@ -140,7 +140,7 @@ export default function RoleSelectionScreen() {
       description: "Join our network and help people worldwide from anywhere",
       features: ["Set your schedule", "Manage clients easily", "Secure & HIPAA compliant"],
       gradient: colors.secondaryGradient,
-      iconBg: isDarkColorScheme ? "rgba(16, 185, 129, 0.2)" : "rgba(16, 185, 129, 0.1)",
+      iconBg: isDarkColorScheme ? "rgba(42, 167, 157, 0.2)" : "rgba(42, 167, 157, 0.1)",
       anim: card2Anim,
     },
   ];
@@ -176,15 +176,13 @@ export default function RoleSelectionScreen() {
             style={{
               backgroundColor: isSelected ? colors.cardBgSelected : colors.cardBg,
               borderRadius: 24,
-              borderWidth: isSelected ? 2 : 1,
-              borderColor: isSelected ? option.gradient[0] : colors.border,
               overflow: "hidden",
-              // Premium shadow
+              // Premium shadow - no borders, modern apps use elevation
               shadowColor: isSelected ? option.gradient[0] : "#000",
-              shadowOffset: { width: 0, height: isSelected ? 12 : 4 },
-              shadowOpacity: isSelected ? 0.3 : 0.08,
-              shadowRadius: isSelected ? 24 : 12,
-              elevation: isSelected ? 12 : 4,
+              shadowOffset: { width: 0, height: isSelected ? 16 : 4 },
+              shadowOpacity: isSelected ? 0.35 : 0.08,
+              shadowRadius: isSelected ? 28 : 12,
+              elevation: isSelected ? 16 : 4,
             }}
           >
             {/* Gradient accent bar at top when selected */}
@@ -237,17 +235,17 @@ export default function RoleSelectionScreen() {
                   </View>
                 </View>
                 
-                {/* Selection indicator */}
+                {/* Selection indicator - modern fill style, no borders */}
                 <View
                   style={{
                     width: 26,
                     height: 26,
                     borderRadius: 13,
-                    borderWidth: 2,
-                    borderColor: isSelected ? option.gradient[0] : colors.textMuted,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: isSelected ? option.gradient[0] : "transparent",
+                    backgroundColor: isSelected 
+                      ? option.gradient[0] 
+                      : (isDarkColorScheme ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"),
                   }}
                 >
                   {isSelected && (
@@ -337,7 +335,7 @@ export default function RoleSelectionScreen() {
           {/* Logo with gradient ring */}
           <View style={{ marginBottom: 24 }}>
             <LinearGradient
-              colors={["#6366F1", "#8B5CF6", "#EC4899"]}
+              colors={["#2AA79D", "#3A9C94", "#248F87"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -422,10 +420,10 @@ export default function RoleSelectionScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{
-                borderRadius: 16,
+                borderRadius: 28,
                 paddingVertical: 18,
                 alignItems: "center",
-                shadowColor: selectedRole ? "#6366F1" : "transparent",
+                shadowColor: selectedRole ? "#2AA79D" : "transparent",
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.4,
                 shadowRadius: 16,
@@ -459,7 +457,7 @@ export default function RoleSelectionScreen() {
               onPress={() => router.replace("/(auth)/sign-in")}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: "#6366F1" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#2AA79D" }}>
                 Sign in
               </Text>
             </Pressable>

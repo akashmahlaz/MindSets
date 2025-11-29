@@ -8,11 +8,11 @@ import { ThemedView } from "../ThemedView";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "../ui/card";
 
 interface CallSetupProps {
@@ -217,10 +217,10 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   audioCall: {
-    backgroundColor: "#10B981",
+    backgroundColor: "#2AA79D",
   },
   videoCall: {
-    backgroundColor: "#3B82F6",
+    backgroundColor: "#3A9C94",
   },
   callButtonText: {
     color: "#fff",

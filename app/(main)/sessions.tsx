@@ -57,14 +57,14 @@ export default function SessionsScreen() {
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-    secondary: "#10B981",
-    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
-    purple: "#8B5CF6",
+    primary: "#2AA79D",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    secondary: "#3A9C94",
+    secondaryContainer: isDarkColorScheme ? "rgba(58, 156, 148, 0.15)" : "rgba(58, 156, 148, 0.08)",
+    purple: "#3A9C94",
     warning: "#F59E0B",
     warningContainer: isDarkColorScheme ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.08)",
-    success: "#10B981",
+    success: "#2AA79D",
     error: "#EF4444",
     errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
@@ -232,7 +232,7 @@ export default function SessionsScreen() {
               style={{ overflow: 'hidden', borderRadius: 16 }}
             >
               <LinearGradient
-                colors={['#6366F1', '#8B5CF6']}
+                colors={['#2AA79D', '#3A9C94']}
                 style={{
                   width: 48,
                   height: 48,
@@ -342,7 +342,7 @@ export default function SessionsScreen() {
                   style={{ marginTop: 24, overflow: 'hidden', borderRadius: 14 }}
                 >
                   <LinearGradient
-                    colors={['#6366F1', '#8B5CF6']}
+                    colors={['#2AA79D', '#3A9C94']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{
@@ -469,7 +469,7 @@ export default function SessionsScreen() {
                             style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}
                           >
                             <LinearGradient
-                              colors={['#6366F1', '#8B5CF6']}
+                              colors={['#2AA79D', '#3A9C94']}
                               start={{ x: 0, y: 0 }}
                               end={{ x: 1, y: 0 }}
                               style={{

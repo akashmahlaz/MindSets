@@ -94,27 +94,27 @@ const PremiumButton: React.FC<PremiumButtonProps> = ({
   // Color configurations
   const colorConfig = {
     primary: {
-      gradient: gradientColors || ["#4A6CF4", "#7C3AED"],
-      background: "#4A6CF4",
+      gradient: gradientColors || ["#2AA79D", "#3A9C94"],
+      background: "#2AA79D",
       text: "#FFFFFF",
       border: "transparent",
     },
     secondary: {
-      gradient: ["#10B981", "#059669"],
-      background: "#10B981",
+      gradient: ["#3A9C94", "#248F87"],
+      background: "#3A9C94",
       text: "#FFFFFF",
       border: "transparent",
     },
     outline: {
       gradient: ["transparent", "transparent"],
       background: "transparent",
-      text: "#4A6CF4",
-      border: "#4A6CF4",
+      text: "#2AA79D",
+      border: "#2AA79D",
     },
     ghost: {
       gradient: ["transparent", "transparent"],
       background: "transparent",
-      text: "#4A6CF4",
+      text: "#2AA79D",
       border: "transparent",
     },
     destructive: {

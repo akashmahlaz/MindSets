@@ -98,6 +98,21 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
+    // Mood Entries collection - for mood tracking
+    match /moodEntries/{entryId} {
+      // Users can read their own mood entries
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can create mood entries for themselves
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users can update/delete their own mood entries
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Admins can read all mood entries (for analytics)
+      allow read: if isAdmin();
+    }
+    
     // Deny all other access by default
     match /{document=**} {
       allow read, write: if false;

@@ -6,19 +6,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -73,15 +73,15 @@ export default function UserSignUpScreen() {
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-    secondary: "#8B5CF6",
+    primary: "#2AA79D",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    secondary: "#3A9C94",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
     input: isDarkColorScheme ? "#1E293B" : "#F8FAFC",
     error: "#EF4444",
     errorContainer: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
-    success: "#10B981",
-    successContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
+    success: "#2AA79D",
+    successContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
   };
 
   const isFormValid =
@@ -141,8 +141,8 @@ export default function UserSignUpScreen() {
 
   // Quick concerns for faster selection
   const quickConcerns = [
-    { id: "Anxiety", icon: "pulse-outline", color: "#6366F1" },
-    { id: "Depression", icon: "cloud-outline", color: "#8B5CF6" },
+    { id: "Anxiety", icon: "pulse-outline", color: "#2AA79D" },
+    { id: "Depression", icon: "cloud-outline", color: "#3A9C94" },
     { id: "Stress", icon: "fitness-outline", color: "#EC4899" },
     { id: "Relationships", icon: "heart-outline", color: "#EF4444" },
     { id: "Self-esteem", icon: "sparkles-outline", color: "#F59E0B" },
@@ -205,7 +205,7 @@ export default function UserSignUpScreen() {
             >
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <LinearGradient
-                  colors={["#6366F1", "#8B5CF6"]}
+                  colors={["#2AA79D", "#3A9C94"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -493,7 +493,7 @@ export default function UserSignUpScreen() {
                 style={{ opacity: loading ? 0.7 : 1, marginTop: 8 }}
               >
                 <LinearGradient
-                  colors={isFormValid ? ["#6366F1", "#8B5CF6"] : [colors.surfaceVariant, colors.surfaceVariant]}
+                  colors={isFormValid ? ["#2AA79D", "#3A9C94"] : [colors.surfaceVariant, colors.surfaceVariant]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{

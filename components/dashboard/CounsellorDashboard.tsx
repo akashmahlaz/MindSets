@@ -2,8 +2,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Article, getUserArticles } from "@/services/articleService";
 import {
-    getUpcomingSessions,
-    getUserSessions,
+  getUpcomingSessions,
+  getUserSessions,
 } from "@/services/sessionService";
 import { getAllUsers } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
@@ -12,15 +12,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    Animated,
-    Image,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    View,
+  Alert,
+  Animated,
+  Image,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -43,25 +43,25 @@ export default function CounsellorDashboard() {
 
   // Premium colors - matching tab bar
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-    surface: isDarkColorScheme ? "#16161F" : "#FFFFFF",
-    surfaceElevated: isDarkColorScheme ? "#1C1C28" : "#F8F9FC",
-    text: isDarkColorScheme ? "#FFFFFF" : "#1A1A2E",
-    textSecondary: isDarkColorScheme ? "#8B8B9E" : "#6B7280",
-    textMuted: isDarkColorScheme ? "#5C5C6F" : "#9CA3AF",
-    primary: "#7C3AED",
-    primaryLight: "#A78BFA",
-    secondary: "#06B6D4",
+    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
+    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
+    surfaceElevated: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
+    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    textMuted: isDarkColorScheme ? "#6B7280" : "#9CA3AF",
+    primary: "#2AA79D",
+    primaryLight: "#3A9C94",
+    secondary: "#248F87",
     accent: "#F472B6",
-    success: "#10B981",
-    warning: "#FBBF24",
-    error: "#EF4444",
-    gradient1: ["#7C3AED", "#EC4899"] as const,
-    gradient2: ["#06B6D4", "#3B82F6"] as const,
+    success: "#48A9A6",
+    warning: "#F5B945",
+    error: "#E57373",
+    gradient1: ["#2AA79D", "#3A9C94"] as const,
+    gradient2: ["#248F87", "#1E7771"] as const,
     gradient3: ["#F472B6", "#FB923C"] as const,
-    gradient4: ["#10B981", "#059669"] as const,
-    border: isDarkColorScheme ? "#2A2A3C" : "#E5E7EB",
-    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(99,102,241,0.08)",
+    gradient4: ["#2AA79D", "#248F87"] as const,
+    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(42,167,157,0.08)",
   };
 
   // Premium animations
@@ -438,10 +438,10 @@ export default function CounsellorDashboard() {
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24 }} contentContainerStyle={{ paddingHorizontal: 24 }}>
             {[
-              { icon: "chatbubbles", label: "Messages", color: "#7C3AED", bgColor: "rgba(124, 58, 237, 0.12)", route: "/chat" },
-              { icon: "calendar", label: "Schedule", color: "#06B6D4", bgColor: "rgba(6, 182, 212, 0.12)", route: "/(main)/sessions" },
+              { icon: "chatbubbles", label: "Messages", color: "#2AA79D", bgColor: "rgba(42, 167, 157, 0.12)", route: "/chat" },
+              { icon: "calendar", label: "Schedule", color: "#3A9C94", bgColor: "rgba(58, 156, 148, 0.12)", route: "/(main)/sessions" },
               { icon: "book", label: "Stories", color: "#F472B6", bgColor: "rgba(244, 114, 182, 0.12)", route: "/(resources)/articles" },
-              { icon: "create", label: "Write Story", color: "#10B981", bgColor: "rgba(16, 185, 129, 0.12)", route: "/(resources)/articles/create" },
+              { icon: "create", label: "Write Story", color: "#248F87", bgColor: "rgba(36, 143, 135, 0.12)", route: "/(resources)/articles/create" },
               { icon: "person", label: "Profile", color: "#FB923C", bgColor: "rgba(251, 146, 60, 0.12)", route: "/profile" },
             ].map((action, index) => (
               <Pressable
@@ -603,8 +603,8 @@ export default function CounsellorDashboard() {
             <View style={{ gap: 16 }}>
               {myStories.slice(0, 3).map((story, index) => {
                 const categoryColors = [
-                  { bg: "rgba(124, 58, 237, 0.12)", text: "#7C3AED" },
-                  { bg: "rgba(6, 182, 212, 0.12)", text: "#06B6D4" },
+                  { bg: "rgba(42, 167, 157, 0.12)", text: "#2AA79D" },
+                  { bg: "rgba(58, 156, 148, 0.12)", text: "#3A9C94" },
                   { bg: "rgba(244, 114, 182, 0.12)", text: "#F472B6" },
                 ];
                 const colorSet = categoryColors[index % 3];

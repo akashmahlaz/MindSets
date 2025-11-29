@@ -6,17 +6,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useColorScheme,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useColorScheme,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -32,9 +32,9 @@ const getColors = (isDark: boolean) => ({
   border: isDark ? "#333333" : "#E0E0E0",
   borderSubtle: isDark ? "#222222" : "#F0F0F0",
   primary: "#FFFFFF",
-  accent: "#20B2AA",
+  accent: "#2AA79D",
   danger: "#EF4444",
-  success: "#10B981",
+  success: "#2AA79D",
 });
 
 const categories = [

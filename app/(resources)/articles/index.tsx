@@ -1,24 +1,24 @@
 import { useAuth } from "@/context/AuthContext";
 import {
-  Article,
-  getAllArticles,
-  getUserArticles,
+    Article,
+    getAllArticles,
+    getUserArticles,
 } from "@/services/articleService";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
-  Image,
-  Platform,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    Dimensions,
+    Image,
+    Platform,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -37,10 +37,10 @@ const getColors = (isDark: boolean) => ({
   textMuted: isDark ? "#737373" : "#9CA3AF",
   border: isDark ? "#262626" : "#E5E7EB",
   borderSubtle: isDark ? "#1F1F1F" : "#F3F4F6",
-  primary: "#20B2AA", // Teal accent like Perplexity
-  primarySoft: isDark ? "rgba(32, 178, 170, 0.15)" : "rgba(32, 178, 170, 0.1)",
-  accent: isDark ? "#20B2AA" : "#20B2AA",
-  success: "#10B981",
+  primary: "#2AA79D", // MindSets teal
+  primarySoft: isDark ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
+  accent: isDark ? "#2AA79D" : "#2AA79D",
+  success: "#2AA79D",
   warning: "#F59E0B",
 });
 

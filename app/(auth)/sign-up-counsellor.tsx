@@ -98,15 +98,15 @@ export default function CounsellorSignUpScreen() {
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
     textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
-    primary: "#6366F1",
-    primaryContainer: isDarkColorScheme ? "rgba(99, 102, 241, 0.15)" : "rgba(99, 102, 241, 0.08)",
-    secondary: "#10B981",
-    secondaryContainer: isDarkColorScheme ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.08)",
-    accent: "#8B5CF6",
+    primary: "#2AA79D",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    secondary: "#2AA79D",
+    secondaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
+    accent: "#3A9C94",
     border: isDarkColorScheme ? "#334155" : "#E2E8F0",
     input: isDarkColorScheme ? "#1E293B" : "#F8FAFC",
     error: "#EF4444",
-    success: "#10B981",
+    success: "#2AA79D",
   };
 
   const pickDocument = async (type: "license" | "degree") => {
@@ -218,7 +218,7 @@ export default function CounsellorSignUpScreen() {
       {/* Section Header */}
       <View style={{ alignItems: "center", marginBottom: 8 }}>
         <LinearGradient
-          colors={["#6366F1", "#8B5CF6"]}
+          colors={["#2AA79D", "#3A9C94"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -354,7 +354,7 @@ export default function CounsellorSignUpScreen() {
       {/* Section Header */}
       <View style={{ alignItems: "center", marginBottom: 8 }}>
         <LinearGradient
-          colors={["#10B981", "#059669"]}
+          colors={["#2AA79D", "#248F87"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -631,7 +631,7 @@ export default function CounsellorSignUpScreen() {
           overflow: "hidden"
         }}>
           <LinearGradient
-            colors={["#6366F1", "#8B5CF6"]}
+            colors={["#2AA79D", "#3A9C94"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
@@ -674,7 +674,7 @@ export default function CounsellorSignUpScreen() {
           style={{ opacity: loading || (currentStep === 1 ? !isStep1Valid : !isStep2Valid) ? 0.6 : 1 }}
         >
           <LinearGradient
-            colors={(currentStep === 1 ? isStep1Valid : isStep2Valid) ? ["#6366F1", "#8B5CF6"] : [colors.surfaceVariant, colors.surfaceVariant]}
+            colors={(currentStep === 1 ? isStep1Valid : isStep2Valid) ? ["#2AA79D", "#3A9C94"] : [colors.surfaceVariant, colors.surfaceVariant]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
