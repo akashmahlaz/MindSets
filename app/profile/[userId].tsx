@@ -1,7 +1,6 @@
 import "@/app/global.css";
 import ReviewDisplay from "@/components/profile/ReviewDisplay";
 import ReviewSubmission from "@/components/profile/ReviewSubmission";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
@@ -15,17 +14,21 @@ import { useEffect, useRef, useState } from "react";
 import {
     Alert,
     Animated,
+    Dimensions,
+    Image,
     Modal,
-    ScrollView,
     StatusBar,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import {
     SafeAreaView,
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const HEADER_HEIGHT = SCREEN_HEIGHT * 0.42;
 
 export default function ProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -38,98 +41,78 @@ export default function ProfileScreen() {
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [profileUser, setProfileUser] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const isCounsellor = userData?.role === "counsellor";
   const isUserProfile = userData?.role === "user";
   const counsellorData = userData as CounsellorProfileData;
-  const userProfileData = userData as any; // UserProfileData type
+  const userProfileData = userData as any;
   const isOwnProfile = user?.uid === userId;
   const canReview = user && !isOwnProfile && isCounsellor;
 
-  // Premium animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
-  // Premium Material Design 3 colors - desaturated for mental health
   const colors = {
-    background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
-    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
-    surfaceVariant: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
-    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    background: isDarkColorScheme ? "#0F1117" : "#F5F7FA",
+    cardBg: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    text: isDarkColorScheme ? "#F3F4F6" : "#1F2937",
     textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
     primary: "#2AA79D",
-    primaryLight: "#3A9C94",
-    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
-    secondary: "#3A9C94",
-    secondaryContainer: isDarkColorScheme ? "rgba(58, 156, 148, 0.15)" : "rgba(58, 156, 148, 0.08)",
-    accent: "#248F87",
-    accentContainer: isDarkColorScheme ? "rgba(36, 143, 135, 0.15)" : "rgba(36, 143, 135, 0.08)",
-    purple: "#3A9C94",
-    warning: "#F5B945",
-    warningContainer: isDarkColorScheme ? "rgba(245, 185, 69, 0.15)" : "rgba(245, 185, 69, 0.08)",
-    error: "#E57373",
-    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
+    primaryLight: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
+    border: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
+    skeleton: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
+    surface: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    surfaceVariant: isDarkColorScheme ? "#252830" : "#F3F4F6",
+    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
+    secondaryContainer: isDarkColorScheme ? "rgba(96, 165, 250, 0.15)" : "rgba(96, 165, 250, 0.1)",
+    secondary: "#60A5FA",
+    warningContainer: isDarkColorScheme ? "rgba(251, 191, 36, 0.15)" : "rgba(251, 191, 36, 0.1)",
+    warning: "#FBBF24",
+    accentContainer: isDarkColorScheme ? "rgba(168, 85, 247, 0.15)" : "rgba(168, 85, 247, 0.1)",
+    accent: "#A855F7",
   };
 
   useEffect(() => {
     const loadUserData = async () => {
       if (!userId) {
-        console.log("No userId provided");
         setError(true);
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         setError(false);
-        console.log("Loading user data for:", userId);
-
-        // Load user profile data
         const profile = await getUserProfile(userId as string);
-
-        // Also fetch user from Stream Chat if chatClient is available
-        let streamUser = null;
-        if (chatClient) {
-          try {
-            const response = await chatClient.queryUsers({
-              id: userId as string,
-            });
-            if (response.users.length > 0) {
-              streamUser = response.users[0];
-              setProfileUser(streamUser);
-            }
-          } catch (streamError) {
-            console.error("Error fetching Stream user:", streamError);
-            // Don't fail the whole operation if Stream fails
-          }
-        }
-
         if (profile) {
           setUserData(profile);
-          console.log("User data loaded:", profile);
         } else {
-          console.log("User not found:", userId);
           setError(true);
         }
-      } catch (error) {
-        console.error("Error loading user data:", error);
+      } catch (err) {
+        console.error("Error loading user data:", err);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
-
     loadUserData();
-  }, [userId, chatClient]);
+  }, [userId]);
 
   const startChat2 = async (targetUser: UserProfile) => {
     if (!user || !chatClient) {
@@ -310,49 +293,60 @@ export default function ProfileScreen() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // Scroll animation for header
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_HEIGHT / 2],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={[]}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <View style={{ flex: 1 }}>
-          {/* Header Skeleton */}
+          {/* Hero Skeleton */}
           <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
+            height: HEADER_HEIGHT,
+            backgroundColor: colors.surfaceVariant,
           }}>
-            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surfaceVariant }} />
-            <View style={{ width: 100, height: 20, borderRadius: 10, backgroundColor: colors.surfaceVariant }} />
-            <View style={{ width: 40 }} />
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.7)"]}
+              style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 150 }}
+            />
           </View>
-
-          <View style={{ flex: 1, padding: 20 }}>
-            {/* Profile Card Skeleton */}
+          
+          {/* Content Skeleton */}
+          <View style={{ padding: 20, marginTop: -60 }}>
             <View style={{
               backgroundColor: colors.surface,
-              borderRadius: 24,
-              padding: 24,
-              alignItems: 'center',
-              marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
+              borderRadius: 20,
+              padding: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 5,
             }}>
-              <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.surfaceVariant, marginBottom: 16 }} />
-              <View style={{ width: 150, height: 24, borderRadius: 12, backgroundColor: colors.surfaceVariant, marginBottom: 8 }} />
-              <View style={{ width: 200, height: 16, borderRadius: 8, backgroundColor: colors.surfaceVariant }} />
+              <View style={{ width: "60%", height: 24, borderRadius: 8, backgroundColor: colors.surfaceVariant, marginBottom: 8 }} />
+              <View style={{ width: "40%", height: 16, borderRadius: 6, backgroundColor: colors.surfaceVariant, marginBottom: 16 }} />
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+                <View style={{ width: 80, height: 28, borderRadius: 14, backgroundColor: colors.surfaceVariant }} />
+                <View style={{ width: 60, height: 28, borderRadius: 14, backgroundColor: colors.surfaceVariant }} />
+              </View>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ flex: 1, height: 50, borderRadius: 14, backgroundColor: colors.surfaceVariant }} />
+                <View style={{ flex: 1, height: 50, borderRadius: 14, backgroundColor: colors.surfaceVariant }} />
+              </View>
             </View>
           </View>
         </View>
       </SafeAreaView>
     );
-  } // Only show error state if loading is complete AND there's an error AND no userData
+  }
+
   if (!loading && (!userData || error)) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
@@ -390,264 +384,358 @@ export default function ProfileScreen() {
     );
   }
 
-  // Only render profile if we have userData
   if (!userData) {
-    return null; // This should not happen, but prevents TypeScript errors
+    return null;
   }
+
   return (
-    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <StatusBar barStyle={isDarkColorScheme ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
-          {/* Premium Header */}
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-            backgroundColor: colors.surface,
-          }}>
-            <TouchableOpacity
-              onPress={() => router.back()}
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Floating Back Button */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          position: "absolute",
+          top: insets.top + 10,
+          left: 16,
+          zIndex: 100,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: "rgba(0,0,0,0.4)",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Ionicons name="arrow-back" size={22} color="#FFF" />
+      </TouchableOpacity>
+
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Story-Style Hero Header */}
+        <View style={{ height: HEADER_HEIGHT, position: "relative" }}>
+          {/* Background Image or Gradient */}
+          {userData.photoURL ? (
+            <Image
+              source={{ uri: userData.photoURL }}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                backgroundColor: colors.surfaceVariant,
-                justifyContent: 'center',
-                alignItems: 'center',
+                width: SCREEN_WIDTH,
+                height: HEADER_HEIGHT,
+                position: "absolute",
               }}
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>
-              {isUserProfile ? "Client Profile" : "Profile"}
-            </Text>
-            <View style={{ width: 40 }} />
-          </View>
+              resizeMode="cover"
+            />
+          ) : (
+            <LinearGradient
+              colors={["#0D9488", "#2AA79D", "#14B8A6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: SCREEN_WIDTH,
+                height: HEADER_HEIGHT,
+                position: "absolute",
+              }}
+            />
+          )}
+          
+          {/* Dark Gradient Overlay */}
+          <LinearGradient
+            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.1)", "rgba(0,0,0,0.6)"]}
+            locations={[0, 0.4, 1]}
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+            }}
+          />
 
-          <View style={{ padding: 20 }}>
-            {/* Premium Profile Card */}
+          {/* Top Badges */}
+          <Animated.View style={{
+            position: "absolute",
+            top: insets.top + 10,
+            right: 16,
+            flexDirection: "row",
+            gap: 8,
+            opacity: headerOpacity,
+          }}>
+            {/* Online Status */}
             <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 24,
-              padding: 24,
-              marginBottom: 16,
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              elevation: 4,
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: userData.status === "online" ? "rgba(34, 197, 94, 0.9)" : "rgba(0,0,0,0.5)",
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 14,
             }}>
-              <View style={{ position: 'relative', marginBottom: 16 }}>
-                {userData.photoURL ? (
-                  <Avatar className="w-24 h-24" alt={userData.displayName || "User Avatar"}>
-                    <AvatarImage source={{ uri: userData.photoURL }} />
-                    <AvatarFallback style={{ backgroundColor: colors.primaryContainer }}>
-                      <Text style={{ color: colors.primary, fontSize: 28, fontWeight: 'bold' }}>
-                        {getInitials(userData.displayName)}
-                      </Text>
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <LinearGradient
-                    colors={['#2AA79D', '#3A9C94']}
-                    style={{
-                      width: 96,
-                      height: 96,
-                      borderRadius: 48,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontSize: 32, fontWeight: 'bold' }}>
-                      {getInitials(userData.displayName)}
-                    </Text>
-                  </LinearGradient>
-                )}
-                <View style={{
-                  position: 'absolute',
-                  bottom: -4,
-                  right: -4,
-                  width: 28,
-                  height: 28,
-                  borderRadius: 14,
-                  backgroundColor: userData.status === 'online' ? colors.secondary : colors.warning,
-                  borderWidth: 3,
-                  borderColor: colors.surface,
-                }} />
-              </View>
-
-              <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: 4 }}>
-                {userData.displayName}
+              <View style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: userData.status === "online" ? "#FFF" : "#F59E0B",
+                marginRight: 5,
+              }} />
+              <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "600" }}>
+                {userData.status === "online" ? "Online" : "Away"}
               </Text>
-
-              {/* Show counsellor professional info */}
-              {isCounsellor && (
-                <>
-                  <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>
-                    {counsellorData.licenseType} • {counsellorData.yearsExperience} years experience
-                  </Text>
-                  {/* Verification Badge */}
-                  {counsellorData.verificationStatus === "verified" && (
-                    <View style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginBottom: 8,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      backgroundColor: colors.secondaryContainer,
-                      borderRadius: 20,
-                    }}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.secondary} />
-                      <Text style={{ marginLeft: 6, color: colors.secondary, fontWeight: '600' }}>Verified Professional</Text>
-                    </View>
-                  )}
-
-                  {/* Rating Display */}
-                  {counsellorData.averageRating && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                      <Ionicons name="star" size={18} color={colors.warning} />
-                      <Text style={{ marginLeft: 4, color: colors.text, fontWeight: '700', fontSize: 16 }}>
-                        {counsellorData.averageRating.toFixed(1)}
-                      </Text>
-                      <Text style={{ color: colors.textSecondary, marginLeft: 6 }}>
-                        ({counsellorData.totalReviews || 0} reviews)
-                      </Text>
-                    </View>
-                  )}
-                </>
-              )}
-
-              <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>{userData.email}</Text>
-
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: userData.status === 'online' ? colors.secondary : colors.warning,
-                  marginRight: 6,
-                }} />
-                <Text style={{ fontSize: 14, color: colors.textSecondary, textTransform: 'capitalize' }}>
-                  {userData.status}
-                </Text>
-              </View>
             </View>
-          {/* Professional Information for Counsellors */}
+
+            {/* Verified Badge */}
+            {isCounsellor && counsellorData.verificationStatus === "verified" && (
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "rgba(255,255,255,0.95)",
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 14,
+              }}>
+                <Ionicons name="checkmark-circle" size={14} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: "700", marginLeft: 4 }}>Verified</Text>
+              </View>
+            )}
+          </Animated.View>
+
+          {/* Bottom Content on Hero */}
+          <Animated.View style={{
+            position: "absolute",
+            bottom: 20,
+            left: 16,
+            right: 16,
+            opacity: headerOpacity,
+          }}>
+            <Text style={{
+              fontSize: 26,
+              fontWeight: "800",
+              color: "#FFF",
+              letterSpacing: -0.5,
+              marginBottom: 4,
+              textShadowColor: "rgba(0,0,0,0.3)",
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 4,
+            }}>
+              {isCounsellor ? `Dr. ${userData.displayName}` : userData.displayName}
+            </Text>
+            
+            {isCounsellor && (
+              <Text style={{
+                fontSize: 14,
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: "500",
+                marginBottom: 12,
+              }}>
+                {counsellorData.licenseType} • {counsellorData.yearsExperience}+ years experience
+              </Text>
+            )}
+
+            {/* Rating Badge for Counsellors */}
+            {isCounsellor && counsellorData.averageRating && (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 12,
+                }}>
+                  <Ionicons name="star" size={14} color="#FBBF24" />
+                  <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", marginLeft: 4 }}>
+                    {counsellorData.averageRating.toFixed(1)}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginLeft: 4 }}>
+                    ({counsellorData.totalReviews || 0} reviews)
+                  </Text>
+                </View>
+              </View>
+            )}
+          </Animated.View>
+        </View>
+
+        {/* Main Content Area */}
+        <View style={{ 
+          backgroundColor: colors.background, 
+          borderTopLeftRadius: 24, 
+          borderTopRightRadius: 24,
+          marginTop: -24,
+          paddingTop: 24,
+          paddingHorizontal: 16,
+          paddingBottom: insets.bottom + 24,
+          minHeight: SCREEN_HEIGHT - HEADER_HEIGHT + 24,
+        }}>
+          
+          {/* Quick Action Buttons */}
+          {!isOwnProfile && (
+            <View style={{ 
+              flexDirection: "row", 
+              gap: 12, 
+              marginBottom: 20,
+            }}>
+              <TouchableOpacity
+                onPress={() => startChat(userData)}
+                style={{ flex: 1 }}
+              >
+                <LinearGradient
+                  colors={[colors.primary, "#0D9488"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 14,
+                    borderRadius: 14,
+                  }}
+                >
+                  <Ionicons name="chatbubble" size={18} color="#FFF" />
+                  <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", marginLeft: 8 }}>Message</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleStartVideoCall}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  backgroundColor: colors.surfaceVariant,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <Ionicons name="videocam" size={18} color={colors.primary} />
+                <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>Video Call</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Price Card for Counsellors */}
           {isCounsellor && (
             <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 20,
-              padding: 20,
+              backgroundColor: colors.primaryContainer,
+              borderRadius: 16,
+              padding: 16,
               marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.primaryContainer,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                }}>
-                  <Ionicons name="briefcase-outline" size={18} color={colors.primary} />
-                </View>
-                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Professional Information</Text>
+              <View>
+                <Text style={{ fontSize: 12, color: colors.textSecondary }}>Session Rate</Text>
+                <Text style={{ fontSize: 28, fontWeight: "800", color: colors.primary }}>
+                  ${counsellorData.hourlyRate}
+                  <Text style={{ fontSize: 14, fontWeight: "500", color: colors.textSecondary }}>/hour</Text>
+                </Text>
               </View>
+              {!isOwnProfile && (
+                <TouchableOpacity
+                  onPress={() => Alert.alert("Book Session", "This would open the booking flow.")}
+                  style={{
+                    backgroundColor: colors.primary,
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700" }}>Book Now</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
-              <View style={{ gap: 14 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ color: colors.textSecondary }}>License</Text>
-                  <Text style={{ color: colors.text, fontWeight: '600' }}>
-                    {counsellorData.licenseType} #{counsellorData.licenseNumber}
-                  </Text>
-                </View>
-                <View style={{ height: 1, backgroundColor: colors.border }} />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ color: colors.textSecondary }}>Experience</Text>
-                  <Text style={{ color: colors.text, fontWeight: '600' }}>{counsellorData.yearsExperience} years</Text>
-                </View>
-                <View style={{ height: 1, backgroundColor: colors.border }} />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ color: colors.textSecondary }}>Rate</Text>
-                  <View style={{
-                    backgroundColor: colors.primaryContainer,
-                    paddingHorizontal: 12,
-                    paddingVertical: 4,
-                    borderRadius: 10,
+          {/* Specializations */}
+          {isCounsellor && counsellorData.specializations && counsellorData.specializations.length > 0 && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 12 }}>
+                Specializations
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {counsellorData.specializations.map((spec, index) => (
+                  <View key={index} style={{
+                    backgroundColor: colors.surfaceVariant,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    borderRadius: 20,
                   }}>
-                    <Text style={{ color: colors.primary, fontWeight: '700' }}>${counsellorData.hourlyRate}/hour</Text>
+                    <Text style={{ color: colors.text, fontSize: 13, fontWeight: "500" }}>
+                      {spec.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </Text>
                   </View>
-                </View>
-                {counsellorData.specializations && counsellorData.specializations.length > 0 && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View>
-                      <Text style={{ color: colors.textSecondary, marginBottom: 10 }}>Specializations</Text>
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                        {counsellorData.specializations.slice(0, 4).map((spec, index) => (
-                          <View key={index} style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            backgroundColor: colors.surfaceVariant,
-                            borderRadius: 16,
-                          }}>
-                            <Text style={{ color: colors.text, fontSize: 13, fontWeight: '500' }}>
-                              {spec.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  </>
-                )}
+                ))}
               </View>
             </View>
           )}
-          {/* User Information for Counsellors */}
+
+          {/* About Section */}
+          {isCounsellor && (
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>
+                  About
+                </Text>
+              </View>
+              <View style={{ gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="school-outline" size={18} color={colors.textSecondary} />
+                  <Text style={{ color: colors.text, marginLeft: 10, flex: 1 }}>
+                    <Text style={{ fontWeight: "600" }}>{counsellorData.licenseType}</Text>
+                    {counsellorData.licenseNumber && ` #${counsellorData.licenseNumber}`}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="time-outline" size={18} color={colors.textSecondary} />
+                  <Text style={{ color: colors.text, marginLeft: 10 }}>
+                    <Text style={{ fontWeight: "600" }}>{counsellorData.yearsExperience}+</Text> years of experience
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="mail-outline" size={18} color={colors.textSecondary} />
+                  <Text style={{ color: colors.text, marginLeft: 10 }}>{userData.email}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* User Information for Counsellors viewing Users */}
           {isUserProfile && !isOwnProfile && (
             <View style={{
               backgroundColor: colors.surface,
-              borderRadius: 20,
-              padding: 20,
+              borderRadius: 16,
+              padding: 16,
               marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
+              borderWidth: 1,
+              borderColor: colors.border,
             }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.secondaryContainer,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                }}>
-                  <Ionicons name="person-outline" size={18} color={colors.secondary} />
-                </View>
-                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Client Information</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+                <Ionicons name="person-outline" size={20} color={colors.primary} />
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>
+                  Client Information
+                </Text>
               </View>
 
               <View style={{ gap: 14 }}>
                 {userProfileData.firstName && userProfileData.lastName && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                     <Text style={{ color: colors.textSecondary }}>Full Name</Text>
-                    <Text style={{ color: colors.text, fontWeight: '600' }}>
+                    <Text style={{ color: colors.text, fontWeight: "600" }}>
                       {userProfileData.firstName} {userProfileData.lastName}
                     </Text>
                   </View>
@@ -655,21 +743,10 @@ export default function ProfileScreen() {
                 {userProfileData.gender && (
                   <>
                     <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                       <Text style={{ color: colors.textSecondary }}>Gender</Text>
-                      <Text style={{ color: colors.text, fontWeight: '600', textTransform: 'capitalize' }}>
+                      <Text style={{ color: colors.text, fontWeight: "600", textTransform: "capitalize" }}>
                         {userProfileData.gender === "prefer-not-to-say" ? "Prefer not to say" : userProfileData.gender}
-                      </Text>
-                    </View>
-                  </>
-                )}
-                {userProfileData.preferredSessionType && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ color: colors.textSecondary }}>Preferred Session Type</Text>
-                      <Text style={{ color: colors.text, fontWeight: '600', textTransform: 'capitalize' }}>
-                        {userProfileData.preferredSessionType}
                       </Text>
                     </View>
                   </>
@@ -679,7 +756,7 @@ export default function ProfileScreen() {
                     <View style={{ height: 1, backgroundColor: colors.border }} />
                     <View>
                       <Text style={{ color: colors.textSecondary, marginBottom: 10 }}>Primary Concerns</Text>
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                         {userProfileData.primaryConcerns.slice(0, 4).map((concern: string, index: number) => (
                           <View key={index} style={{
                             paddingHorizontal: 12,
@@ -687,8 +764,8 @@ export default function ProfileScreen() {
                             backgroundColor: colors.primaryContainer,
                             borderRadius: 16,
                           }}>
-                            <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '500' }}>
-                              {concern.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "500" }}>
+                              {concern.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
                             </Text>
                           </View>
                         ))}
@@ -699,7 +776,7 @@ export default function ProfileScreen() {
                 {userProfileData.severityLevel && (
                   <>
                     <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                       <Text style={{ color: colors.textSecondary }}>Severity Level</Text>
                       <View style={{
                         paddingHorizontal: 12,
@@ -712,209 +789,152 @@ export default function ProfileScreen() {
                             : "#D1FAE5",
                       }}>
                         <Text style={{
-                          fontSize: 13,
-                          fontWeight: '600',
+                          fontSize: 12,
+                          fontWeight: "600",
                           color: userProfileData.severityLevel === "severe" 
                             ? "#DC2626" 
                             : userProfileData.severityLevel === "moderate" 
                               ? "#D97706" 
                               : "#059669",
                         }}>
-                        {userProfileData.severityLevel.charAt(0).toUpperCase() +
-                          userProfileData.severityLevel.slice(1)}
+                          {userProfileData.severityLevel.charAt(0).toUpperCase() + userProfileData.severityLevel.slice(1)}
                         </Text>
                       </View>
                     </View>
                   </>
                 )}
-                {userProfileData.previousTherapy !== undefined && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ color: colors.textSecondary }}>Previous Therapy</Text>
-                      <Text style={{ color: colors.text, fontWeight: '600' }}>
-                        {userProfileData.previousTherapy ? "Yes" : "No"}
-                      </Text>
-                    </View>
-                  </>
-                )}
-                {userProfileData.preferredLanguage && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ color: colors.textSecondary }}>Preferred Language</Text>
-                      <Text style={{ color: colors.text, fontWeight: '600' }}>
-                        {userProfileData.preferredLanguage}
-                      </Text>
-                    </View>
-                  </>
-                )}
-                {userProfileData.availableHours && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.border }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ color: colors.textSecondary }}>Availability</Text>
-                      <Text style={{ color: colors.text, fontWeight: '600' }}>
-                        {userProfileData.availableHours.start} - {userProfileData.availableHours.end}
-                      </Text>
-                    </View>
-                  </>
-                )}
-                {/* Crisis Information - only show to counsellors with appropriate warning */}
+                
+                {/* Crisis Alert */}
                 {userProfileData.inCrisis && (
                   <View style={{
                     marginTop: 8,
                     padding: 14,
-                    backgroundColor: '#FEF2F2',
+                    backgroundColor: "#FEF2F2",
                     borderRadius: 12,
                     borderWidth: 1,
-                    borderColor: '#FECACA',
+                    borderColor: "#FECACA",
                   }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
                       <Ionicons name="warning" size={18} color="#DC2626" />
-                      <Text style={{ color: '#DC2626', fontWeight: '700', marginLeft: 8, fontSize: 15 }}>
+                      <Text style={{ color: "#DC2626", fontWeight: "700", marginLeft: 8, fontSize: 14 }}>
                         Crisis Alert
                       </Text>
                     </View>
-                    <Text style={{ color: '#991B1B', fontSize: 13, lineHeight: 18 }}>
-                      This client has indicated they are in crisis. Please prioritize immediate support and follow crisis intervention protocols.
+                    <Text style={{ color: "#991B1B", fontSize: 12, lineHeight: 18 }}>
+                      This client has indicated they are in crisis. Please prioritize immediate support.
                     </Text>
                   </View>
                 )}
               </View>
             </View>
           )}
-          
-          {/* Action Buttons */}
+
+          {/* More Actions */}
           {!isOwnProfile && (
             <View style={{
               backgroundColor: colors.surface,
-              borderRadius: 20,
-              padding: 20,
+              borderRadius: 16,
+              padding: 16,
               marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
+              borderWidth: 1,
+              borderColor: colors.border,
             }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.accentContainer,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                }}>
-                  <Ionicons name="link-outline" size={18} color={colors.accent} />
-                </View>
-                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Connect</Text>
-              </View>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 14 }}>
+                Quick Actions
+              </Text>
               
-              <View style={{ gap: 12 }}>
-                <TouchableOpacity
-                  onPress={() => startChat(userData)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 16,
-                    borderRadius: 16,
-                    backgroundColor: colors.primaryContainer,
-                  }}
-                >
-                  <LinearGradient
-                    colors={[colors.primary, colors.primaryLight]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 14,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 14,
-                    }}
-                  >
-                    <Ionicons name="chatbubble" size={22} color="white" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Message</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>Send a message</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </TouchableOpacity>
-
+              <View style={{ gap: 10 }}>
                 <TouchableOpacity
                   onPress={handleStartCall}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 16,
-                    borderRadius: 16,
-                    backgroundColor: colors.secondaryContainer,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    padding: 14,
+                    borderRadius: 12,
+                    backgroundColor: colors.surfaceVariant,
                   }}
                 >
-                  <LinearGradient
-                    colors={[colors.secondary, '#34D399']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 14,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 14,
-                    }}
-                  >
-                    <Ionicons name="call" size={22} color="white" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Contact</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>Start a call</Text>
+                  <View style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    backgroundColor: colors.secondaryContainer,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 12,
+                  }}>
+                    <Ionicons name="call" size={18} color={colors.secondary} />
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.text, fontWeight: "600", fontSize: 14 }}>Voice Call</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Start an audio call</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
 
-                {/* Review Button for Counsellors */}
                 {canReview && (
                   <TouchableOpacity
                     onPress={() => setShowReviewModal(true)}
                     style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      padding: 16,
-                      borderRadius: 16,
-                      backgroundColor: colors.warningContainer,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      padding: 14,
+                      borderRadius: 12,
+                      backgroundColor: colors.surfaceVariant,
                     }}
                   >
-                    <LinearGradient
-                      colors={['#F59E0B', '#FBBF24']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 14,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 14,
-                      }}
-                    >
-                      <Ionicons name="star" size={22} color="white" />
-                    </LinearGradient>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Write Review</Text>
-                      <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>Share your experience</Text>
+                    <View style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      backgroundColor: colors.warningContainer,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginRight: 12,
+                    }}>
+                      <Ionicons name="star" size={18} color={colors.warning} />
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.text, fontWeight: "600", fontSize: 14 }}>Write Review</Text>
+                      <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Share your experience</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+
+                {isUserProfile && (
+                  <TouchableOpacity
+                    onPress={() => Alert.alert("Schedule Session", "This would open the booking flow.")}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      padding: 14,
+                      borderRadius: 12,
+                      backgroundColor: colors.surfaceVariant,
+                    }}
+                  >
+                    <View style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      backgroundColor: colors.accentContainer,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginRight: 12,
+                    }}>
+                      <Ionicons name="calendar" size={18} color={colors.accent} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.text, fontWeight: "600", fontSize: 14 }}>Schedule Session</Text>
+                      <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Book a therapy session</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                   </TouchableOpacity>
                 )}
               </View>
             </View>
           )}
+
           {/* Reviews Section for Counsellors */}
           {isCounsellor && (
             <ReviewDisplay
@@ -923,181 +943,25 @@ export default function ProfileScreen() {
               showWriteReviewButton={!!canReview}
             />
           )}
-          {/* Professional Actions for Counsellors viewing Users */}
-          {isUserProfile && (
-            <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 20,
-              padding: 20,
-              marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.accentContainer,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                }}>
-                  <Ionicons name="medical-outline" size={18} color={colors.accent} />
-                </View>
-                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Actions</Text>
-              </View>
-              
-              <View style={{ gap: 12 }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    // Navigate to session scheduling
-                    Alert.alert(
-                      "Schedule Session",
-                      "This would navigate to session scheduling with this client.",
-                    );
-                  }}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 16,
-                    borderRadius: 16,
-                    backgroundColor: colors.accentContainer,
-                  }}
-                >
-                  <LinearGradient
-                    colors={[colors.accent, '#A78BFA']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 14,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 14,
-                    }}
-                  >
-                    <Ionicons name="calendar" size={22} color="white" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Schedule Session</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>Book a therapy session</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    // Navigate to client notes
-                    Alert.alert(
-                      "Client Notes",
-                      "This would open the client notes and treatment history.",
-                    );
-                  }}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 16,
-                    borderRadius: 16,
-                    backgroundColor: colors.secondaryContainer,
-                  }}
-                >
-                  <LinearGradient
-                    colors={['#14B8A6', '#2DD4BF']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 14,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 14,
-                    }}
-                  >
-                    <Ionicons name="document-text" size={22} color="white" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Client Notes</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>View treatment notes & history</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </TouchableOpacity>
-
-                {userProfileData.inCrisis && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      Alert.alert(
-                        "Crisis Intervention",
-                        "This would open crisis intervention protocols and emergency contacts.",
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Emergency Resources",
-                            onPress: () => {
-                              // Open emergency resources
-                            },
-                          },
-                        ],
-                      );
-                    }}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      padding: 16,
-                      borderRadius: 16,
-                      backgroundColor: '#FEF2F2',
-                    }}
-                  >
-                    <LinearGradient
-                      colors={['#EF4444', '#F87171']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 14,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 14,
-                      }}
-                    >
-                      <Ionicons name="medical" size={22} color="white" />
-                    </LinearGradient>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Crisis Support</Text>
-                      <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 2 }}>Emergency intervention protocols</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          )}
         </View>
+      </Animated.ScrollView>
 
-        {/* Review Submission Modal */}
-        <Modal
-          visible={showReviewModal}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowReviewModal(false)}
-        >
-          <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-            <ReviewSubmission
-              counsellorId={userData.uid}
-              counsellorName={userData.displayName}
-              onReviewSubmitted={handleReviewSubmitted}
-              onCancel={() => setShowReviewModal(false)}
-            />
-          </SafeAreaView>
-        </Modal>
-      </ScrollView>
-    </SafeAreaView>
-    </Animated.View>
+      {/* Review Submission Modal */}
+      <Modal
+        visible={showReviewModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowReviewModal(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+          <ReviewSubmission
+            counsellorId={userData.uid}
+            counsellorName={userData.displayName}
+            onReviewSubmitted={handleReviewSubmitted}
+            onCancel={() => setShowReviewModal(false)}
+          />
+        </SafeAreaView>
+      </Modal>
+    </View>
   );
 }

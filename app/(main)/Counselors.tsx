@@ -2,10 +2,7 @@ import "@/app/global.css";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
-import {
-  CounsellorProfileData,
-  UserProfile,
-} from "@/types/user";
+import { CounsellorProfileData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -14,339 +11,306 @@ import {
   Animated,
   Dimensions,
   Image,
+  Pressable,
   RefreshControl,
   ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 40;
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.58; // Taller cards to show more photo
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
-// Gradient color sets for cards without photos
-const gradientSets = [
-  ["#0D9488", "#2AA79D", "#14B8A6"],
-  ["#2AA79D", "#0F766E", "#0D9488"],
-  ["#14B8A6", "#2AA79D", "#0D9488"],
-  ["#0F766E", "#14B8A6", "#2AA79D"],
-];
-
-// Story Card Component - Separate to properly use hooks
-function StoryCard({ 
-  counsellor, 
-  index, 
-  colors, 
-  onPress 
-}: { 
-  counsellor: CounsellorProfileData; 
-  index: number; 
+// Grid Card Component - Same style as UserDashboard
+function CounsellorCard({
+  counsellor,
+  index,
+  colors,
+  onPress,
+  isDark,
+}: {
+  counsellor: CounsellorProfileData;
+  index: number;
   colors: Record<string, string>;
-  onPress: (c: CounsellorProfileData) => void;
+  onPress: () => void;
+  isDark: boolean;
 }) {
-  const cardAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.92)).current;
-  
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(cardAnim, {
+      Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 500,
-        delay: index * 100,
+        duration: 350,
+        delay: index * 60,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 8,
         tension: 50,
-        delay: index * 100,
+        delay: index * 60,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [cardAnim, scaleAnim, index]);
+  }, [fadeAnim, scaleAnim, index]);
 
-  const gradientColors = gradientSets[index % gradientSets.length];
+  const isOnline = counsellor.status === "online";
 
   return (
     <Animated.View
       style={{
-        opacity: cardAnim,
-        transform: [
-          { scale: scaleAnim },
-          {
-            translateY: cardAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [40, 0],
-            }),
-          },
-        ],
+        width: CARD_WIDTH,
+        marginBottom: 16,
+        opacity: fadeAnim,
+        transform: [{ scale: scaleAnim }],
       }}
     >
-      <TouchableOpacity
-        onPress={() => onPress(counsellor)}
-        activeOpacity={0.95}
-        style={{ marginBottom: 20, paddingHorizontal: 20 }}
-      >
-        <View 
+      <Pressable onPress={onPress}>
+        <View
           style={{
-            width: CARD_WIDTH,
-            height: CARD_HEIGHT,
-            borderRadius: 24,
+            backgroundColor: colors.cardBg,
+            borderRadius: 20,
             overflow: "hidden",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.2,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: isDark ? 0.2 : 0.1,
             shadowRadius: 16,
-            elevation: 10,
+            elevation: 6,
           }}
         >
-          {/* Background - Photo or Gradient */}
-          {counsellor.photoURL ? (
-            <Image
-              source={{ uri: counsellor.photoURL }}
-              style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-              }}
-              resizeMode="cover"
-            />
-          ) : (
-            <LinearGradient
-              colors={gradientColors as any}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-              }}
-            />
-          )}
-          
-          {/* Lighter Gradient Overlay - Shows More Photo */}
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.1)", "rgba(0,0,0,0.7)"]}
-            locations={[0, 0.6, 1]}
+          {/* Header with Organic Background */}
+          <View
             style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
+              height: 70,
+              position: "relative",
+              backgroundColor: isDark ? "#1C2128" : "#E8F5F3",
             }}
-          />
-          
-          {/* Top Section - Status & Verified - Compact */}
-          <View style={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            right: 12,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}>
-            {/* Online Status Pill - Smaller */}
-            <View style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "rgba(34, 197, 94, 0.85)",
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderRadius: 12,
-            }}>
-              <View style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: "#FFF",
-                marginRight: 4,
-              }} />
-              <Text style={{ color: "#FFF", fontSize: 10, fontWeight: "600" }}>Available</Text>
-            </View>
-            
-            {/* Verified & Rating Row */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              {/* Rating */}
-              <View style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "rgba(0,0,0,0.5)",
+          >
+            {/* Organic blob shapes */}
+            <View
+              style={{
+                position: "absolute",
+                top: -15,
+                left: -15,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: `${colors.primary}30`,
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                top: 10,
+                right: -20,
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                backgroundColor: `${colors.secondary || colors.primary}25`,
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                bottom: -8,
+                left: 40,
+                width: 35,
+                height: 35,
+                borderRadius: 17,
+                backgroundColor: `${colors.primary}20`,
+              }}
+            />
+
+            {/* Status Badge */}
+            <View
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                backgroundColor: isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.9)",
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 12,
-              }}>
-                <Ionicons name="star" size={12} color="#FBBF24" />
-                <Text style={{ color: "#FFF", fontSize: 11, fontWeight: "700", marginLeft: 3 }}>
-                  {counsellor.averageRating?.toFixed(1) || "4.9"}
-                </Text>
-              </View>
-              
-              {/* Verified Badge */}
-              {counsellor.verificationStatus === "verified" && (
-                <View style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "rgba(255,255,255,0.9)",
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 12,
-                }}>
-                  <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
-                  <Text style={{ color: colors.primary, fontSize: 10, fontWeight: "700", marginLeft: 2 }}>Verified</Text>
-                </View>
-              )}
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: isOnline ? "#22C55E" : "#9CA3AF",
+                  marginRight: 4,
+                }}
+              />
+              <Text style={{ color: isDark ? "#FFF" : "#1F2937", fontSize: 9, fontWeight: "600" }}>
+                {isOnline ? "Online" : "Away"}
+              </Text>
             </View>
           </View>
-          
-          {/* Bottom Content Overlay - Compact */}
-          <View style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: 14,
-          }}>
-            {/* Name & Title - Compact */}
-            <View style={{ marginBottom: 6 }}>
-              <Text style={{
-                fontSize: 18,
-                fontWeight: "700",
-                color: "#FFF",
-                letterSpacing: -0.3,
-                marginBottom: 2,
-                textShadowColor: "rgba(0,0,0,0.5)",
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 3,
-              }}>
-                Dr. {counsellor.displayName}
-              </Text>
-              <Text style={{
-                fontSize: 11,
-                color: "rgba(255,255,255,0.8)",
-                fontWeight: "500",
-              }}>
-                {counsellor.licenseType || "Licensed Therapist"} • {counsellor.yearsExperience || 5}+ yrs
-              </Text>
-            </View>
-            
-            {/* Specialization Tags - Smaller */}
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
-              {counsellor.specializations?.slice(0, 3).map((spec, idx) => (
-                <View key={idx} style={{
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  paddingHorizontal: 8,
-                  paddingVertical: 3,
-                  borderRadius: 10,
-                }}>
-                  <Text style={{ fontSize: 9, color: "#FFF", fontWeight: "600" }}>
-                    {spec.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </Text>
-                </View>
-              ))}
-              {(!counsellor.specializations || counsellor.specializations.length === 0) && (
-                <View style={{
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  paddingHorizontal: 8,
-                  paddingVertical: 3,
-                  borderRadius: 10,
-                }}>
-                  <Text style={{ fontSize: 9, color: "#FFF", fontWeight: "600" }}>
-                    Mental Health
-                  </Text>
-                </View>
-              )}
-            </View>
-            
-            {/* Price & CTA Row - Compact */}
-            <View style={{ 
-              flexDirection: "row", 
-              alignItems: "center", 
-              justifyContent: "space-between",
-            }}>
-              <View>
-                <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>
-                  Starting from
-                </Text>
-                <Text style={{ fontSize: 20, fontWeight: "800", color: "#FFF" }}>
-                  ${counsellor.hourlyRate || 80}
-                  <Text style={{ fontSize: 11, fontWeight: "500", color: "rgba(255,255,255,0.7)" }}>/hr</Text>
-                </Text>
-              </View>
-              
-              <TouchableOpacity 
-                onPress={() => onPress(counsellor)} 
-                activeOpacity={0.9}
-              >
-                <View
+
+          {/* Profile Photo - Overlapping */}
+          <View style={{ alignItems: "center", marginTop: -35 }}>
+            <View
+              style={{
+                padding: 3,
+                borderRadius: 38,
+                backgroundColor: colors.cardBg,
+              }}
+            >
+              {counsellor.photoURL ? (
+                <Image
+                  source={{ uri: counsellor.photoURL }}
                   style={{
-                    backgroundColor: "#FFF",
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 10,
-                    flexDirection: "row",
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                  }}
+                />
+              ) : (
+                <LinearGradient
+                  colors={["#2AA79D", "#3A9C94"]}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
                     alignItems: "center",
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 8,
-                    elevation: 4,
+                    justifyContent: "center",
                   }}
                 >
-                  <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Book Now</Text>
-                  <Ionicons name="arrow-forward" size={14} color={colors.primary} style={{ marginLeft: 4 }} />
-                </View>
-              </TouchableOpacity>
+                  <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "700" }}>
+                    {counsellor.displayName?.charAt(0) || "C"}
+                  </Text>
+                </LinearGradient>
+              )}
             </View>
+
+            {/* Verified Badge */}
+            {counsellor.verificationStatus === "verified" && (
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: "30%",
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 2,
+                  borderColor: colors.cardBg,
+                }}
+              >
+                <Ionicons name="checkmark" size={12} color="#FFF" />
+              </View>
+            )}
           </View>
-          
-          {/* Decorative Elements - Floating Icons */}
-          {!counsellor.photoURL && (
-            <>
-              <View style={{
-                position: "absolute",
-                top: "30%",
-                left: "10%",
-                opacity: 0.15,
-              }}>
-                <Ionicons name="heart" size={60} color="#FFF" />
+
+          {/* Content */}
+          <View style={{ padding: 12, paddingTop: 10 }}>
+            {/* Name */}
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "700",
+                color: colors.text,
+                textAlign: "center",
+                marginBottom: 2,
+              }}
+              numberOfLines={1}
+            >
+              Dr. {counsellor.displayName}
+            </Text>
+
+            {/* Specialty */}
+            <Text
+              style={{
+                fontSize: 11,
+                color: colors.primary,
+                textAlign: "center",
+                fontWeight: "500",
+                marginBottom: 10,
+              }}
+              numberOfLines={1}
+            >
+              {counsellor.specializations?.[0]
+                ?.replace(/-/g, " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health"}
+            </Text>
+
+            {/* Stats Row */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-around",
+                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                borderRadius: 10,
+                paddingVertical: 8,
+                marginBottom: 10,
+              }}
+            >
+              <View style={{ alignItems: "center" }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="star" size={12} color="#FBBF24" />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, marginLeft: 3 }}>
+                    {counsellor.averageRating?.toFixed(1) || "4.9"}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 9, color: colors.textSecondary, marginTop: 1 }}>Rating</Text>
               </View>
-              <View style={{
-                position: "absolute",
-                top: "20%",
-                right: "15%",
-                opacity: 0.1,
-              }}>
-                <Ionicons name="leaf" size={80} color="#FFF" />
+              <View style={{ width: 1, backgroundColor: colors.border }} />
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primary }}>
+                  ${counsellor.hourlyRate || 80}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.textSecondary, marginTop: 1 }}>Per hr</Text>
               </View>
-            </>
-          )}
+            </View>
+
+            {/* Book Button */}
+            <Pressable onPress={onPress}>
+              <LinearGradient
+                colors={["#2AA79D", "#3A9C94"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons name="calendar-outline" size={14} color="#FFF" />
+                <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "600", marginLeft: 5 }}>
+                  Book Now
+                </Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     </Animated.View>
   );
 }
 
-// Skeleton Loader Component
-function StorySkeleton({ colors }: { colors: Record<string, string> }) {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-  
+// Grid Skeleton
+function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDark: boolean }) {
+  const shimmerAnim = useRef(new Animated.Value(0.3)).current;
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
+        Animated.timing(shimmerAnim, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        Animated.timing(shimmerAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
       ])
     ).start();
   }, [shimmerAnim]);
@@ -354,173 +318,77 @@ function StorySkeleton({ colors }: { colors: Record<string, string> }) {
   return (
     <Animated.View
       style={{
-        marginBottom: 20,
-        paddingHorizontal: 20,
-        opacity: shimmerAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.4, 0.8],
-        }),
+        width: CARD_WIDTH,
+        marginBottom: 16,
+        borderRadius: 20,
+        overflow: "hidden",
+        backgroundColor: colors.cardBg,
+        opacity: shimmerAnim,
       }}
     >
-      <View 
-        style={{
-          width: CARD_WIDTH,
-          height: CARD_HEIGHT,
-          borderRadius: 24,
-          overflow: "hidden",
-          backgroundColor: colors.surfaceVariant,
-        }}
-      >
-        <LinearGradient
-          colors={[colors.surfaceVariant, colors.surfaceElevated, colors.surfaceVariant]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-          }}
-        />
-        
-        {/* Skeleton top badges */}
-        <View style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          right: 12,
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}>
-          <View style={{
-            width: 80,
-            height: 24,
-            borderRadius: 12,
-            backgroundColor: colors.surface,
-          }} />
-          <View style={{
-            width: 60,
-            height: 24,
-            borderRadius: 12,
-            backgroundColor: colors.surface,
-          }} />
-        </View>
-        
-        {/* Skeleton bottom content */}
-        <View style={{
-          position: "absolute",
-          bottom: 14,
-          left: 14,
-          right: 14,
-        }}>
-          <View style={{
-            width: "60%",
-            height: 20,
-            borderRadius: 6,
-            backgroundColor: colors.surface,
-            marginBottom: 6,
-          }} />
-          <View style={{
-            width: "40%",
-            height: 12,
-            borderRadius: 4,
-            backgroundColor: colors.surface,
-            marginBottom: 10,
-          }} />
-          <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
-            <View style={{
-              width: 60,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: colors.surface,
-            }} />
-            <View style={{
-              width: 60,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: colors.surface,
-            }} />
-          </View>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <View style={{
-              width: 70,
-              height: 26,
-              borderRadius: 6,
-              backgroundColor: colors.surface,
-            }} />
-            <View style={{
-              width: 90,
-              height: 32,
-              borderRadius: 10,
-              backgroundColor: colors.surface,
-            }} />
-          </View>
-        </View>
+      <View style={{ height: 70, backgroundColor: isDark ? "#1C2128" : "#E8F5F3" }} />
+      <View style={{ alignItems: "center", marginTop: -35 }}>
+        <View style={{ width: 70, height: 70, borderRadius: 35, backgroundColor: colors.skeleton }} />
+      </View>
+      <View style={{ padding: 12, paddingTop: 10 }}>
+        <View style={{ width: "80%", height: 16, borderRadius: 6, backgroundColor: colors.skeleton, alignSelf: "center" }} />
+        <View style={{ width: "60%", height: 12, borderRadius: 4, backgroundColor: colors.skeleton, alignSelf: "center", marginTop: 6 }} />
+        <View style={{ height: 40, borderRadius: 10, backgroundColor: colors.skeleton, marginTop: 10 }} />
+        <View style={{ height: 36, borderRadius: 10, backgroundColor: colors.skeleton, marginTop: 10 }} />
       </View>
     </Animated.View>
   );
 }
 
 export default function CounselorsScreen() {
-  useAuth(); // Check auth state
-  const router = useRouter();
+  useAuth();
   const { isDarkColorScheme } = useColorScheme();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [counsellors, setCounsellors] = useState<UserProfile[]>([]);
+
+  const [counsellors, setCounsellors] = useState<CounsellorProfileData[]>([]);
+  const [filteredCounsellors, setFilteredCounsellors] = useState<CounsellorProfileData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
-  // Premium animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scrollY = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
-
-  // Perplexity-inspired colors with depth
   const colors = {
-    background: isDarkColorScheme ? "#0A0A0B" : "#FAFAFA",
-    surface: isDarkColorScheme ? "#18181B" : "#FFFFFF",
-    surfaceElevated: isDarkColorScheme ? "#27272A" : "#F4F4F5",
-    surfaceVariant: isDarkColorScheme ? "#3F3F46" : "#E4E4E7",
-    text: isDarkColorScheme ? "#FAFAFA" : "#09090B",
-    textSecondary: isDarkColorScheme ? "#A1A1AA" : "#71717A",
-    textMuted: isDarkColorScheme ? "#71717A" : "#A1A1AA",
+    background: isDarkColorScheme ? "#0F1117" : "#F8FAFB",
+    cardBg: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    text: isDarkColorScheme ? "#F3F4F6" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
     primary: "#2AA79D",
-    primaryLight: isDarkColorScheme ? "rgba(42, 167, 157, 0.2)" : "rgba(42, 167, 157, 0.1)",
-    primaryContainer: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.08)",
-    secondary: "#3A9C94",
-    accent: "#14B8A6",
-    warning: "#F59E0B",
-    success: "#22C55E",
-    border: isDarkColorScheme ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.08)",
+    border: isDarkColorScheme ? "#2D3139" : "#E8ECEF",
+    searchBg: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    skeleton: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
+    filterActive: "#2AA79D",
+    filterInactive: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    filterTextActive: "#FFFFFF",
+    filterTextInactive: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
+    headerGradientStart: isDarkColorScheme ? "#0F1117" : "#F8FAFB",
+    headerGradientEnd: isDarkColorScheme ? "#0F1117" : "#F8FAFB",
   };
 
   const filters = [
-    { id: null, label: "All", icon: "grid-outline" },
+    { id: "all", label: "All", icon: "grid-outline" },
     { id: "anxiety", label: "Anxiety", icon: "pulse-outline" },
-    { id: "depression", label: "Depression", icon: "cloud-outline" },
-    { id: "relationship", label: "Relationships", icon: "heart-outline" },
-    { id: "trauma", label: "Trauma", icon: "shield-outline" },
-    { id: "stress-management", label: "Stress", icon: "fitness-outline" },
+    { id: "depression", label: "Depression", icon: "cloudy-outline" },
+    { id: "stress", label: "Stress", icon: "fitness-outline" },
+    { id: "trauma", label: "Trauma", icon: "heart-outline" },
+    { id: "relationships", label: "Relationships", icon: "people-outline" },
   ];
 
   const loadCounsellors = async () => {
     try {
+      setLoading(true);
       const data = await getCounsellors();
-      setCounsellors(data);
+      setCounsellors(data as CounsellorProfileData[]);
+      setFilteredCounsellors(data as CounsellorProfileData[]);
     } catch (error) {
       console.error("Error loading counsellors:", error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -528,214 +396,306 @@ export default function CounselorsScreen() {
     loadCounsellors();
   }, []);
 
-  const onRefresh = () => {
+  useEffect(() => {
+    let filtered = [...counsellors];
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.displayName?.toLowerCase().includes(query) ||
+          c.specializations?.some((s) => s.toLowerCase().includes(query))
+      );
+    }
+    if (selectedFilter !== "all") {
+      filtered = filtered.filter((c) =>
+        c.specializations?.some((s) => s.toLowerCase().includes(selectedFilter))
+      );
+    }
+    setFilteredCounsellors(filtered);
+  }, [searchQuery, selectedFilter, counsellors]);
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadCounsellors();
+    await loadCounsellors();
+    setRefreshing(false);
   };
 
-  const handleCounsellorPress = (counsellor: CounsellorProfileData) => {
-    router.push({
-      pathname: "/profile/[userId]",
-      params: { userId: counsellor.uid },
-    });
+  const handlePress = (counsellor: CounsellorProfileData) => {
+    router.push(`/profile/${counsellor.uid}`);
   };
 
-  const filteredCounsellors = counsellors.filter((counsellor) => {
-    const matchesSearch = 
-      counsellor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ("specializations" in counsellor &&
-        counsellor.specializations?.some((spec) =>
-          spec.toLowerCase().includes(searchQuery.toLowerCase()),
-        ));
-    
-    const matchesFilter = !selectedFilter || 
-      ("specializations" in counsellor && 
-        counsellor.specializations?.includes(selectedFilter));
-    
-    return matchesSearch && matchesFilter;
-  });
+  // Split data into two columns for grid
+  const leftColumn = filteredCounsellors.filter((_, i) => i % 2 === 0);
+  const rightColumn = filteredCounsellors.filter((_, i) => i % 2 === 1);
 
   return (
-    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
-        <StatusBar
-          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={colors.background}
-        />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar
+        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
 
-        {/* Perplexity-Style Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
-          <Text style={{ 
-            fontSize: 28, 
-            fontWeight: "800", 
-            color: colors.text, 
-            letterSpacing: -0.5,
-          }}>
-            Discover
-          </Text>
-          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
-            Find your perfect counselor match
-          </Text>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: colors.background }}>
+        {/* Header */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <View>
+              <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text, letterSpacing: -0.5 }}>
+                Discover
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
+                {filteredCounsellors.length} counselors ready to help
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: colors.cardBg,
+                justifyContent: "center",
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
+            >
+              <Ionicons name="options-outline" size={22} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Search Bar - Perplexity Style */}
-        <View style={{ paddingHorizontal: 20, paddingVertical: 12 }}>
-          <View 
+        {/* Search Bar - Enhanced */}
+        <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
+          <View
             style={{
-              backgroundColor: colors.surfaceElevated,
-              borderRadius: 14,
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 14,
-              borderWidth: 1,
-              borderColor: colors.border,
+              backgroundColor: colors.searchBg,
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              height: 52,
+              borderWidth: 1.5,
+              borderColor: searchQuery.length > 0 ? colors.primary : colors.border,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
             }}
           >
-            <Ionicons name="search" size={20} color={colors.textMuted} />
+            <Ionicons name="search" size={22} color={searchQuery.length > 0 ? colors.primary : colors.textSecondary} />
             <TextInput
-              placeholder="Search counselors..."
-              placeholderTextColor={colors.textMuted}
+              placeholder="Search by name or specialty..."
+              placeholderTextColor={colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                paddingHorizontal: 10,
-                fontSize: 15,
-                color: colors.text,
-              }}
+              style={{ flex: 1, marginLeft: 12, fontSize: 15, color: colors.text, fontWeight: "500" }}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+              <TouchableOpacity
+                onPress={() => setSearchQuery("")}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: isDarkColorScheme ? "#374151" : "#E5E7EB",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Ionicons name="close" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Filter Chips - Horizontal Scroll */}
-        <View style={{ paddingBottom: 12 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-          >
-            {filters.map((filter) => {
-              const isActive = selectedFilter === filter.id;
-              return (
-                <TouchableOpacity
-                  key={filter.id || "all"}
-                  onPress={() => setSelectedFilter(filter.id)}
-                  activeOpacity={0.7}
-                >
-                  {isActive ? (
-                    <LinearGradient
-                      colors={['#2AA79D', '#0D9488']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingHorizontal: 14,
-                        paddingVertical: 8,
-                        borderRadius: 20,
-                      }}
-                    >
-                      <Ionicons name={filter.icon as any} size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
-                      <Text style={{ fontSize: 13, fontWeight: "600", color: "#FFFFFF" }}>{filter.label}</Text>
-                    </LinearGradient>
-                  ) : (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        backgroundColor: colors.surfaceElevated,
-                        paddingHorizontal: 14,
-                        paddingVertical: 8,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      }}
-                    >
-                      <Ionicons name={filter.icon as any} size={15} color={colors.textSecondary} style={{ marginRight: 5 }} />
-                      <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>{filter.label}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* Results Count */}
-        <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
-          <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: "500" }}>
-            {loading ? "Finding counselors..." : `${filteredCounsellors.length} counselors available`}
-          </Text>
-        </View>
-
-        {/* Counselors Feed - Story Style */}
-        {loading ? (
-          <Animated.ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}
-          >
-            {[0, 1, 2].map((i) => (
-              <StorySkeleton key={i} colors={colors} />
-            ))}
-          </Animated.ScrollView>
-        ) : filteredCounsellors.length === 0 ? (
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <View 
+        {/* Filter Chips - Enhanced with Icons */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16, gap: 10 }}
+        >
+          {filters.map((f) => (
+            <TouchableOpacity
+              key={f.id}
+              onPress={() => setSelectedFilter(f.id)}
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: 24,
-                backgroundColor: colors.primaryLight,
+                flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 24,
+                backgroundColor: selectedFilter === f.id ? colors.filterActive : colors.filterInactive,
+                borderWidth: 1.5,
+                borderColor: selectedFilter === f.id ? colors.filterActive : colors.border,
+                shadowColor: selectedFilter === f.id ? colors.primary : "transparent",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: selectedFilter === f.id ? 4 : 0,
               }}
             >
-              <Ionicons name="search-outline" size={36} color={colors.primary} />
+              <Ionicons
+                name={f.icon as any}
+                size={16}
+                color={selectedFilter === f.id ? colors.filterTextActive : colors.filterTextInactive}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "600",
+                  color: selectedFilter === f.id ? colors.filterTextActive : colors.filterTextInactive,
+                }}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+
+      {/* Main Content */}
+      {loading ? (
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <View>
+              {[0, 1, 2].map((i) => (
+                <GridSkeleton key={`l${i}`} colors={colors} isDark={isDarkColorScheme} />
+              ))}
             </View>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
-              No counselors found
-            </Text>
-            <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center" }}>
-              Try adjusting your search or filters
+            <View>
+              {[3, 4, 5].map((i) => (
+                <GridSkeleton key={`r${i}`} colors={colors} isDark={isDarkColorScheme} />
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      ) : filteredCounsellors.length === 0 ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 40 }}>
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 20,
+            }}
+          >
+            <Ionicons name="search" size={44} color={colors.primary} />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>No counselors found</Text>
+          <Text
+            style={{
+              fontSize: 15,
+              color: colors.textSecondary,
+              textAlign: "center",
+              marginTop: 8,
+              lineHeight: 22,
+            }}
+          >
+            Try adjusting your search or{"\n"}clearing the filters
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setSearchQuery("");
+              setSelectedFilter("all");
+            }}
+            style={{
+              marginTop: 24,
+              paddingHorizontal: 28,
+              paddingVertical: 14,
+              backgroundColor: colors.primary,
+              borderRadius: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Ionicons name="refresh" size={18} color="#FFF" style={{ marginRight: 8 }} />
+            <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 15 }}>Reset Filters</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 100, paddingTop: 8 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
+        >
+          {/* Section Header */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 20,
+              marginBottom: 14,
+            }}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 10,
+              }}
+            >
+              <Ionicons name="people" size={18} color={colors.primary} />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+              {selectedFilter === "all" ? "All Counselors" : `${selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)} Specialists`}
             </Text>
           </View>
-        ) : (
-          <Animated.ScrollView
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true }
-            )}
-            scrollEventThrottle={16}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}
-            refreshControl={
-              <RefreshControl 
-                refreshing={refreshing} 
-                onRefresh={onRefresh} 
-                tintColor={colors.primary}
-                colors={[colors.primary]}
-              />
-            }
-          >
-            {filteredCounsellors.map((counsellor, index) => (
-              <StoryCard 
-                key={counsellor.uid} 
-                counsellor={counsellor as CounsellorProfileData} 
-                index={index} 
-                colors={colors}
-                onPress={handleCounsellorPress}
-              />
-            ))}
-          </Animated.ScrollView>
-        )}
-      </SafeAreaView>
-    </Animated.View>
+
+          {/* 2-Column Grid */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 16 }}>
+            {/* Left Column */}
+            <View>
+              {leftColumn.map((c, i) => (
+                <CounsellorCard
+                  key={c.uid}
+                  counsellor={c}
+                  index={i * 2}
+                  colors={colors}
+                  onPress={() => handlePress(c)}
+                  isDark={isDarkColorScheme}
+                />
+              ))}
+            </View>
+            {/* Right Column */}
+            <View>
+              {rightColumn.map((c, i) => (
+                <CounsellorCard
+                  key={c.uid}
+                  counsellor={c}
+                  index={i * 2 + 1}
+                  colors={colors}
+                  onPress={() => handlePress(c)}
+                  isDark={isDarkColorScheme}
+                />
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </View>
   );
 }
