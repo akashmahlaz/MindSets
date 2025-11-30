@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+﻿import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Article, getUserArticles } from "@/services/articleService";
 import {
@@ -12,8 +12,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
+  Dimensions,
   Image,
   Pressable,
   RefreshControl,
@@ -23,73 +23,86 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CLIENT_CARD_WIDTH = SCREEN_WIDTH * 0.42;
+
+// Organic blob background component
+const BlobDecoration = ({ color, size, style }: { color: string; size: number; style?: any }) => (
+  <View style={[{ width: size, height: size, position: "absolute" }, style]}>
+    <Svg width={size} height={size} viewBox="0 0 200 200">
+      <Path
+        d="M45.7,-62.3C58.9,-53.4,69.3,-39.5,74.2,-23.8C79.1,-8.1,78.5,9.3,72.2,24.4C65.9,39.5,53.8,52.3,39.5,60.6C25.2,68.9,8.6,72.7,-7.5,72.1C-23.6,71.5,-39.2,66.5,-51.8,56.7C-64.4,46.9,-74,32.4,-77.3,16.4C-80.6,0.4,-77.6,-17.1,-69.8,-31.5C-62,-45.9,-49.4,-57.2,-35.5,-65.7C-21.6,-74.2,-6.3,-79.9,6.1,-78.3C18.5,-76.7,32.4,-71.2,45.7,-62.3Z"
+        fill={color}
+        transform="translate(100 100)"
+      />
+    </Svg>
+  </View>
+);
 
 export default function CounsellorDashboard() {
   const { isDarkColorScheme } = useColorScheme();
-  const { userProfile, logout } = useAuth();
+  const { userProfile } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [myStories, setMyStories] = useState<Article[]>([]);
   const [storiesLoading, setStoriesLoading] = useState(false);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    upcomingSessions: number;
+    totalClients: number;
+    weeklyHours: number;
+    rating: number | null;
+    totalStories: number;
+  }>({
     upcomingSessions: 0,
     totalClients: 0,
     weeklyHours: 0,
-    rating: 4.8,
+    rating: null,
     totalStories: 0,
   });
 
-  // Premium colors - matching tab bar
+  // Premium colors matching the app design system
   const colors = {
     background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
-    surface: isDarkColorScheme ? "#151923" : "#FFFFFF",
-    surfaceElevated: isDarkColorScheme ? "#1C2128" : "#F9FBFB",
-    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
+    surface: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
+    surfaceElevated: isDarkColorScheme ? "#252830" : "#F8FAFB",
+    text: isDarkColorScheme ? "#F3F4F6" : "#1F2937",
     textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
     textMuted: isDarkColorScheme ? "#6B7280" : "#9CA3AF",
     primary: "#2AA79D",
     primaryLight: "#3A9C94",
-    secondary: "#248F87",
+    secondary: "#0D9488",
     accent: "#F472B6",
-    success: "#48A9A6",
-    warning: "#F5B945",
-    error: "#E57373",
-    gradient1: ["#2AA79D", "#3A9C94"] as const,
-    gradient2: ["#248F87", "#1E7771"] as const,
-    gradient3: ["#F472B6", "#FB923C"] as const,
-    gradient4: ["#2AA79D", "#248F87"] as const,
-    border: isDarkColorScheme ? "#374151" : "#E5E7EB",
-    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(42,167,157,0.08)",
+    success: "#22C55E",
+    warning: "#FBBF24",
+    error: "#EF4444",
+    border: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
+    cardShadow: isDarkColorScheme ? "rgba(0,0,0,0.4)" : "rgba(42,167,157,0.1)",
+    blobPrimary: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.12)",
+    blobSecondary: isDarkColorScheme ? "rgba(107,114,128,0.1)" : "rgba(107,114,128,0.08)",
   };
 
-  // Premium animations
+  // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 700,
+        duration: 500,
         useNativeDriver: true,
       }),
-      Animated.spring(slideAnim, {
+      Animated.timing(slideAnim, {
         toValue: 0,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
+        duration: 500,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, slideAnim, scaleAnim]);
+  }, [fadeAnim, slideAnim]);
 
   const counsellorProfile = userProfile as CounsellorProfileData;
 
@@ -97,24 +110,20 @@ export default function CounsellorDashboard() {
     try {
       if (!userProfile?.uid) return;
 
-      // Load upcoming sessions
       const upcomingSessions = await getUpcomingSessions(userProfile.uid, "counselor");
       const allSessions = await getUserSessions(userProfile.uid, "counselor");
 
-      // Get unique clients
       const uniqueClientIds = [...new Set(allSessions.map((session) => session.clientId))];
       const allUsers = await getAllUsers(userProfile.uid);
 
       let clientUsers = allUsers.filter((user) => uniqueClientIds.includes(user.uid));
 
-      // If no clients from sessions, show sample clients for testing
       if (clientUsers.length === 0 && allUsers.length > 0) {
         clientUsers = allUsers
           .filter((user) => user.role === "user" && user.uid !== userProfile.uid)
           .slice(0, 5);
       }
 
-      // Calculate stats
       const now = new Date();
       const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
       const weekSessions = allSessions.filter(
@@ -127,18 +136,11 @@ export default function CounsellorDashboard() {
         upcomingSessions: upcomingSessions.length,
         totalClients: clientUsers.length,
         weeklyHours: Math.round(weeklyHours * 10) / 10,
-        rating: 4.8,
+        rating: counsellorProfile.averageRating || null,
         totalStories: myStories.length,
       });
     } catch (error) {
       console.error("Error loading dashboard data:", error);
-      setStats({
-        upcomingSessions: 0,
-        totalClients: 0,
-        weeklyHours: 0,
-        rating: 0,
-        totalStories: 0,
-      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -171,14 +173,6 @@ export default function CounsellorDashboard() {
     loadMyStories();
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch {
-      Alert.alert("Error", "Failed to sign out");
-    }
-  };
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -186,22 +180,137 @@ export default function CounsellorDashboard() {
     return "Good evening";
   };
 
+  // Client card component - matching the beautiful counsellor card style
+  const renderClientCard = (client: UserProfile, index: number) => {
+    const gradientSets = [
+      ["#2AA79D", "#0D9488"],
+      ["#3B82F6", "#2563EB"],
+      ["#F472B6", "#EC4899"],
+      ["#FBBF24", "#F59E0B"],
+    ];
+    const gradient = gradientSets[index % 4];
+
+    return (
+      <Pressable
+        key={client.uid}
+        onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: client.uid } })}
+        style={{ width: CLIENT_CARD_WIDTH, marginRight: 14 }}
+      >
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 20,
+            overflow: "hidden",
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 1,
+            shadowRadius: 14,
+            elevation: 5,
+            borderWidth: isDarkColorScheme ? 0 : 1,
+            borderColor: colors.border,
+          }}
+        >
+          {/* Header with organic background */}
+          <View style={{ height: 70, position: "relative", backgroundColor: isDarkColorScheme ? "#1C2128" : "#E8F5F3" }}>
+            <BlobDecoration color={`${colors.primary}25`} size={80} style={{ top: -20, left: -20 }} />
+            <BlobDecoration color={`${colors.secondary}20`} size={60} style={{ top: 10, right: -15 }} />
+            
+            {/* Online status */}
+            <View
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                backgroundColor: isDarkColorScheme ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.9)",
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 12,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success, marginRight: 4 }} />
+              <Text style={{ color: isDarkColorScheme ? "#FFF" : "#1F2937", fontSize: 9, fontWeight: "600" }}>Active</Text>
+            </View>
+          </View>
+
+          {/* Profile photo overlapping */}
+          <View style={{ alignItems: "center", marginTop: -35 }}>
+            <View style={{ padding: 3, borderRadius: 35, backgroundColor: colors.surface }}>
+              {client.photoURL ? (
+                <Image source={{ uri: client.photoURL }} style={{ width: 64, height: 64, borderRadius: 32 }} />
+              ) : (
+                <LinearGradient
+                  colors={gradient as any}
+                  style={{ width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center" }}
+                >
+                  <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "700" }}>
+                    {client.displayName?.charAt(0) || "?"}
+                  </Text>
+                </LinearGradient>
+              )}
+            </View>
+          </View>
+
+          {/* Content */}
+          <View style={{ padding: 14, paddingTop: 10 }}>
+            <Text
+              style={{ fontSize: 15, fontWeight: "700", color: colors.text, textAlign: "center", marginBottom: 6 }}
+              numberOfLines={1}
+            >
+              {client.displayName || "Client"}
+            </Text>
+            
+            <View style={{ alignItems: "center", marginBottom: 12 }}>
+              <View
+                style={{
+                  backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 10,
+                }}
+              >
+                <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>Client</Text>
+              </View>
+            </View>
+
+            {/* Action button */}
+            <Pressable
+              onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: client.uid } })}
+              style={{
+                backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+                paddingVertical: 10,
+                borderRadius: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="person-outline" size={14} color={colors.primary} />
+              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600", marginLeft: 6 }}>View Profile</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
+
   if (!counsellorProfile || counsellorProfile.role !== "counsellor") {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
           <View style={{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
+            width: 64,
+            height: 64,
+            borderRadius: 32,
             backgroundColor: colors.surfaceElevated,
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 20,
+            marginBottom: 16,
           }}>
-            <Ionicons name="hourglass-outline" size={36} color={colors.primary} />
+            <Ionicons name="hourglass-outline" size={28} color={colors.primary} />
           </View>
-          <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>Loading dashboard...</Text>
+          <Text style={{ fontSize: 16, color: colors.text }}>Loading dashboard...</Text>
         </View>
       </SafeAreaView>
     );
@@ -217,118 +326,143 @@ export default function CounsellorDashboard() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Premium Header */}
+        {/* ============ HEADER ============ */}
         <Animated.View
           style={{
-            paddingHorizontal: 24,
+            paddingHorizontal: 20,
             paddingTop: 16,
             paddingBottom: 20,
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }],
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, color: colors.textSecondary, marginBottom: 6 }}>
-                {getGreeting()} 👋
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <View>
+              <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 4 }}>
+                {getGreeting()} 
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text, letterSpacing: -1 }}>
+                <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text }}>
                   Dr. {counsellorProfile.firstName}
                 </Text>
                 {counsellorProfile.verificationStatus === "verified" && (
                   <View style={{
                     marginLeft: 10,
-                    backgroundColor: "rgba(16, 185, 129, 0.12)",
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 12,
+                    backgroundColor: "rgba(34, 197, 94, 0.12)",
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 10,
                     flexDirection: "row",
                     alignItems: "center",
                   }}>
-                    <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-                    <Text style={{ color: colors.success, fontSize: 12, fontWeight: "700", marginLeft: 4 }}>Verified</Text>
+                    <Ionicons name="checkmark-circle" size={12} color={colors.success} />
+                    <Text style={{ color: colors.success, fontSize: 10, fontWeight: "700", marginLeft: 3 }}>Verified</Text>
                   </View>
                 )}
               </View>
             </View>
 
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <Pressable
-                onPress={() => router.push("/notifications" as any)}
+            <Pressable
+              onPress={() => router.push("/profile")}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                backgroundColor: colors.surfaceElevated,
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {counsellorProfile?.photoURL ? (
+                <Image source={{ uri: counsellorProfile.photoURL }} style={{ width: 48, height: 48, borderRadius: 16 }} />
+              ) : (
+                <Ionicons name="person" size={22} color={colors.textSecondary} />
+              )}
+            </Pressable>
+          </View>
+
+          {/* Today's Overview Card */}
+          <Pressable onPress={() => router.push("/(main)/sessions" as any)}>
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 20,
+                padding: 18,
+                flexDirection: "row",
+                alignItems: "center",
+                borderWidth: isDarkColorScheme ? 0 : 1,
+                borderColor: colors.border,
+              }}
+            >
+              <View
                 style={{
-                  width: 48,
-                  height: 48,
+                  width: 52,
+                  height: 52,
                   borderRadius: 16,
-                  backgroundColor: colors.surfaceElevated,
+                  backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 14,
+                }}
+              >
+                <Text style={{ fontSize: 28 }}></Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 2 }}>
+                  {stats.upcomingSessions > 0 
+                    ? `${stats.upcomingSessions} Session${stats.upcomingSessions > 1 ? "s" : ""} Today`
+                    : "No Sessions Today"}
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                  {stats.upcomingSessions > 0 ? "Tap to view your schedule" : "Your schedule is clear"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  backgroundColor: colors.primary,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Ionicons name="notifications-outline" size={24} color={colors.textSecondary} />
-              </Pressable>
-
-              <Pressable
-                onPress={() => router.push("/profile")}
-                style={{ width: 56, height: 56, borderRadius: 20, overflow: "hidden" }}
-              >
-                <LinearGradient
-                  colors={colors.gradient1}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{ width: 56, height: 56, padding: 3 }}
-                >
-                  <View style={{
-                    flex: 1,
-                    borderRadius: 17,
-                    backgroundColor: colors.background,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}>
-                    {counsellorProfile?.photoURL ? (
-                      <Image
-                        source={{ uri: counsellorProfile.photoURL }}
-                        style={{ width: 50, height: 50, borderRadius: 17 }}
-                      />
-                    ) : (
-                      <Text style={{ fontSize: 22, fontWeight: "800", color: colors.primary }}>
-                        {counsellorProfile.firstName?.charAt(0)}
-                      </Text>
-                    )}
-                  </View>
-                </LinearGradient>
-              </Pressable>
+                <Ionicons name="chevron-forward" size={20} color="#FFF" />
+              </View>
             </View>
-          </View>
+          </Pressable>
         </Animated.View>
 
-        {/* Verification Status Cards */}
+        {/* ============ VERIFICATION STATUS ============ */}
         {counsellorProfile.verificationStatus === "pending" && (
-          <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
             <View style={{
-              backgroundColor: "rgba(251, 191, 36, 0.12)",
-              borderRadius: 24,
-              padding: 20,
+              backgroundColor: "rgba(251, 191, 36, 0.1)",
+              borderRadius: 16,
+              padding: 16,
               flexDirection: "row",
               alignItems: "center",
+              borderWidth: 1,
+              borderColor: "rgba(251, 191, 36, 0.3)",
             }}>
               <View style={{
-                width: 56,
-                height: 56,
-                borderRadius: 18,
-                backgroundColor: "rgba(251, 191, 36, 0.2)",
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: "rgba(251, 191, 36, 0.15)",
                 alignItems: "center",
                 justifyContent: "center",
-                marginRight: 16,
+                marginRight: 14,
               }}>
-                <Ionicons name="time" size={28} color={colors.warning} />
+                <Ionicons name="time" size={24} color={colors.warning} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 17, fontWeight: "700", color: colors.warning, marginBottom: 4 }}>
-                  Verification In Progress
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.warning, marginBottom: 2 }}>
+                  Verification Pending
                 </Text>
-                <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>
-                  Your credentials are being reviewed. This typically takes 3-5 business days.
+                <Text style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>
+                  Your credentials are being reviewed (3-5 days)
                 </Text>
               </View>
             </View>
@@ -336,30 +470,32 @@ export default function CounsellorDashboard() {
         )}
 
         {counsellorProfile.verificationStatus === "rejected" && (
-          <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
             <View style={{
-              backgroundColor: "rgba(239, 68, 68, 0.12)",
-              borderRadius: 24,
-              padding: 20,
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              borderRadius: 16,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: "rgba(239, 68, 68, 0.3)",
             }}>
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <View style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 18,
-                  backgroundColor: "rgba(239, 68, 68, 0.2)",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(239, 68, 68, 0.15)",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginRight: 16,
+                  marginRight: 14,
                 }}>
-                  <Ionicons name="alert-circle" size={28} color={colors.error} />
+                  <Ionicons name="alert-circle" size={24} color={colors.error} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 17, fontWeight: "700", color: colors.error, marginBottom: 4 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "700", color: colors.error }}>
                     Application Needs Updates
                   </Text>
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>
-                    {counsellorProfile.verificationNotes || "Please review and resubmit your application."}
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                    {counsellorProfile.verificationNotes || "Please review and resubmit"}
                   </Text>
                 </View>
               </View>
@@ -367,340 +503,273 @@ export default function CounsellorDashboard() {
                 onPress={() => router.push("/profile/edit" as any)}
                 style={{
                   backgroundColor: "rgba(239, 68, 68, 0.15)",
-                  paddingVertical: 14,
-                  borderRadius: 16,
+                  paddingVertical: 12,
+                  borderRadius: 12,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: colors.error, fontWeight: "700", fontSize: 15 }}>Update Application</Text>
+                <Text style={{ color: colors.error, fontWeight: "700", fontSize: 14 }}>Update Application</Text>
               </Pressable>
             </View>
           </View>
         )}
 
-        {/* Stats Overview - Premium cards */}
-        <Animated.View
-          style={{
-            paddingHorizontal: 24,
-            marginBottom: 28,
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          }}
-        >
-          <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, marginBottom: 18, letterSpacing: -0.5 }}>
-            Dashboard Overview
-          </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -6 }}>
-            {[
-              { icon: "calendar", label: "Upcoming", value: stats.upcomingSessions, sublabel: "Sessions", gradient: colors.gradient1 },
-              { icon: "people", label: "Active", value: stats.totalClients, sublabel: "Clients", gradient: colors.gradient2 },
-              { icon: "time", label: "This Week", value: `${stats.weeklyHours}h`, sublabel: "Hours", gradient: colors.gradient3 },
-              { icon: "star", label: "Rating", value: stats.rating > 0 ? stats.rating.toFixed(1) : "--", sublabel: "Average", gradient: colors.gradient4 },
-            ].map((stat, index) => (
-              <View key={index} style={{ width: "50%", paddingHorizontal: 6, marginBottom: 12 }}>
-                <View style={{
-                  backgroundColor: colors.surface,
-                  borderRadius: 24,
-                  padding: 20,
-                  shadowColor: colors.cardShadow,
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 1,
-                  shadowRadius: 16,
-                  elevation: 4,
-                }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <LinearGradient
-                      colors={stat.gradient}
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 16,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Ionicons name={stat.icon as any} size={24} color="#FFF" />
-                    </LinearGradient>
-                    <Text style={{ fontSize: 28, fontWeight: "800", color: colors.text }}>{stat.value}</Text>
-                  </View>
-                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{stat.label}</Text>
-                  <Text style={{ fontSize: 13, color: colors.textMuted }}>{stat.sublabel}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </Animated.View>
-
-        {/* Quick Actions */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, marginBottom: 18, letterSpacing: -0.5 }}>
+        {/* ============ QUICK ACTIONS ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 14 }}>
             Quick Actions
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24 }} contentContainerStyle={{ paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: "row", gap: 12 }}>
             {[
-              { icon: "chatbubbles", label: "Messages", color: "#2AA79D", bgColor: "rgba(42, 167, 157, 0.12)", route: "/chat" },
-              { icon: "calendar", label: "Schedule", color: "#3A9C94", bgColor: "rgba(58, 156, 148, 0.12)", route: "/(main)/sessions" },
-              { icon: "book", label: "Stories", color: "#F472B6", bgColor: "rgba(244, 114, 182, 0.12)", route: "/(resources)/articles" },
-              { icon: "create", label: "Write Story", color: "#248F87", bgColor: "rgba(36, 143, 135, 0.12)", route: "/(resources)/articles/create" },
-              { icon: "person", label: "Profile", color: "#FB923C", bgColor: "rgba(251, 146, 60, 0.12)", route: "/profile" },
+              { icon: "chatbubbles-outline", label: "Messages", colors: ["#2AA79D", "#0D9488"], route: "/chat" },
+              { icon: "calendar-outline", label: "Schedule", colors: ["#3B82F6", "#2563EB"], route: "/(main)/sessions" },
+              { icon: "create-outline", label: "Write\nStory", colors: ["#F472B6", "#EC4899"], route: "/(resources)/articles/create" },
             ].map((action, index) => (
               <Pressable
                 key={index}
                 onPress={() => router.push(action.route as any)}
-                style={{ alignItems: "center", marginRight: 20 }}
-              >
-                <View style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 22,
-                  backgroundColor: action.bgColor,
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.surface,
+                  borderRadius: 16,
+                  padding: 16,
                   alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}>
-                  <Ionicons name={action.icon as any} size={28} color={action.color} />
-                </View>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text, textAlign: "center" }}>
+                  borderWidth: isDarkColorScheme ? 0 : 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <LinearGradient
+                  colors={action.colors as any}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Ionicons name={action.icon as any} size={24} color="#FFF" />
+                </LinearGradient>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: colors.text,
+                    textAlign: "center",
+                    lineHeight: 18,
+                  }}
+                >
                   {action.label}
                 </Text>
               </Pressable>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
-        {/* Today's Schedule Card */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-            <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, letterSpacing: -0.5 }}>
-              Today&apos;s Schedule
+        {/* ============ STATS OVERVIEW ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 14 }}>
+            Overview
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -6 }}>
+            {[
+              { icon: "calendar", value: stats.upcomingSessions, label: "Upcoming", color: colors.primary },
+              { icon: "people", value: stats.totalClients, label: "Clients", color: "#3B82F6" },
+              { icon: "time", value: `${stats.weeklyHours}h`, label: "This Week", color: "#F472B6" },
+              { icon: "star", value: stats.rating && stats.rating > 0 ? stats.rating.toFixed(1) : "New", label: "Rating", color: "#FBBF24" },
+            ].map((stat, index) => (
+              <View key={index} style={{ width: "50%", paddingHorizontal: 6, marginBottom: 12 }}>
+                <View
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: 16,
+                    padding: 16,
+                    borderWidth: isDarkColorScheme ? 0 : 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        backgroundColor: `${stat.color}15`,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name={stat.icon as any} size={20} color={stat.color} />
+                    </View>
+                    <Text style={{ fontSize: 24, fontWeight: "800", color: colors.text }}>{stat.value}</Text>
+                  </View>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>{stat.label}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* ============ YOUR CLIENTS ============ */}
+        <View style={{ marginBottom: 24 }}>
+          <View style={{ paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+              Your Clients
             </Text>
-            <Pressable
-              onPress={() => router.push("/(main)/sessions" as any)}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                backgroundColor: colors.surfaceElevated,
-                borderRadius: 20,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>View All</Text>
-            </Pressable>
+            <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+              {clients.length} active
+            </Text>
           </View>
 
-          <View style={{
-            backgroundColor: colors.surface,
-            borderRadius: 24,
-            padding: 24,
-            shadowColor: colors.cardShadow,
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 1,
-            shadowRadius: 16,
-            elevation: 4,
-          }}>
-            {stats.upcomingSessions === 0 ? (
-              <View style={{ alignItems: "center", paddingVertical: 24 }}>
+          {loading ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+              {[1, 2, 3].map((_, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: CLIENT_CARD_WIDTH,
+                    marginRight: 14,
+                    backgroundColor: colors.surface,
+                    borderRadius: 20,
+                    height: 200,
+                  }}
+                >
+                  <View style={{ height: 70, backgroundColor: colors.surfaceElevated, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
+                  <View style={{ padding: 14, alignItems: "center" }}>
+                    <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.surfaceElevated, marginTop: -46 }} />
+                    <View style={{ height: 16, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "70%", marginTop: 12 }} />
+                    <View style={{ height: 12, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "50%", marginTop: 8 }} />
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          ) : clients.length === 0 ? (
+            <View style={{ paddingHorizontal: 20 }}>
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: 20,
+                padding: 32,
+                alignItems: "center",
+                borderWidth: isDarkColorScheme ? 0 : 1,
+                borderColor: colors.border,
+              }}>
                 <View style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
                   backgroundColor: colors.surfaceElevated,
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: 16,
+                  marginBottom: 14,
                 }}>
-                  <Ionicons name="calendar-outline" size={36} color={colors.textSecondary} />
+                  <Ionicons name="people-outline" size={28} color={colors.textSecondary} />
                 </View>
-                <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
-                  No Sessions Today
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 6 }}>
+                  No Clients Yet
                 </Text>
-                <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", marginBottom: 20, lineHeight: 20 }}>
-                  Your schedule is clear. Perfect time to write a story or update your profile!
+                <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: "center", lineHeight: 20 }}>
+                  Your clients will appear here once you start sessions
                 </Text>
-                <Pressable onPress={() => router.push("/(main)/sessions" as any)}>
-                  <LinearGradient
-                    colors={colors.gradient1}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{
-                      paddingHorizontal: 28,
-                      paddingVertical: 14,
-                      borderRadius: 20,
-                    }}
-                  >
-                    <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "700" }}>Manage Schedule</Text>
-                  </LinearGradient>
-                </Pressable>
               </View>
-            ) : (
-              <View>
-                <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 12 }}>
-                  You have {stats.upcomingSessions} upcoming session{stats.upcomingSessions > 1 ? "s" : ""}
-                </Text>
-                <Pressable onPress={() => router.push("/(main)/sessions" as any)}>
-                  <LinearGradient
-                    colors={colors.gradient1}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{
-                      paddingVertical: 14,
-                      borderRadius: 16,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "700" }}>View Schedule</Text>
-                  </LinearGradient>
-                </Pressable>
-              </View>
-            )}
-          </View>
+            </View>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+              {clients.map((client, index) => renderClientCard(client, index))}
+            </ScrollView>
+          )}
         </View>
 
-        {/* My Stories Section */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-            <View>
-              <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, letterSpacing: -0.5 }}>
-                My Stories
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
-                Share your expertise with clients
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => router.push("/(resources)/articles" as any)}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                backgroundColor: colors.surfaceElevated,
-                borderRadius: 20,
-              }}
-            >
+        {/* ============ MY STORIES ============ */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+              My Stories
+            </Text>
+            <Pressable onPress={() => router.push("/(resources)/articles" as any)}>
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.primary }}>See All</Text>
             </Pressable>
           </View>
 
           {storiesLoading ? (
-            <View style={{ gap: 16 }}>
+            <View style={{ gap: 12 }}>
               {[1, 2].map((_, index) => (
                 <View
                   key={index}
                   style={{
                     backgroundColor: colors.surface,
-                    borderRadius: 24,
-                    padding: 20,
+                    borderRadius: 16,
+                    padding: 16,
                     flexDirection: "row",
                   }}
                 >
-                  <View style={{ width: 80, height: 80, borderRadius: 16, backgroundColor: colors.surfaceElevated, marginRight: 16 }} />
+                  <View style={{ width: 60, height: 60, borderRadius: 12, backgroundColor: colors.surfaceElevated, marginRight: 14 }} />
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <View style={{ height: 18, backgroundColor: colors.surfaceElevated, borderRadius: 6, marginBottom: 10 }} />
-                    <View style={{ height: 14, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "70%" }} />
+                    <View style={{ height: 16, backgroundColor: colors.surfaceElevated, borderRadius: 6, marginBottom: 8 }} />
+                    <View style={{ height: 12, backgroundColor: colors.surfaceElevated, borderRadius: 6, width: "60%" }} />
                   </View>
                 </View>
               ))}
             </View>
           ) : myStories.length > 0 ? (
-            <View style={{ gap: 16 }}>
-              {myStories.slice(0, 3).map((story, index) => {
-                const categoryColors = [
-                  { bg: "rgba(42, 167, 157, 0.12)", text: "#2AA79D" },
-                  { bg: "rgba(58, 156, 148, 0.12)", text: "#3A9C94" },
-                  { bg: "rgba(244, 114, 182, 0.12)", text: "#F472B6" },
-                ];
-                const colorSet = categoryColors[index % 3];
-
-                return (
-                  <Pressable
-                    key={story.id}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(resources)/articles/[articleId]" as any,
-                        params: { articleId: story.id },
-                      })
-                    }
-                  >
+            <View style={{ gap: 12 }}>
+              {myStories.slice(0, 3).map((story, index) => (
+                <Pressable
+                  key={story.id}
+                  onPress={() => router.push({ pathname: "/(resources)/articles/[articleId]" as any, params: { articleId: story.id } })}
+                >
+                  <View style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: 16,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderWidth: isDarkColorScheme ? 0 : 1,
+                    borderColor: colors.border,
+                  }}>
                     <View style={{
-                      backgroundColor: colors.surface,
-                      borderRadius: 24,
-                      padding: 18,
-                      flexDirection: "row",
+                      width: 56,
+                      height: 56,
+                      borderRadius: 14,
+                      backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
                       alignItems: "center",
-                      shadowColor: colors.cardShadow,
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 1,
-                      shadowRadius: 16,
-                      elevation: 4,
+                      justifyContent: "center",
+                      marginRight: 14,
                     }}>
-                      <View style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 18,
-                        backgroundColor: colorSet.bg,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 16,
-                      }}>
-                        <Ionicons name="document-text" size={32} color={colorSet.text} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <View style={{
-                          backgroundColor: story.isPublished ? "rgba(16, 185, 129, 0.12)" : "rgba(251, 191, 36, 0.12)",
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                          alignSelf: "flex-start",
-                          marginBottom: 8,
-                        }}>
-                          <Text style={{
-                            fontSize: 11,
-                            fontWeight: "700",
-                            color: story.isPublished ? colors.success : colors.warning,
-                          }}>
-                            {story.isPublished ? "PUBLISHED" : "DRAFT"}
-                          </Text>
-                        </View>
-                        <Text
-                          style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 4, lineHeight: 22 }}
-                          numberOfLines={2}
-                        >
-                          {story.title}
-                        </Text>
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <Ionicons name="eye-outline" size={14} color={colors.textMuted} />
-                          <Text style={{ fontSize: 13, color: colors.textMuted, marginLeft: 4 }}>
-                            {story.viewCount || 0} views
-                          </Text>
-                        </View>
-                      </View>
-                      <Pressable
-                        onPress={() =>
-                          router.push({
-                            pathname: "/(resources)/articles/edit/[articleId]" as any,
-                            params: { articleId: story.id },
-                          })
-                        }
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          backgroundColor: colors.surfaceElevated,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Ionicons name="create-outline" size={20} color={colors.textSecondary} />
-                      </Pressable>
+                      <Ionicons name="document-text" size={24} color={colors.primary} />
                     </View>
-                  </Pressable>
-                );
-              })}
+                    <View style={{ flex: 1 }}>
+                      <View style={{
+                        backgroundColor: story.isPublished ? "rgba(34, 197, 94, 0.12)" : "rgba(251, 191, 36, 0.12)",
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        borderRadius: 6,
+                        alignSelf: "flex-start",
+                        marginBottom: 6,
+                      }}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: story.isPublished ? colors.success : colors.warning }}>
+                          {story.isPublished ? "PUBLISHED" : "DRAFT"}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 4 }} numberOfLines={1}>
+                        {story.title}
+                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Ionicons name="eye-outline" size={12} color={colors.textMuted} />
+                        <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>{story.viewCount || 0} views</Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </View>
+                </Pressable>
+              ))}
 
               {/* Write new story button */}
               <Pressable onPress={() => router.push("/(resources)/articles/create" as any)}>
                 <View style={{
                   backgroundColor: colors.surface,
-                  borderRadius: 24,
-                  padding: 20,
+                  borderRadius: 16,
+                  padding: 16,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
@@ -709,301 +778,58 @@ export default function CounsellorDashboard() {
                   borderColor: colors.border,
                 }}>
                   <View style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
-                    backgroundColor: "rgba(124, 58, 237, 0.12)",
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: isDarkColorScheme ? "rgba(42,167,157,0.15)" : "rgba(42,167,157,0.1)",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginRight: 16,
+                    marginRight: 12,
                   }}>
-                    <Ionicons name="add" size={26} color={colors.primary} />
+                    <Ionicons name="add" size={22} color={colors.primary} />
                   </View>
-                  <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary }}>Write a New Story</Text>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}>Write a New Story</Text>
                 </View>
               </Pressable>
             </View>
           ) : (
             <View style={{
               backgroundColor: colors.surface,
-              borderRadius: 24,
-              padding: 40,
+              borderRadius: 20,
+              padding: 32,
               alignItems: "center",
-              shadowColor: colors.cardShadow,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 1,
-              shadowRadius: 16,
-              elevation: 4,
+              borderWidth: isDarkColorScheme ? 0 : 1,
+              borderColor: colors.border,
             }}>
               <View style={{
-                width: 100,
-                height: 100,
-                borderRadius: 50,
+                width: 64,
+                height: 64,
+                borderRadius: 32,
                 backgroundColor: colors.surfaceElevated,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: 20,
+                marginBottom: 14,
               }}>
-                <Ionicons name="create-outline" size={44} color={colors.textSecondary} />
+                <Ionicons name="create-outline" size={28} color={colors.textSecondary} />
               </View>
-              <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 6 }}>
                 Share Your Expertise
               </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", marginBottom: 24, lineHeight: 22, paddingHorizontal: 20 }}>
-                Write stories to help clients understand mental health topics and build trust with potential clients.
+              <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: "center", marginBottom: 16, lineHeight: 20 }}>
+                Write stories to help clients understand mental health topics
               </Text>
               <Pressable onPress={() => router.push("/(resources)/articles/create" as any)}>
                 <LinearGradient
-                  colors={colors.gradient1}
+                  colors={["#2AA79D", "#0D9488"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={{
-                    paddingHorizontal: 32,
-                    paddingVertical: 16,
-                    borderRadius: 24,
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
+                  style={{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}
                 >
-                  <Ionicons name="create" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                  <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700" }}>Write Your First Story</Text>
+                  <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700" }}>Write Your First Story</Text>
                 </LinearGradient>
               </Pressable>
             </View>
           )}
-        </View>
-
-        {/* Client Management */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-            <View>
-              <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, letterSpacing: -0.5 }}>
-                Your Clients
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
-                {clients.length} active client{clients.length !== 1 ? "s" : ""}
-              </Text>
-            </View>
-          </View>
-
-          {loading ? (
-            <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 24,
-              padding: 24,
-              alignItems: "center",
-            }}>
-              <View style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                borderWidth: 3,
-                borderColor: colors.surfaceElevated,
-                borderTopColor: colors.primary,
-              }} />
-              <Text style={{ color: colors.textSecondary, marginTop: 16 }}>Loading clients...</Text>
-            </View>
-          ) : clients.length === 0 ? (
-            <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 24,
-              padding: 40,
-              alignItems: "center",
-            }}>
-              <View style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: colors.surfaceElevated,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}>
-                <Ionicons name="people-outline" size={36} color={colors.textSecondary} />
-              </View>
-              <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
-                No Active Clients Yet
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", lineHeight: 20 }}>
-                Your client list will appear here once you start conducting sessions.
-              </Text>
-            </View>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24 }} contentContainerStyle={{ paddingHorizontal: 24 }}>
-              {clients.map((client, index) => {
-                const gradients = [colors.gradient1, colors.gradient2, colors.gradient3];
-                const gradient = gradients[index % 3];
-
-                return (
-                  <Pressable
-                    key={client.uid}
-                    onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: client.uid } })}
-                    style={{ marginRight: 16, width: 140 }}
-                  >
-                    <View style={{
-                      backgroundColor: colors.surface,
-                      borderRadius: 24,
-                      padding: 20,
-                      alignItems: "center",
-                      shadowColor: colors.cardShadow,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 1,
-                      shadowRadius: 12,
-                      elevation: 3,
-                    }}>
-                      <LinearGradient
-                        colors={gradient}
-                        style={{
-                          width: 64,
-                          height: 64,
-                          borderRadius: 32,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginBottom: 14,
-                        }}
-                      >
-                        {client.photoURL ? (
-                          <Image
-                            source={{ uri: client.photoURL }}
-                            style={{ width: 60, height: 60, borderRadius: 30 }}
-                          />
-                        ) : (
-                          <Text style={{ fontSize: 24, fontWeight: "800", color: "#FFF" }}>
-                            {client.displayName?.charAt(0) || "?"}
-                          </Text>
-                        )}
-                      </LinearGradient>
-                      <Text
-                        style={{ fontSize: 15, fontWeight: "700", color: colors.text, textAlign: "center", marginBottom: 8 }}
-                        numberOfLines={1}
-                      >
-                        {client.displayName || "Unknown"}
-                      </Text>
-                      <View style={{
-                        backgroundColor: "rgba(124, 58, 237, 0.12)",
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 12,
-                      }}>
-                        <Text style={{ fontSize: 12, fontWeight: "600", color: colors.primary }}>Client</Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
-        </View>
-
-        {/* Professional Profile Summary */}
-        <View style={{ paddingHorizontal: 24 }}>
-          <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, marginBottom: 18, letterSpacing: -0.5 }}>
-            Professional Profile
-          </Text>
-          <View style={{
-            backgroundColor: colors.surface,
-            borderRadius: 24,
-            padding: 24,
-            shadowColor: colors.cardShadow,
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 1,
-            shadowRadius: 16,
-            elevation: 4,
-          }}>
-            <View style={{ gap: 20 }}>
-              {[
-                { icon: "ribbon", label: "Specializations", value: counsellorProfile.specializations?.slice(0, 2).join(", ") || "Not specified", gradient: colors.gradient1 },
-                { icon: "school", label: "Experience", value: `${counsellorProfile.yearsExperience || 0} years`, gradient: colors.gradient2 },
-                { icon: "card", label: "License", value: counsellorProfile.licenseType || "Not specified", gradient: colors.gradient3 },
-              ].map((item, index) => (
-                <View key={index} style={{ flexDirection: "row", alignItems: "center" }}>
-                  <LinearGradient
-                    colors={item.gradient}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 16,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 16,
-                    }}
-                  >
-                    <Ionicons name={item.icon as any} size={22} color="#FFF" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 2 }}>{item.label}</Text>
-                    <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text }}>{item.value}</Text>
-                  </View>
-                </View>
-              ))}
-
-              {/* Session Rate */}
-              <View style={{
-                backgroundColor: colors.surfaceElevated,
-                borderRadius: 20,
-                padding: 20,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 16,
-                    backgroundColor: "rgba(251, 191, 36, 0.15)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                  }}>
-                    <Ionicons name="cash" size={24} color={colors.warning} />
-                  </View>
-                  <View>
-                    <Text style={{ fontSize: 13, color: colors.textMuted }}>Session Rate</Text>
-                    <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>Per hour</Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 32, fontWeight: "800", color: colors.warning }}>
-                  ${counsellorProfile.hourlyRate || 0}
-                </Text>
-              </View>
-            </View>
-
-            <Pressable
-              onPress={() => router.push("/profile")}
-              style={{ marginTop: 24 }}
-            >
-              <View style={{
-                backgroundColor: colors.surfaceElevated,
-                paddingVertical: 16,
-                borderRadius: 20,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <Ionicons name="create-outline" size={20} color={colors.text} style={{ marginRight: 8 }} />
-                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Edit Profile</Text>
-              </View>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Logout Button */}
-        <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
-          <Pressable
-            onPress={handleLogout}
-            style={{
-              backgroundColor: "rgba(239, 68, 68, 0.1)",
-              paddingVertical: 16,
-              borderRadius: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="log-out-outline" size={22} color={colors.error} style={{ marginRight: 8 }} />
-            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.error }}>Sign Out</Text>
-          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
