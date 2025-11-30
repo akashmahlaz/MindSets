@@ -65,7 +65,7 @@ function CounsellorCard({
   const gradientSets = [
     ["#C6F135", "#B8E62E"], // Yellow-green like in screenshot
     ["#14B8A6", "#2DD4BF"], // Teal
-    ["#8B5CF6", "#A78BFA"], // Purple
+    ["#3B82F6", "#60A5FA"], // Blue (instead of purple)
     ["#F472B6", "#EC4899"], // Pink
   ];
 
@@ -176,11 +176,13 @@ function CounsellorCard({
           )}
         </View>
 
-        {/* Info Section - Dark Background */}
+        {/* Info Section - Theme Aware */}
         <View
           style={{
-            backgroundColor: isDark ? "#1A2332" : "#1E293B",
+            backgroundColor: isDark ? "#1A2332" : "#FFFFFF",
             padding: 12,
+            borderTopWidth: isDark ? 0 : 1,
+            borderTopColor: "#E5E7EB",
           }}
         >
           {/* Name */}
@@ -188,7 +190,7 @@ function CounsellorCard({
             style={{
               fontSize: 15,
               fontWeight: "700",
-              color: "#FFF",
+              color: isDark ? "#FFF" : "#1F2937",
               marginBottom: 2,
             }}
             numberOfLines={1}
@@ -200,7 +202,7 @@ function CounsellorCard({
           <Text
             style={{
               fontSize: 12,
-              color: "rgba(255,255,255,0.7)",
+              color: isDark ? "rgba(255,255,255,0.7)" : "#6B7280",
               marginBottom: 10,
             }}
             numberOfLines={1}
@@ -219,7 +221,7 @@ function CounsellorCard({
             {/* Rating */}
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Ionicons name="star" size={14} color="#FBBF24" />
-              <Text style={{ fontSize: 14, color: "#FFF", fontWeight: "600", marginLeft: 4 }}>
+              <Text style={{ fontSize: 14, color: isDark ? "#FFF" : "#1F2937", fontWeight: "600", marginLeft: 4 }}>
                 {rating}
               </Text>
             </View>
@@ -227,13 +229,13 @@ function CounsellorCard({
             {/* Price Badge */}
             <View
               style={{
-                backgroundColor: "rgba(42, 167, 157, 0.2)",
+                backgroundColor: isDark ? "rgba(42, 167, 157, 0.2)" : "rgba(42, 167, 157, 0.15)",
                 paddingHorizontal: 10,
                 paddingVertical: 4,
                 borderRadius: 8,
               }}
             >
-              <Text style={{ fontSize: 13, color: "#2DD4BF", fontWeight: "700" }}>
+              <Text style={{ fontSize: 13, color: "#2AA79D", fontWeight: "700" }}>
                 ${counsellor.hourlyRate || 80}
               </Text>
             </View>
@@ -277,15 +279,17 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
       {/* Info placeholder */}
       <View
         style={{
-          backgroundColor: isDark ? "#1A2332" : "#1E293B",
+          backgroundColor: isDark ? "#1A2332" : "#FFFFFF",
           padding: 12,
+          borderTopWidth: isDark ? 0 : 1,
+          borderTopColor: "#E5E7EB",
         }}
       >
         <View
           style={{
             width: "80%",
             height: 16,
-            backgroundColor: "rgba(255,255,255,0.1)",
+            backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
             borderRadius: 4,
             marginBottom: 6,
           }}
@@ -294,7 +298,7 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
           style={{
             width: "50%",
             height: 12,
-            backgroundColor: "rgba(255,255,255,0.1)",
+            backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
             borderRadius: 4,
             marginBottom: 10,
           }}
@@ -309,7 +313,7 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
             style={{
               width: 50,
               height: 16,
-              backgroundColor: "rgba(255,255,255,0.1)",
+              backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
               borderRadius: 4,
             }}
           />
@@ -317,7 +321,7 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
             style={{
               width: 60,
               height: 24,
-              backgroundColor: "rgba(255,255,255,0.1)",
+              backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
               borderRadius: 8,
             }}
           />
@@ -439,19 +443,21 @@ export default function CounselorsScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: isDarkColorScheme ? "#1E2733" : "#374151",
+              backgroundColor: isDarkColorScheme ? "#1A1D24" : "#F3F4F6",
               borderRadius: 12,
               paddingHorizontal: 14,
               height: 48,
+              borderWidth: 1,
+              borderColor: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
             }}
           >
-            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <Ionicons name="search" size={20} color={isDarkColorScheme ? "#9CA3AF" : "#6B7280"} />
             <TextInput
               placeholder="Search by name or specialty..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDarkColorScheme ? "#9CA3AF" : "#9CA3AF"}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              style={{ flex: 1, marginLeft: 10, fontSize: 15, color: "#FFF" }}
+              style={{ flex: 1, marginLeft: 10, fontSize: 15, color: isDarkColorScheme ? "#F3F4F6" : "#1F2937" }}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
@@ -477,20 +483,22 @@ export default function CounselorsScreen() {
                 paddingHorizontal: 14,
                 paddingVertical: 10,
                 borderRadius: 20,
-                backgroundColor: selectedFilter === f.id ? "#8B5CF6" : isDarkColorScheme ? "#1E2733" : "#374151",
+                backgroundColor: selectedFilter === f.id ? "#2AA79D" : isDarkColorScheme ? "#1A1D24" : "#F3F4F6",
+                borderWidth: selectedFilter === f.id ? 0 : 1,
+                borderColor: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
               }}
             >
               <Ionicons
                 name={f.icon as any}
                 size={16}
-                color={selectedFilter === f.id ? "#FFF" : "#9CA3AF"}
+                color={selectedFilter === f.id ? "#FFF" : isDarkColorScheme ? "#9CA3AF" : "#6B7280"}
                 style={{ marginRight: 6 }}
               />
               <Text
                 style={{
                   fontSize: 13,
                   fontWeight: "600",
-                  color: selectedFilter === f.id ? "#FFF" : "#9CA3AF",
+                  color: selectedFilter === f.id ? "#FFF" : isDarkColorScheme ? "#9CA3AF" : "#6B7280",
                 }}
               >
                 {f.label}

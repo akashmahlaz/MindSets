@@ -138,8 +138,8 @@ export default function ProfileScreen() {
     secondary: "#60A5FA",
     warningContainer: isDarkColorScheme ? "rgba(251, 191, 36, 0.15)" : "rgba(251, 191, 36, 0.1)",
     warning: "#FBBF24",
-    accentContainer: isDarkColorScheme ? "rgba(168, 85, 247, 0.15)" : "rgba(168, 85, 247, 0.1)",
-    accent: "#A855F7",
+    accentContainer: isDarkColorScheme ? "rgba(96, 165, 250, 0.15)" : "rgba(96, 165, 250, 0.1)",
+    accent: "#60A5FA",
     tagBg: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
     tabActive: isDarkColorScheme ? "#1A1D24" : "#FFFFFF",
     tabInactive: isDarkColorScheme ? "transparent" : "transparent",
@@ -790,27 +790,52 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>Message</Text>
           </TouchableOpacity>
 
-          {/* Book Session Button */}
-          <TouchableOpacity
-            onPress={() => Alert.alert("Book Session", "This would open the booking flow.")}
-            style={{ flex: 1.2 }}
-          >
-            <LinearGradient
-              colors={[colors.primary, "#0D9488"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 16,
-                borderRadius: 16,
-              }}
+          {/* Conditional Action Button */}
+          {isCounsellor ? (
+            /* Book Session Button - for counsellor profiles */
+            <TouchableOpacity
+              onPress={() => Alert.alert("Book Session", "This would open the booking flow.")}
+              style={{ flex: 1.2 }}
             >
-              <Ionicons name="calendar-outline" size={20} color="#FFF" />
-              <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700", marginLeft: 8 }}>Book Session</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={[colors.primary, "#0D9488"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons name="calendar-outline" size={20} color="#FFF" />
+                <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700", marginLeft: 8 }}>Book Session</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : (
+            /* Session History Button - for client profiles (when counsellor views) */
+            <TouchableOpacity
+              onPress={() => Alert.alert("Session History", "View past sessions with this client.")}
+              style={{ flex: 1.2 }}
+            >
+              <LinearGradient
+                colors={["#0D9488", "#115E59"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                }}
+              >
+                <Ionicons name="time-outline" size={20} color="#FFF" />
+                <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700", marginLeft: 8 }}>Session History</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
