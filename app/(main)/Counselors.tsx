@@ -24,8 +24,9 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
+const CARD_HEIGHT = CARD_WIDTH * 1.55;
 
-// Grid Card Component - Same style as UserDashboard
+// Professional Tinder-style Card
 function CounsellorCard({
   counsellor,
   index,
@@ -46,99 +47,117 @@ function CounsellorCard({
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 350,
-        delay: index * 60,
+        duration: 400,
+        delay: index * 80,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 8,
         tension: 50,
-        delay: index * 60,
+        delay: index * 80,
         useNativeDriver: true,
       }),
     ]).start();
   }, [fadeAnim, scaleAnim, index]);
 
+  // Calming gradient colors for placeholder
+  const gradientSets = [
+    ["#0D9488", "#14B8A6", "#2DD4BF"],
+    ["#0F766E", "#0D9488", "#14B8A6"],
+    ["#115E59", "#0F766E", "#0D9488"],
+    ["#134E4A", "#115E59", "#0F766E"],
+  ];
+
   const isOnline = counsellor.status === "online";
+  const rating = counsellor.averageRating?.toFixed(1) || "4.9";
+  const specialty = counsellor.specializations?.[0]
+    ?.replace(/-/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health";
 
   return (
     <Animated.View
       style={{
         width: CARD_WIDTH,
+        height: CARD_HEIGHT,
         marginBottom: 16,
         opacity: fadeAnim,
         transform: [{ scale: scaleAnim }],
       }}
     >
-      <Pressable onPress={onPress}>
-        <View
-          style={{
-            backgroundColor: colors.cardBg,
-            borderRadius: 20,
-            overflow: "hidden",
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: isDark ? 0.2 : 0.1,
-            shadowRadius: 16,
-            elevation: 6,
-          }}
-        >
-          {/* Header with Organic Background */}
+      <Pressable
+        onPress={onPress}
+        style={{
+          flex: 1,
+          borderRadius: 20,
+          overflow: "hidden",
+          backgroundColor: colors.cardBg,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isDark ? 0.4 : 0.15,
+          shadowRadius: 16,
+          elevation: 8,
+        }}
+      >
+        {/* Full Image Background */}
+        <View style={{ flex: 1, position: "relative" }}>
+          {counsellor.photoURL ? (
+            <Image
+              source={{ uri: counsellor.photoURL }}
+              style={{ width: "100%", height: "100%" }}
+              resizeMode="cover"
+            />
+          ) : (
+            <LinearGradient
+              colors={gradientSets[index % 4] as any}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 35,
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 32, fontWeight: "700", color: "#FFF" }}>
+                  {counsellor.displayName?.charAt(0)?.toUpperCase() || "C"}
+                </Text>
+              </View>
+            </LinearGradient>
+          )}
+
+          {/* Top Bar - Status & Verified */}
           <View
             style={{
-              height: 70,
-              position: "relative",
-              backgroundColor: isDark ? "#1C2128" : "#E8F5F3",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 10,
             }}
           >
-            {/* Organic blob shapes */}
+            {/* Online Status */}
             <View
               style={{
-                position: "absolute",
-                top: -15,
-                left: -15,
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                backgroundColor: `${colors.primary}30`,
-              }}
-            />
-            <View
-              style={{
-                position: "absolute",
-                top: 10,
-                right: -20,
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                backgroundColor: `${colors.secondary || colors.primary}25`,
-              }}
-            />
-            <View
-              style={{
-                position: "absolute",
-                bottom: -8,
-                left: 40,
-                width: 35,
-                height: 35,
-                borderRadius: 17,
-                backgroundColor: `${colors.primary}20`,
-              }}
-            />
-
-            {/* Status Badge */}
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                backgroundColor: isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.9)",
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: isOnline ? "rgba(34,197,94,0.9)" : "rgba(0,0,0,0.5)",
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 12,
-                flexDirection: "row",
-                alignItems: "center",
               }}
             >
               <View
@@ -146,156 +165,149 @@ function CounsellorCard({
                   width: 6,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: isOnline ? "#22C55E" : "#9CA3AF",
-                  marginRight: 4,
+                  backgroundColor: "#FFF",
+                  marginRight: 5,
                 }}
               />
-              <Text style={{ color: isDark ? "#FFF" : "#1F2937", fontSize: 9, fontWeight: "600" }}>
-                {isOnline ? "Online" : "Away"}
+              <Text style={{ fontSize: 10, color: "#FFF", fontWeight: "600" }}>
+                {isOnline ? "Available" : "Away"}
               </Text>
-            </View>
-          </View>
-
-          {/* Profile Photo - Overlapping */}
-          <View style={{ alignItems: "center", marginTop: -35 }}>
-            <View
-              style={{
-                padding: 3,
-                borderRadius: 38,
-                backgroundColor: colors.cardBg,
-              }}
-            >
-              {counsellor.photoURL ? (
-                <Image
-                  source={{ uri: counsellor.photoURL }}
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
-                  }}
-                />
-              ) : (
-                <LinearGradient
-                  colors={["#2AA79D", "#3A9C94"]}
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "700" }}>
-                    {counsellor.displayName?.charAt(0) || "C"}
-                  </Text>
-                </LinearGradient>
-              )}
             </View>
 
             {/* Verified Badge */}
             {counsellor.verificationStatus === "verified" && (
               <View
                 style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: "30%",
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: colors.primary,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 2,
-                  borderColor: colors.cardBg,
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  borderRadius: 12,
+                  padding: 5,
                 }}
               >
-                <Ionicons name="checkmark" size={12} color="#FFF" />
+                <Ionicons name="shield-checkmark" size={14} color={colors.primary} />
               </View>
             )}
           </View>
 
-          {/* Content */}
-          <View style={{ padding: 12, paddingTop: 10 }}>
-            {/* Name */}
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "700",
-                color: colors.text,
-                textAlign: "center",
-                marginBottom: 2,
-              }}
-              numberOfLines={1}
-            >
-              Dr. {counsellor.displayName}
-            </Text>
+          {/* Bottom Gradient Overlay */}
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.85)"]}
+            locations={[0, 0.5, 1]}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: CARD_HEIGHT * 0.55,
+              justifyContent: "flex-end",
+              padding: 12,
+            }}
+          >
+            {/* Name & Title */}
+            <View style={{ marginBottom: 6 }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#FFF",
+                  marginBottom: 2,
+                }}
+                numberOfLines={1}
+              >
+                Dr. {counsellor.displayName}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: "rgba(255,255,255,0.85)",
+                  fontWeight: "500",
+                }}
+                numberOfLines={1}
+              >
+                {counsellor.licenseType || "Licensed Therapist"}
+              </Text>
+            </View>
 
-            {/* Specialty */}
-            <Text
+            {/* Specialty Tag */}
+            <View
               style={{
-                fontSize: 11,
-                color: colors.primary,
-                textAlign: "center",
-                fontWeight: "500",
+                alignSelf: "flex-start",
+                backgroundColor: "rgba(42,167,157,0.9)",
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 8,
                 marginBottom: 10,
               }}
-              numberOfLines={1}
             >
-              {counsellor.specializations?.[0]
-                ?.replace(/-/g, " ")
-                .replace(/\b\w/g, (l) => l.toUpperCase()) || "Mental Health"}
-            </Text>
+              <Text style={{ fontSize: 10, color: "#FFF", fontWeight: "600" }}>
+                {specialty}
+              </Text>
+            </View>
 
             {/* Stats Row */}
             <View
               style={{
                 flexDirection: "row",
-                justifyContent: "space-around",
-                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "rgba(255,255,255,0.15)",
                 borderRadius: 10,
                 paddingVertical: 8,
+                paddingHorizontal: 10,
                 marginBottom: 10,
               }}
             >
-              <View style={{ alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Ionicons name="star" size={12} color="#FBBF24" />
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, marginLeft: 3 }}>
-                    {counsellor.averageRating?.toFixed(1) || "4.9"}
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 9, color: colors.textSecondary, marginTop: 1 }}>Rating</Text>
-              </View>
-              <View style={{ width: 1, backgroundColor: colors.border }} />
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primary }}>
-                  ${counsellor.hourlyRate || 80}
+              {/* Rating */}
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="star" size={12} color="#FBBF24" />
+                <Text style={{ fontSize: 12, color: "#FFF", fontWeight: "700", marginLeft: 4 }}>
+                  {rating}
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.textSecondary, marginTop: 1 }}>Per hr</Text>
               </View>
+
+              <View style={{ width: 1, height: 14, backgroundColor: "rgba(255,255,255,0.3)" }} />
+
+              {/* Experience */}
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="briefcase-outline" size={11} color="rgba(255,255,255,0.8)" />
+                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginLeft: 4 }}>
+                  {counsellor.yearsExperience || 5}yr
+                </Text>
+              </View>
+
+              <View style={{ width: 1, height: 14, backgroundColor: "rgba(255,255,255,0.3)" }} />
+
+              {/* Price */}
+              <Text style={{ fontSize: 12, color: "#FFF", fontWeight: "700" }}>
+                ${counsellor.hourlyRate || 80}
+              </Text>
             </View>
 
             {/* Book Button */}
-            <Pressable onPress={onPress}>
-              <LinearGradient
-                colors={["#2AA79D", "#3A9C94"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            <TouchableOpacity
+              onPress={onPress}
+              style={{
+                backgroundColor: "#FFF",
+                borderRadius: 10,
+                paddingVertical: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              activeOpacity={0.9}
+            >
+              <Ionicons name="calendar-outline" size={14} color={colors.primary} />
+              <Text
                 style={{
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  fontSize: 13,
+                  fontWeight: "700",
+                  color: colors.primary,
+                  marginLeft: 6,
                 }}
               >
-                <Ionicons name="calendar-outline" size={14} color="#FFF" />
-                <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "600", marginLeft: 5 }}>
-                  Book Now
-                </Text>
-              </LinearGradient>
-            </Pressable>
-          </View>
+                Book Session
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </Pressable>
     </Animated.View>
@@ -309,7 +321,7 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(shimmerAnim, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        Animated.timing(shimmerAnim, { toValue: 0.6, duration: 800, useNativeDriver: true }),
         Animated.timing(shimmerAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
       ])
     ).start();
@@ -319,23 +331,31 @@ function GridSkeleton({ colors, isDark }: { colors: Record<string, string>; isDa
     <Animated.View
       style={{
         width: CARD_WIDTH,
+        height: CARD_HEIGHT,
         marginBottom: 16,
         borderRadius: 20,
-        overflow: "hidden",
-        backgroundColor: colors.cardBg,
+        backgroundColor: isDark ? "#1C2128" : "#E8F0EF",
         opacity: shimmerAnim,
+        overflow: "hidden",
       }}
     >
-      <View style={{ height: 70, backgroundColor: isDark ? "#1C2128" : "#E8F5F3" }} />
-      <View style={{ alignItems: "center", marginTop: -35 }}>
-        <View style={{ width: 70, height: 70, borderRadius: 35, backgroundColor: colors.skeleton }} />
-      </View>
-      <View style={{ padding: 12, paddingTop: 10 }}>
-        <View style={{ width: "80%", height: 16, borderRadius: 6, backgroundColor: colors.skeleton, alignSelf: "center" }} />
-        <View style={{ width: "60%", height: 12, borderRadius: 4, backgroundColor: colors.skeleton, alignSelf: "center", marginTop: 6 }} />
-        <View style={{ height: 40, borderRadius: 10, backgroundColor: colors.skeleton, marginTop: 10 }} />
-        <View style={{ height: 36, borderRadius: 10, backgroundColor: colors.skeleton, marginTop: 10 }} />
-      </View>
+      <LinearGradient
+        colors={["transparent", isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.3)"]}
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "50%",
+          justifyContent: "flex-end",
+          padding: 12,
+        }}
+      >
+        <View style={{ width: "70%", height: 16, borderRadius: 6, backgroundColor: colors.skeleton, marginBottom: 6 }} />
+        <View style={{ width: "50%", height: 12, borderRadius: 4, backgroundColor: colors.skeleton, marginBottom: 10 }} />
+        <View style={{ width: "40%", height: 20, borderRadius: 8, backgroundColor: colors.skeleton, marginBottom: 10 }} />
+        <View style={{ width: "100%", height: 36, borderRadius: 10, backgroundColor: colors.skeleton }} />
+      </LinearGradient>
     </Animated.View>
   );
 }
