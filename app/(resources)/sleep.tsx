@@ -1,4 +1,5 @@
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useSleepSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -129,11 +130,17 @@ export default function SleepScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [volume, setVolume] = useState(0.7);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const starAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const tipTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Sound hooks - dynamically use based on selected content
+  const sleepSound = useSleepSound(selectedContent?.id || 'rain');
+  const { playSuccess } = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -152,6 +159,7 @@ export default function SleepScreen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (tipTimerRef.current) clearInterval(tipTimerRef.current);
+      sleepSound.stop();
     };
   }, []);
 
@@ -188,11 +196,16 @@ export default function SleepScreen() {
     }
   }, [isPlaying]);
 
-  const startSleep = useCallback((content: SleepContent) => {
+  const startSleep = useCallback(async (content: SleepContent) => {
     setSelectedContent(content);
     setTimeRemaining(content.duration * 60);
     setIsPlaying(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Start sleep sound if enabled
+    if (soundEnabled) {
+      await sleepSound.play();
+    }
 
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -203,24 +216,50 @@ export default function SleepScreen() {
         return prev - 1;
       });
     }, 1000);
-  }, []);
+  }, [soundEnabled, sleepSound]);
 
-  const stopSleep = useCallback(() => {
+  const stopSleep = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    
+    // Stop sleep sound
+    if (soundEnabled) {
+      await sleepSound.stop();
+    }
+  }, [soundEnabled, sleepSound]);
 
-  const endSession = useCallback(() => {
-    stopSleep();
+  const endSession = useCallback(async () => {
+    await stopSleep();
     setSelectedContent(null);
     setTimeRemaining(0);
-  }, [stopSleep]);
+    
+    // Play completion sound
+    if (soundEnabled) {
+      await playSuccess();
+    }
+  }, [stopSleep, soundEnabled, playSuccess]);
 
-  const formatTime = (seconds: number) => {
+  // Toggle sound on/off
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => !prev);
+    if (isPlaying) {
+      if (soundEnabled) {
+        sleepSound.stop();
+      } else {
+        sleepSound.play();
+      }
+    }
+  }, [isPlaying, soundEnabled, sleepSound]);
+
+  // Volume control
+  const adjustVolume = useCallback((newVolume: number) => {
+    setVolume(newVolume);
+    // Volume is handled by the sound service
+  }, []);  const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -293,7 +332,24 @@ export default function SleepScreen() {
                   {selectedContent.title}
                 </Text>
               </View>
-              <View style={{ width: 44 }} />
+              {/* Sound toggle button */}
+              <Pressable
+                onPress={toggleSound}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: soundEnabled ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons 
+                  name={soundEnabled ? "volume-high-outline" : "volume-mute-outline"} 
+                  size={22} 
+                  color="#FFF" 
+                />
+              </Pressable>
             </View>
 
             {/* Main content */}

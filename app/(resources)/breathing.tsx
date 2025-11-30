@@ -1,4 +1,6 @@
+import { getSoundSource, SOUND_IDS } from "@/lib/soundAssets";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useAmbientSound, useBreathingSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -109,9 +111,15 @@ export default function BreathingScreen() {
   const [currentPhase, setCurrentPhase] = useState<BreathPhase>("inhale");
   const [currentCycle, setCurrentCycle] = useState(1);
   const [phaseTime, setPhaseTime] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const circleScale = useRef(new Animated.Value(0.6)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Sound hooks
+  const breathingSound = useBreathingSound();
+  const ambientSound = useAmbientSound(getSoundSource(SOUND_IDS.BREATHING_AMBIENT), { volume: 0.3 });
+  const { playSuccess } = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -129,8 +137,31 @@ export default function BreathingScreen() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      ambientSound.stop();
     };
   }, []);
+
+  // Play phase-specific audio cue
+  useEffect(() => {
+    if (!isActive || !soundEnabled) return;
+    
+    // Play appropriate sound for each phase
+    switch (currentPhase) {
+      case "inhale":
+        breathingSound.playInhale();
+        break;
+      case "exhale":
+        breathingSound.playExhale();
+        break;
+      case "hold1":
+      case "hold2":
+        breathingSound.playHold();
+        break;
+      case "complete":
+        breathingSound.playComplete();
+        break;
+    }
+  }, [currentPhase, isActive, soundEnabled]);
 
   // Circle animation based on phase
   useEffect(() => {
@@ -205,7 +236,7 @@ export default function BreathingScreen() {
     }
   };
 
-  const startExercise = useCallback((exercise: BreathingExercise) => {
+  const startExercise = useCallback(async (exercise: BreathingExercise) => {
     setSelectedExercise(exercise);
     setIsActive(true);
     setCurrentPhase("inhale");
@@ -213,6 +244,12 @@ export default function BreathingScreen() {
     setPhaseTime(exercise.pattern.inhale);
     circleScale.setValue(0.6);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Start ambient background sound if enabled
+    if (soundEnabled) {
+      await ambientSound.play();
+      await breathingSound.playBell(); // Start bell
+    }
 
     timerRef.current = setInterval(() => {
       setPhaseTime((prev) => {
@@ -252,23 +289,45 @@ export default function BreathingScreen() {
         return prev - 1;
       });
     }, 1000);
-  }, [currentPhase]);
+  }, [currentPhase, soundEnabled, ambientSound, breathingSound]);
 
-  const stopExercise = useCallback(() => {
+  const stopExercise = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     setIsActive(false);
     setCurrentPhase("complete");
-  }, []);
+    
+    // Stop ambient sound
+    if (soundEnabled) {
+      await ambientSound.stop();
+    }
+  }, [soundEnabled, ambientSound]);
 
-  const endSession = useCallback(() => {
-    stopExercise();
+  const endSession = useCallback(async () => {
+    await stopExercise();
     setSelectedExercise(null);
     setPhaseTime(0);
     setCurrentCycle(1);
-  }, [stopExercise]);
+    
+    // Play completion sound
+    if (soundEnabled) {
+      await playSuccess();
+    }
+  }, [stopExercise, soundEnabled, playSuccess]);
+
+  // Toggle sound on/off
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => !prev);
+    if (isActive) {
+      if (soundEnabled) {
+        ambientSound.stop();
+      } else {
+        ambientSound.play();
+      }
+    }
+  }, [isActive, soundEnabled, ambientSound]);
 
   // Active breathing view
   if (selectedExercise && isActive) {
@@ -305,7 +364,24 @@ export default function BreathingScreen() {
                   {selectedExercise.title}
                 </Text>
               </View>
-              <View style={{ width: 44 }} />
+              {/* Sound toggle button */}
+              <Pressable
+                onPress={toggleSound}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: soundEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons 
+                  name={soundEnabled ? "volume-high-outline" : "volume-mute-outline"} 
+                  size={22} 
+                  color="#FFF" 
+                />
+              </Pressable>
             </View>
 
             {/* Main breathing circle */}

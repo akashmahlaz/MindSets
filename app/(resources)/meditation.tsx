@@ -1,6 +1,6 @@
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useMeditationSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -103,11 +103,15 @@ export default function MeditationScreen() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [breathingPhase, setBreathingPhase] = useState<"in" | "out">("in");
+  const [soundEnabled, setSoundEnabled] = useState(true);
   
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const breathAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  
+  // Sound hooks
+  const meditationSound = useMeditationSound(selectedSession?.id || 'calm');
+  const { playSuccess } = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -124,10 +128,9 @@ export default function MeditationScreen() {
   // Cleanup on unmount
   useEffect(() => {
     const timer = timerRef.current;
-    const sound = soundRef.current;
     return () => {
       if (timer) clearInterval(timer);
-      if (sound) sound.unloadAsync();
+      meditationSound.endSession();
     };
   }, []);
 
@@ -172,12 +175,17 @@ export default function MeditationScreen() {
     }
   }, [isPlaying, pulseAnim, breathAnim]);
 
-  const startMeditation = useCallback((session: MeditationSession) => {
+  const startMeditation = useCallback(async (session: MeditationSession) => {
     setSelectedSession(session);
     setTotalTime(session.duration * 60);
     setTimeRemaining(session.duration * 60);
     setIsPlaying(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Start ambient sound if enabled
+    if (soundEnabled) {
+      await meditationSound.startSession();
+    }
 
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -190,29 +198,46 @@ export default function MeditationScreen() {
         return prev - 1;
       });
     }, 1000);
-  }, []);
+  }, [soundEnabled, meditationSound]);
 
-  const stopMeditation = useCallback(() => {
+  const stopMeditation = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    
+    // Stop ambient sound and play completion
+    if (soundEnabled) {
+      await meditationSound.endSession();
+      await playSuccess();
+    }
+  }, [soundEnabled, meditationSound, playSuccess]);
 
-  const pauseMeditation = useCallback(() => {
+  const pauseMeditation = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    
+    // Pause ambient sound
+    if (soundEnabled) {
+      await meditationSound.pauseSession();
+    }
+  }, [soundEnabled, meditationSound]);
 
-  const resumeMeditation = useCallback(() => {
+  const resumeMeditation = useCallback(async () => {
     setIsPlaying(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Resume ambient sound
+    if (soundEnabled) {
+      await meditationSound.resumeSession();
+    }
+    
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -223,14 +248,26 @@ export default function MeditationScreen() {
         return prev - 1;
       });
     }, 1000);
-  }, [stopMeditation]);
+  }, [stopMeditation, soundEnabled, meditationSound]);
 
-  const endSession = useCallback(() => {
-    stopMeditation();
+  const endSession = useCallback(async () => {
+    await stopMeditation();
     setSelectedSession(null);
     setTimeRemaining(0);
     setTotalTime(0);
   }, [stopMeditation]);
+
+  // Toggle sound on/off
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => !prev);
+    if (isPlaying && meditationSound.isActive) {
+      if (soundEnabled) {
+        meditationSound.pauseSession();
+      } else {
+        meditationSound.resumeSession();
+      }
+    }
+  }, [isPlaying, soundEnabled, meditationSound]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -275,7 +312,24 @@ export default function MeditationScreen() {
                   {selectedSession.title}
                 </Text>
               </View>
-              <View style={{ width: 44 }} />
+              {/* Sound toggle button */}
+              <Pressable
+                onPress={toggleSound}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: soundEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons 
+                  name={soundEnabled ? "volume-high-outline" : "volume-mute-outline"} 
+                  size={22} 
+                  color="#FFF" 
+                />
+              </Pressable>
             </View>
 
             {/* Main content */}
