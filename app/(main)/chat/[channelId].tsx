@@ -378,7 +378,7 @@ export default function ChatScreen() {
         <View style={{ flex: 1 }}>
           <Channel
             channel={channel}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 60}
+            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
             enforceUniqueReaction={true}
           >
             <MessageList />
