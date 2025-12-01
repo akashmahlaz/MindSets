@@ -218,7 +218,7 @@ export const deleteArticle = async (articleId: string): Promise<void> => {
 // Get articles by author
 export const getArticlesByAuthor = async (
   authorId: string,
-  published: boolean = true,
+  publishedOnly: boolean = true, // If true, only published articles; if false, all articles (published + unpublished)
 ): Promise<Article[]> => {
   try {
     const constraints = [
@@ -226,8 +226,9 @@ export const getArticlesByAuthor = async (
       orderBy("createdAt", "desc")
     ];
     
-    if (published !== undefined) {
-      constraints.unshift(where("isPublished", "==", published));
+    // Only filter by published status if we want published-only
+    if (publishedOnly) {
+      constraints.unshift(where("isPublished", "==", true));
     }
 
     const articlesQuery = query(

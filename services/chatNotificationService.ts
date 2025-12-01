@@ -13,52 +13,51 @@ export class ChatNotificationService {
       ChatNotificationService.instance = new ChatNotificationService();
     }
     return ChatNotificationService.instance;
-  } /**
+  }
+
+  // Store the current user ID for filtering
+  private currentLoggedInUserId: string | null = null;
+
+  /**
+   * Set the current logged-in user ID for filtering self notifications
+   */
+  setCurrentUserId(userId: string | null): void {
+    this.currentLoggedInUserId = userId;
+  }
+
+  /**
    * Handle new message event and send push notifications
    */
   async handleNewMessage(event: Event): Promise<void> {
     try {
-      console.log("🔔 handleNewMessage called with event:", event.type);
-
       // Only handle new messages, not our own messages
       if (event.type !== "message.new" || !event.message || !event.user) {
-        console.log("❌ Event validation failed:", {
-          type: event.type,
-          hasMessage: !!event.message,
-          hasUser: !!event.user,
-        });
         return;
       }
       const message = event.message;
       const sender = event.user;
-      const channel = event.channel; // Get channel ID from multiple possible sources
+      const channel = event.channel;
       const channelId = channel?.id || event.channel_id || message.cid;
 
-      console.log("📨 Processing message:", {
-        messageId: message.id,
-        text: message.text,
-        senderName: sender.name,
-        senderId: sender.id,
-        channelId: channelId,
-        eventChannelId: event.channel_id,
-        messageCid: message.cid,
-      });
       if (!channelId) {
-        console.log("❌ No channel ID found in event");
         return;
       }
 
-      // Don't send notifications for our own messages
-      const currentUserId = event.message.user?.id;
-      if (!currentUserId) {
-        console.log("❌ Missing userId:", { currentUserId });
+      // Get the sender ID from the message
+      const senderId = sender.id || event.message.user?.id;
+      if (!senderId) {
+        return;
+      }
+
+      // CRITICAL FIX: Don't send notifications if the current logged-in user is the sender
+      // This prevents the sender from receiving their own notification
+      if (this.currentLoggedInUserId && senderId === this.currentLoggedInUserId) {
         return;
       }
 
       // Prevent duplicate processing
-      const messageKey = `${message.id}_${channelId}_${currentUserId}`;
+      const messageKey = `${message.id}_${channelId}_${senderId}`;
       if (this.processedMessages.has(messageKey)) {
-        console.log("⚠️ Skipping duplicate message processing:", messageKey);
         return;
       }
       this.processedMessages.add(messageKey);
@@ -76,58 +75,30 @@ export class ChatNotificationService {
       let memberIds: string[] = [];
 
       if (channel?.members && typeof channel.members === "object") {
-        // Stream Chat format: members is an object with user IDs as keys
         memberIds = Object.keys(channel.members);
-        console.log("📋 Found members from channel.members object:", memberIds);
       } else if (event.channel_id) {
-        // For direct messages, we can infer from channel ID
         const inferredIds = this.extractUserIdsFromChannelId(event.channel_id);
         if (inferredIds.length > 0) {
           memberIds = inferredIds;
-          console.log("📋 Inferred members from event.channel_id:", memberIds);
         }
       } else if (channelId) {
-        // Try to infer from the resolved channel ID
         const inferredIds = this.extractUserIdsFromChannelId(channelId);
         if (inferredIds.length > 0) {
           memberIds = inferredIds;
-          console.log("📋 Inferred members from channelId:", memberIds);
         }
       }
 
-      console.log("👥 Channel members analysis:", {
-        totalMembers: memberIds.length,
-        allMembers: memberIds,
-        currentUserId,
-        channelId: channel?.id,
-        channelType: channel?.type,
-      });
-
-      // Filter out the current user (sender)
+      // Filter out the sender
       const membersToNotify = memberIds.filter(
-        (memberId) => memberId !== currentUserId,
+        (memberId) => memberId !== senderId,
       );
 
-      console.log("🎯 Members to notify after filtering:", {
-        membersToNotify,
-        filteredOutSender: currentUserId,
-      });
-
       if (membersToNotify.length === 0) {
-        console.log(
-          "❌ No other members to notify in channel:",
-          channel?.id || "unknown",
-        );
         return;
-      } // Get push tokens for all members
-      console.log("🔍 Getting push tokens for members:", membersToNotify);
+      }
+      
+      // Get push tokens for all members
       const userTokens = await getUsersPushTokens(membersToNotify);
-
-      console.log("🎫 Retrieved push tokens:", {
-        requestedForUsers: memberIds,
-        tokensFound: userTokens.length,
-        tokens: userTokens.map((ut) => ({
-          userId: ut.userId,
           tokenLength: ut.token.length,
         })),
       });

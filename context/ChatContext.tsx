@@ -109,6 +109,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       setIsChatConnected(true);
       reconnectAttempts.current = 0;
 
+      // Set the current user ID in notification service to prevent self-notifications
+      chatNotificationService.setCurrentUserId(user.uid);
+
       // Set up message event listeners for push notifications
       setupMessageEventListeners();
     } catch (error: unknown) {

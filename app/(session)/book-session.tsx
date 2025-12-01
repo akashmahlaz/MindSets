@@ -36,6 +36,38 @@ interface SessionType {
   description: string;
 }
 
+// Helper function to generate session types based on counsellor's hourly rate
+const getSessionTypes = (hourlyRate: number = 80): SessionType[] => [
+  {
+    id: "1",
+    name: "Consultation",
+    duration: 60,
+    price: hourlyRate, // Full hour rate
+    description: "First session to understand your needs and goals",
+  },
+  {
+    id: "2",
+    name: "Therapy",
+    duration: 50,
+    price: Math.round(hourlyRate * 0.85), // ~50 min session
+    description: "Regular therapy session",
+  },
+  {
+    id: "3",
+    name: "Follow-up",
+    duration: 30,
+    price: Math.round(hourlyRate * 0.5), // Half hour rate
+    description: "Short check-in session",
+  },
+  {
+    id: "4",
+    name: "Crisis Support",
+    duration: 45,
+    price: Math.round(hourlyRate * 1.25), // Premium rate for urgent support
+    description: "Immediate support for urgent situations",
+  },
+];
+
 export default function BookSessionScreen() {
   const { userProfile } = useAuth();
   const router = useRouter();
@@ -53,36 +85,8 @@ export default function BookSessionScreen() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
 
-  const sessionTypes: SessionType[] = [
-    {
-      id: "1",
-      name: "Consultation",
-      duration: 60,
-      price: 80,
-      description: "First session to understand your needs and goals",
-    },
-    {
-      id: "2",
-      name: "Therapy",
-      duration: 50,
-      price: 100,
-      description: "Regular therapy session",
-    },
-    {
-      id: "3",
-      name: "Follow-up",
-      duration: 30,
-      price: 60,
-      description: "Short check-in session",
-    },
-    {
-      id: "4",
-      name: "Crisis Support",
-      duration: 45,
-      price: 120,
-      description: "Immediate support for urgent situations",
-    },
-  ];
+  // Get session types based on selected counsellor's hourly rate
+  const sessionTypes = getSessionTypes(selectedCounselor?.hourlyRate || 80);
 
   useEffect(() => {
     loadCounsellors();

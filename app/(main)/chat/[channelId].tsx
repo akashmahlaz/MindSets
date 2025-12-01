@@ -11,10 +11,13 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    Keyboard,
+    KeyboardAvoidingView,
     Platform,
     Pressable,
     StatusBar,
     Text,
+    TouchableWithoutFeedback,
     View
 } from "react-native";
 import {
@@ -375,7 +378,11 @@ export default function ChatScreen() {
       </View>
 
       {/* Chat Area - Stream handles keyboard */}
-        <View style={{ flex: 1 }}>
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
+        >
           <Channel
             channel={channel}
             keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
@@ -384,7 +391,7 @@ export default function ChatScreen() {
             <MessageList />
             <MessageInput />
           </Channel>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

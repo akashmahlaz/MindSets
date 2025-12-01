@@ -1,3 +1,5 @@
+import { getSoundSource, SOUND_IDS } from "@/lib/soundAssets";
+import { soundService } from "@/lib/SoundService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useCall, useCallStateHooks } from "@stream-io/video-react-native-sdk";
@@ -137,6 +139,24 @@ export const CustomOutgoingCall = () => {
   const { useCallMembers } = useCallStateHooks();
   const members = useCallMembers();
   const [isWaiting, setIsWaiting] = useState(true);
+  const outgoingToneId = useRef('outgoing-tone');
+
+  // Play outgoing call tone when component mounts
+  useEffect(() => {
+    const playOutgoingTone = async () => {
+      const outgoingSource = getSoundSource(SOUND_IDS.CALL_OUTGOING);
+      if (outgoingSource) {
+        await soundService.initialize();
+        await soundService.loadSound(outgoingToneId.current, outgoingSource, { loop: true, volume: 0.6 });
+        await soundService.play(outgoingToneId.current);
+      }
+    };
+    playOutgoingTone();
+
+    return () => {
+      soundService.unloadSound(outgoingToneId.current);
+    };
+  }, []);
 
   // Colors matching app theme
   const colors = {
@@ -160,10 +180,16 @@ export const CustomOutgoingCall = () => {
   const handleCancel = async () => {
     if (!call) return;
     try {
-      console.log("Canceling outgoing call:", call.cid);
-      await call.leave({ reject: true });
-    } catch (error) {
-      console.error("Error canceling call:", error);
+      // Stop outgoing tone and play ended sound
+      await soundService.unloadSound(outgoingToneId.current);
+      const endedSource = getSoundSource(SOUND_IDS.CALL_ENDED);
+      if (endedSource) {
+        soundService.playUISound(endedSource, 0.5);
+      }
+      // Use endCall for self-cancellation (not reject which is for declining incoming calls)
+      await call.endCall();
+    } catch {
+      // Handle error silently
     }
   };
 
@@ -173,6 +199,12 @@ export const CustomOutgoingCall = () => {
 
     const handleCallAccepted = () => {
       console.log("Call was accepted, navigating to call screen...");
+      // Stop outgoing tone and play connected sound
+      soundService.unloadSound(outgoingToneId.current);
+      const connectedSource = getSoundSource(SOUND_IDS.CALL_CONNECTED);
+      if (connectedSource) {
+        soundService.playUISound(connectedSource, 0.5);
+      }
       setIsWaiting(false);
 
       router.push({

@@ -338,22 +338,52 @@ export const SOUND_META: Record<SoundId, SoundMeta> = {
 /**
  * Get sound source by ID
  * 
- * NOTE: This function will return the actual sound source once audio files are added.
- * For now, it returns placeholder paths. Replace these with actual require() statements
- * once you add the audio files to assets/sounds/
- * 
- * Example:
- * return require('@/assets/sounds/meditation-calm.mp3');
+ * Returns the actual sound source for each sound ID.
  */
 export function getSoundSource(id: SoundId): AVPlaybackSource | null {
-  // Placeholder - replace with actual sound files when added
   const soundPaths: Partial<Record<SoundId, AVPlaybackSource>> = {
-    // Uncomment and add your sound files:
-    // [SOUND_IDS.MEDITATION_CALM]: require('@/assets/sounds/meditation-calm.mp3'),
-    // [SOUND_IDS.SLEEP_RAIN]: require('@/assets/sounds/rain.mp3'),
-    // [SOUND_IDS.SLEEP_OCEAN]: require('@/assets/sounds/ocean-waves.mp3'),
-    // [SOUND_IDS.UI_BUTTON_TAP]: require('@/assets/sounds/button-tap.wav'),
-    // [SOUND_IDS.CALL_RINGTONE]: require('@/assets/sounds/ringtone.mp3'),
+    // Meditation sounds
+    [SOUND_IDS.MEDITATION_CALM]: require('@/assets/sounds/meditation-calm.mp3'),
+    [SOUND_IDS.MEDITATION_GRATITUDE]: require('@/assets/sounds/meditation-gratitude.mp3'),
+    [SOUND_IDS.MEDITATION_FOCUS]: require('@/assets/sounds/meditation-focus.mp3'),
+    [SOUND_IDS.MEDITATION_SLEEP_PREP]: require('@/assets/sounds/meditation-sleep.mp3'),
+    [SOUND_IDS.MEDITATION_BODY_SCAN]: require('@/assets/sounds/meditation-body-scan.mp3'),
+    [SOUND_IDS.MEDITATION_MORNING]: require('@/assets/sounds/meditation-morning.mp3'),
+    [SOUND_IDS.MEDITATION_COMPLETE]: require('@/assets/sounds/meditation-complete.mp3'),
+
+    // Breathing sounds
+    [SOUND_IDS.BREATHING_INHALE]: require('@/assets/sounds/breathing-inhale.mp3'),
+    [SOUND_IDS.BREATHING_EXHALE]: require('@/assets/sounds/breathing-exhale.mp3'),
+    [SOUND_IDS.BREATHING_HOLD]: require('@/assets/sounds/breathing-hold.mp3'),
+    [SOUND_IDS.BREATHING_BELL]: require('@/assets/sounds/breathing-bell.mp3'),
+    [SOUND_IDS.BREATHING_AMBIENT]: require('@/assets/sounds/breathing-ambient.mp3'),
+    [SOUND_IDS.BREATHING_COMPLETE]: require('@/assets/sounds/breathing-complete.mp3'),
+
+    // Sleep sounds
+    [SOUND_IDS.SLEEP_RAIN]: require('@/assets/sounds/sleep-rain.wav'),
+    [SOUND_IDS.SLEEP_OCEAN]: require('@/assets/sounds/sleep-ocean.wav'),
+    [SOUND_IDS.SLEEP_FOREST]: require('@/assets/sounds/sleep-forest.wav'),
+    [SOUND_IDS.SLEEP_WHITE_NOISE]: require('@/assets/sounds/sleep-white-noise.mp3'),
+    [SOUND_IDS.SLEEP_THUNDERSTORM]: require('@/assets/sounds/sleep-thunderstorm.mp3'),
+    [SOUND_IDS.SLEEP_PIANO]: require('@/assets/sounds/sleep-piano.mp3'),
+
+    // UI sounds
+    [SOUND_IDS.UI_NOTIFICATION]: require('@/assets/sounds/ui-notification.mp3'),
+    [SOUND_IDS.UI_MESSAGE_RECEIVED]: require('@/assets/sounds/ui-message-received.mp3'),
+
+    // Call sounds
+    [SOUND_IDS.CALL_RINGTONE]: require('@/assets/sounds/call-ringtone.mp3'),
+    [SOUND_IDS.CALL_OUTGOING]: require('@/assets/sounds/call-outgoing.mp3'),
+    [SOUND_IDS.CALL_CONNECTED]: require('@/assets/sounds/call-connected.mp3'),
+    [SOUND_IDS.CALL_ENDED]: require('@/assets/sounds/call-ended.mp3'),
+
+    // Session sounds
+    [SOUND_IDS.SESSION_START]: require('@/assets/sounds/session-start.mp3'),
+    [SOUND_IDS.SESSION_END]: require('@/assets/sounds/session-end.mp3'),
+    [SOUND_IDS.SESSION_REMINDER]: require('@/assets/sounds/session-reminder.mp3'),
+
+    // Achievement
+    [SOUND_IDS.GOAL_ACHIEVED]: require('@/assets/sounds/goal-achieved.mp3'),
   };
 
   return soundPaths[id] ?? null;

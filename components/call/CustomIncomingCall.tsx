@@ -1,9 +1,11 @@
+import { getSoundSource, SOUND_IDS } from "@/lib/soundAssets";
+import { soundService } from "@/lib/SoundService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import {
-    CallingState,
-    useCall,
-    useCallStateHooks,
+  CallingState,
+  useCall,
+  useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -75,6 +77,25 @@ export const CustomIncomingCall = () => {
   const { useCallMembers, useCallCallingState } = useCallStateHooks();
   const members = useCallMembers();
   const callingState = useCallCallingState();
+  const ringtoneId = useRef('incoming-ringtone');
+
+  // Play ringtone when component mounts
+  useEffect(() => {
+    const soundId = ringtoneId.current;
+    const playRingtone = async () => {
+      const ringtoneSource = getSoundSource(SOUND_IDS.CALL_RINGTONE);
+      if (ringtoneSource) {
+        await soundService.initialize();
+        await soundService.loadSound(soundId, ringtoneSource, { loop: true, volume: 0.8 });
+        await soundService.play(soundId);
+      }
+    };
+    playRingtone();
+
+    return () => {
+      soundService.unloadSound(soundId);
+    };
+  }, []);
 
   // Colors matching app theme
   const colors = {
@@ -99,12 +120,19 @@ export const CustomIncomingCall = () => {
   // Navigate to the call screen once the call is joined
   useEffect(() => {
     if (callingState === CallingState.JOINED && call) {
+      // Stop ringtone and play connected sound
+      soundService.unloadSound(ringtoneId.current);
+      const connectedSource = getSoundSource(SOUND_IDS.CALL_CONNECTED);
+      if (connectedSource) {
+        soundService.playUISound(connectedSource, 0.5);
+      }
+      
       router.push({
         pathname: "/call/[callId]",
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: isVideoCall,
+          isVideo: isVideoCall ? "true" : "false",
         },
       });
     }
@@ -113,10 +141,10 @@ export const CustomIncomingCall = () => {
   const handleAccept = async () => {
     if (!call) return;
     try {
-      console.log("Accepting incoming call:", call.cid);
+      // Stop ringtone
+      await soundService.unloadSound(ringtoneId.current);
       await call.join();
-    } catch (error) {
-      console.error("Error accepting call:", error);
+    } catch {
       Alert.alert("Error", "Failed to accept call");
     }
   };
@@ -124,10 +152,15 @@ export const CustomIncomingCall = () => {
   const handleDecline = async () => {
     if (!call) return;
     try {
-      console.log("Declining incoming call:", call.cid);
+      // Stop ringtone and play ended sound
+      await soundService.unloadSound(ringtoneId.current);
+      const endedSource = getSoundSource(SOUND_IDS.CALL_ENDED);
+      if (endedSource) {
+        soundService.playUISound(endedSource, 0.5);
+      }
       await call.leave({ reject: true });
-    } catch (error) {
-      console.error("Error declining call:", error);
+    } catch {
+      // Handle decline error silently
     }
   };
 

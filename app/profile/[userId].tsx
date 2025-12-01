@@ -11,20 +11,20 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  Image,
-  Modal,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Dimensions,
+    Image,
+    Modal,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
@@ -794,7 +794,7 @@ export default function ProfileScreen() {
           {isCounsellor ? (
             /* Book Session Button - for counsellor profiles */
             <TouchableOpacity
-              onPress={() => Alert.alert("Book Session", "This would open the booking flow.")}
+              onPress={() => router.push({ pathname: "/(session)/book-session", params: { counsellorId: userData.uid } })}
               style={{ flex: 1.2 }}
             >
               <LinearGradient
