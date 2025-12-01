@@ -46,12 +46,8 @@ export const SOUND_IDS = {
   SLEEP_THUNDERSTORM: 'sleep-thunderstorm',
   SLEEP_PIANO: 'sleep-piano',
   
-  // === UI SOUNDS ===
-  UI_BUTTON_TAP: 'ui-button-tap',
-  UI_SUCCESS: 'ui-success',
-  UI_ERROR: 'ui-error',
+  // === UI SOUNDS === (minimal - use haptics for taps/typing)
   UI_NOTIFICATION: 'ui-notification',
-  UI_MESSAGE_SENT: 'ui-message-sent',
   UI_MESSAGE_RECEIVED: 'ui-message-received',
   
   // === CALL SOUNDS ===
@@ -234,31 +230,7 @@ export const SOUND_META: Record<SoundId, SoundMeta> = {
     defaultVolume: 0.5,
   },
 
-  // UI sounds
-  [SOUND_IDS.UI_BUTTON_TAP]: {
-    id: SOUND_IDS.UI_BUTTON_TAP,
-    name: 'Button Tap',
-    description: 'Soft tap feedback',
-    category: 'ui',
-    loop: false,
-    defaultVolume: 0.3,
-  },
-  [SOUND_IDS.UI_SUCCESS]: {
-    id: SOUND_IDS.UI_SUCCESS,
-    name: 'Success',
-    description: 'Positive confirmation sound',
-    category: 'ui',
-    loop: false,
-    defaultVolume: 0.5,
-  },
-  [SOUND_IDS.UI_ERROR]: {
-    id: SOUND_IDS.UI_ERROR,
-    name: 'Error',
-    description: 'Gentle error notification',
-    category: 'ui',
-    loop: false,
-    defaultVolume: 0.4,
-  },
+  // UI sounds (minimal - button taps and typing use haptics instead)
   [SOUND_IDS.UI_NOTIFICATION]: {
     id: SOUND_IDS.UI_NOTIFICATION,
     name: 'Notification',
@@ -266,14 +238,6 @@ export const SOUND_META: Record<SoundId, SoundMeta> = {
     category: 'ui',
     loop: false,
     defaultVolume: 0.6,
-  },
-  [SOUND_IDS.UI_MESSAGE_SENT]: {
-    id: SOUND_IDS.UI_MESSAGE_SENT,
-    name: 'Message Sent',
-    description: 'Chat message sent confirmation',
-    category: 'ui',
-    loop: false,
-    defaultVolume: 0.4,
   },
   [SOUND_IDS.UI_MESSAGE_RECEIVED]: {
     id: SOUND_IDS.UI_MESSAGE_RECEIVED,
@@ -437,13 +401,9 @@ export function getSoundsByCategory(category: SoundMeta['category']): SoundMeta[
  * - sleep-thunderstorm.mp3
  * - sleep-piano.mp3
  * 
- * UI:
- * - ui-button-tap.wav
- * - ui-success.wav
- * - ui-error.wav
+ * UI (minimal - use haptics for button taps/typing):
  * - ui-notification.mp3
- * - ui-message-sent.wav
- * - ui-message-received.wav
+ * - ui-message-received.mp3
  * 
  * Call:
  * - call-ringtone.mp3

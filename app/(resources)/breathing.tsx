@@ -119,7 +119,7 @@ export default function BreathingScreen() {
   // Sound hooks
   const breathingSound = useBreathingSound();
   const ambientSound = useAmbientSound(getSoundSource(SOUND_IDS.BREATHING_AMBIENT), { volume: 0.3 });
-  const { playSuccess } = useUISound();
+  const uiSound = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -311,11 +311,9 @@ export default function BreathingScreen() {
     setPhaseTime(0);
     setCurrentCycle(1);
     
-    // Play completion sound
-    if (soundEnabled) {
-      await playSuccess();
-    }
-  }, [stopExercise, soundEnabled, playSuccess]);
+    // Haptic feedback for completion
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [stopExercise]);
 
   // Toggle sound on/off
   const toggleSound = useCallback(() => {

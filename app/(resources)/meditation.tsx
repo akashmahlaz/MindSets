@@ -111,7 +111,7 @@ export default function MeditationScreen() {
   
   // Sound hooks
   const meditationSound = useMeditationSound(selectedSession?.id || 'calm');
-  const { playSuccess } = useUISound();
+  const uiSound = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -208,12 +208,11 @@ export default function MeditationScreen() {
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    // Stop ambient sound and play completion
+    // Stop ambient sound
     if (soundEnabled) {
       await meditationSound.endSession();
-      await playSuccess();
     }
-  }, [soundEnabled, meditationSound, playSuccess]);
+  }, [soundEnabled, meditationSound]);
 
   const pauseMeditation = useCallback(async () => {
     if (timerRef.current) {

@@ -140,7 +140,7 @@ export default function SleepScreen() {
   
   // Sound hooks - dynamically use based on selected content
   const sleepSound = useSleepSound(selectedContent?.id || 'rain');
-  const { playSuccess } = useUISound();
+  const uiSound = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -237,11 +237,9 @@ export default function SleepScreen() {
     setSelectedContent(null);
     setTimeRemaining(0);
     
-    // Play completion sound
-    if (soundEnabled) {
-      await playSuccess();
-    }
-  }, [stopSleep, soundEnabled, playSuccess]);
+    // Haptic feedback for completion
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [stopSleep]);
 
   // Toggle sound on/off
   const toggleSound = useCallback(() => {

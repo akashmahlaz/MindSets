@@ -282,40 +282,13 @@ export function useAmbientSound(
 
 /**
  * Hook for UI sounds (one-shot, non-blocking)
+ * Note: Button taps and typing should use haptic feedback instead of sounds
  */
 export function useUISound() {
-  const playTap = useCallback(async () => {
-    const source = getSoundSource('ui-button-tap' as SoundId);
-    if (source) {
-      await playUISound(source, 0.3);
-    }
-  }, []);
-
-  const playSuccess = useCallback(async () => {
-    const source = getSoundSource('ui-success' as SoundId);
-    if (source) {
-      await playUISound(source, 0.5);
-    }
-  }, []);
-
-  const playError = useCallback(async () => {
-    const source = getSoundSource('ui-error' as SoundId);
-    if (source) {
-      await playUISound(source, 0.4);
-    }
-  }, []);
-
   const playNotification = useCallback(async () => {
     const source = getSoundSource('ui-notification' as SoundId);
     if (source) {
       await playUISound(source, 0.6);
-    }
-  }, []);
-
-  const playMessageSent = useCallback(async () => {
-    const source = getSoundSource('ui-message-sent' as SoundId);
-    if (source) {
-      await playUISound(source, 0.4);
     }
   }, []);
 
@@ -331,11 +304,7 @@ export function useUISound() {
   }, []);
 
   return {
-    playTap,
-    playSuccess,
-    playError,
     playNotification,
-    playMessageSent,
     playMessageReceived,
     playCustom,
   };

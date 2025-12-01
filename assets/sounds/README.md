@@ -31,13 +31,11 @@ Add the following audio files to this folder:
 - `sleep-thunderstorm.mp3` - Distant thunder with rain (loop-able)
 - `sleep-piano.mp3` - Soft piano melodies (loop-able)
 
-### UI Sounds (Short, one-shot)
-- `ui-button-tap.wav` - Button tap feedback (< 100ms)
-- `ui-success.wav` - Positive confirmation (< 500ms)
-- `ui-error.wav` - Gentle error notification (< 500ms)
+### UI Sounds (Minimal - use haptics for taps/typing)
 - `ui-notification.mp3` - New notification alert
-- `ui-message-sent.wav` - Chat message sent confirmation
-- `ui-message-received.wav` - New chat message notification
+- `ui-message-received.mp3` - New chat message notification
+
+**Note:** Button taps, typing, and success/error feedback use haptic feedback (`expo-haptics`) instead of audio files for a better native feel.
 
 ### Call Sounds
 - `call-ringtone.mp3` - Incoming call ringtone (loop-able)
