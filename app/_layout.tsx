@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
 import { StreamProvider } from "@/context/StreamContext";
 import { VideoProvider } from "@/context/VideoContext";
+import { initializeSound } from "@/lib/SoundService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { setupVideoPushConfig } from "@/lib/videoPushConfig";
 import { Slot, useRootNavigationState, useRouter, useSegments } from "expo-router";
@@ -19,6 +20,9 @@ import { OverlayProvider } from "stream-chat-react-native";
 
 // Initialize video push configuration on app start
 setupVideoPushConfig();
+
+// Initialize sound service for meditation/breathing/sleep sounds
+initializeSound().catch(err => console.warn('Failed to initialize sound:', err));
 
 // Register headless task for foreground service - only register once
 let isHeadlessTaskRegistered = false;

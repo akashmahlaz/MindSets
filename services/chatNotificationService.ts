@@ -58,6 +58,7 @@ export class ChatNotificationService {
       // Prevent duplicate processing
       const messageKey = `${message.id}_${channelId}_${senderId}`;
       if (this.processedMessages.has(messageKey)) {
+        console.log("⚠️ Skipping duplicate message processing:", messageKey);
         return;
       }
       this.processedMessages.add(messageKey);
@@ -75,30 +76,58 @@ export class ChatNotificationService {
       let memberIds: string[] = [];
 
       if (channel?.members && typeof channel.members === "object") {
+        // Stream Chat format: members is an object with user IDs as keys
         memberIds = Object.keys(channel.members);
+        console.log("📋 Found members from channel.members object:", memberIds);
       } else if (event.channel_id) {
+        // For direct messages, we can infer from channel ID
         const inferredIds = this.extractUserIdsFromChannelId(event.channel_id);
         if (inferredIds.length > 0) {
           memberIds = inferredIds;
+          console.log("📋 Inferred members from event.channel_id:", memberIds);
         }
       } else if (channelId) {
+        // Try to infer from the resolved channel ID
         const inferredIds = this.extractUserIdsFromChannelId(channelId);
         if (inferredIds.length > 0) {
           memberIds = inferredIds;
+          console.log("📋 Inferred members from channelId:", memberIds);
         }
       }
 
-      // Filter out the sender
+      console.log("👥 Channel members analysis:", {
+        totalMembers: memberIds.length,
+        allMembers: memberIds,
+        currentUserId: this.currentLoggedInUserId,
+        channelId: channel?.id,
+        channelType: channel?.type,
+      });
+
+      // Filter out the current user (sender)
       const membersToNotify = memberIds.filter(
-        (memberId) => memberId !== senderId,
+        (memberId) => memberId !== this.currentLoggedInUserId,
       );
 
+      console.log("🎯 Members to notify after filtering:", {
+        membersToNotify,
+        filteredOutSender: this.currentLoggedInUserId,
+      });
+
       if (membersToNotify.length === 0) {
+        console.log(
+          "❌ No other members to notify in channel:",
+          channel?.id || "unknown",
+        );
         return;
-      }
-      
-      // Get push tokens for all members
+      } // Get push tokens for all members
+      console.log("🔍 Getting push tokens for members:", membersToNotify);
       const userTokens = await getUsersPushTokens(membersToNotify);
+
+      console.log("🎫 Retrieved push tokens:", {
+        requestedForUsers: memberIds,
+        tokensFound: userTokens.length,
+        tokens: userTokens.map((ut) => ({
+          userId: ut.userId,
           tokenLength: ut.token.length,
         })),
       });
@@ -109,7 +138,7 @@ export class ChatNotificationService {
       } // Prepare notification payload
       const notificationTitle = sender.name || "New Message";
       const notificationBody = this.getMessagePreview(message.text || "");
-      const channelName = this.getChannelDisplayName(channel, currentUserId);
+      const channelName = this.getChannelDisplayName(channel, this.currentLoggedInUserId);
       const notificationPayload = {
         tokens: userTokens.map((ut) => ut.token),
         title: channelName
@@ -121,7 +150,7 @@ export class ChatNotificationService {
           channelId: channelId || "",
           channelType: channel?.type || "messaging",
           messageId: message.id || "",
-          senderId: currentUserId,
+          senderId: this.currentLoggedInUserId || senderId,
           senderName: sender.name || "Unknown",
           timestamp: Date.now().toString(),
         },
@@ -217,7 +246,7 @@ export class ChatNotificationService {
   } /**
    * Get display name for the channel
    */
-  private getChannelDisplayName(channel: any, currentUserId: string): string {
+  private getChannelDisplayName(channel: any, currentUserId: string | null): string {
     try {
       // If no channel object, return fallback
       if (!channel) {
@@ -225,7 +254,7 @@ export class ChatNotificationService {
       }
 
       // For direct messages, show the other user's name
-      if (channel.type === "messaging" && channel.members) {
+      if (channel.type === "messaging" && channel.members && currentUserId) {
         const otherMembers = Object.values(channel.members).filter(
           (member: any) => member?.user?.id !== currentUserId,
         );

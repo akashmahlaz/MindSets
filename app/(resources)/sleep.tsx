@@ -1,5 +1,4 @@
 import { useColorScheme } from "@/lib/useColorScheme";
-import { useSleepSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -137,9 +136,6 @@ export default function SleepScreen() {
   const starAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const tipTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Sound hooks - dynamically use based on selected content
-  const sleepSound = useSleepSound(selectedContent?.id || 'rain');
   const uiSound = useUISound();
 
   const colors = {

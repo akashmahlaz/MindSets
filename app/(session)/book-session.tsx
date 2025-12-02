@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { createSessionBooking, SessionData } from "@/services/sessionService";
-import { getCounsellors } from "@/services/userService";
+import { getCounsellors, getUserProfile } from "@/services/userService";
 import { CounsellorProfileData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -71,6 +71,7 @@ const getSessionTypes = (hourlyRate: number = 80): SessionType[] => [
 export default function BookSessionScreen() {
   const { userProfile } = useAuth();
   const router = useRouter();
+  const { counsellorId } = useLocalSearchParams<{ counsellorId?: string }>();
   const { isDarkColorScheme } = useColorScheme();
 
   const [step, setStep] = useState(1); // 1: Select Counselor, 2: Select Date/Time, 3: Session Details, 4: Confirm
@@ -91,12 +92,41 @@ export default function BookSessionScreen() {
   useEffect(() => {
     loadCounsellors();
   }, []);
+  
+  // If counsellorId is passed as param, pre-select that counsellor
+  useEffect(() => {
+    const loadPreselectedCounsellor = async () => {
+      if (counsellorId) {
+        try {
+          const counsellorProfile = await getUserProfile(counsellorId);
+          // Only allow booking with VERIFIED counsellors
+          if (counsellorProfile && 
+              counsellorProfile.role === "counsellor" &&
+              (counsellorProfile as CounsellorProfileData).verificationStatus === "verified") {
+            setSelectedCounselor(counsellorProfile as CounsellorProfileData);
+            setStep(2); // Skip to date/time selection
+          } else if (counsellorProfile?.role === "counsellor") {
+            // Counsellor exists but not verified
+            Alert.alert(
+              "Counsellor Not Available",
+              "This counsellor is not currently accepting new bookings. Please choose another counsellor.",
+              [{ text: "OK" }]
+            );
+          }
+        } catch (error) {
+          console.error("Error loading pre-selected counsellor:", error);
+        }
+      }
+    };
+    loadPreselectedCounsellor();
+  }, [counsellorId]);
+  
   const loadCounsellors = async () => {
     try {
       const allUsers = await getCounsellors();
-      // Filter for counsellor users and cast to CounsellorProfileData
+      // Filter for VERIFIED counsellor users only
       const counsellorList = allUsers.filter(
-        (user) => user.role === "counsellor",
+        (user) => user.role === "counsellor" && (user as CounsellorProfileData).verificationStatus === "verified",
       ) as CounsellorProfileData[];
       setCounsellors(counsellorList);
     } catch (error) {

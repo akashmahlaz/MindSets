@@ -1,11 +1,9 @@
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import * as Apple from "expo-apple-authentication";
-import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-    GoogleAuthProvider,
     OAuthProvider,
     signInWithCredential,
     signInWithEmailAndPassword,
@@ -99,69 +97,7 @@ export default function SignInScreen() {
     errorBg: isDarkColorScheme ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.08)",
   };
 
-  // Google Auth
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
-    clientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
-    iosClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
-    androidClientId: "84524660788-3unj4cgjivvh4jqj39o8aeae6tu41anm.apps.googleusercontent.com",
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      handleGoogleSignInResponse(response);
-    }
-  }, [response]);
-
-  const handleGoogleSignInResponse = async (result: any) => {
-    try {
-      setIsLoading(true);
-      setLoadingType("google");
-      setError("");
-
-      if (result?.authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(
-          result.authentication.idToken,
-          result.authentication.accessToken,
-        );
-        await signInWithCredential(auth, credential);
-      } else {
-        setError("Google sign-in failed. Please try again.");
-      }
-    } catch (error: any) {
-      if (error.code === "auth/account-exists-with-different-credential") {
-        setError("An account already exists with this email.");
-      } else if (error.code !== "auth/popup-closed-by-user") {
-        setError("Failed to sign in with Google.");
-      }
-    } finally {
-      setIsLoading(false);
-      setLoadingType(null);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      setLoadingType("google");
-      setError("");
-
-      if (!request) {
-        setError("Google sign-in is not available.");
-        return;
-      }
-
-      const result = await promptAsync();
-      if (result?.type === "cancel" || result?.type === "dismiss") {
-        setIsLoading(false);
-        setLoadingType(null);
-      }
-    } catch {
-      setError("Failed to start Google sign-in.");
-      setIsLoading(false);
-      setLoadingType(null);
-    }
-  };
+  // Google Sign-In removed per user request
 
   const handleAppleSignIn = async () => {
     try {
@@ -526,40 +462,6 @@ export default function SignInScreen() {
 
             {/* Social Sign In */}
             <View style={{ gap: 12, marginBottom: 32 }}>
-              {/* Google */}
-              <Pressable
-                onPress={handleGoogleSignIn}
-                disabled={isLoading || !request}
-                style={({ pressed }) => ({
-                  backgroundColor: colors.card,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  paddingVertical: 15,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: isLoading ? 0.7 : pressed ? 0.9 : 1,
-                  transform: [{ scale: pressed ? 0.98 : 1 }],
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 8,
-                  elevation: 2,
-                })}
-              >
-                {isLoading && loadingType === "google" ? (
-                  <ActivityIndicator size="small" color={colors.text} />
-                ) : (
-                  <>
-                    <Ionicons name="logo-google" size={20} color="#DB4437" />
-                    <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text, marginLeft: 10 }}>
-                      Continue with Google
-                    </Text>
-                  </>
-                )}
-              </Pressable>
-
               {/* Apple - iOS only */}
               {Platform.OS === "ios" && (
                 <Pressable

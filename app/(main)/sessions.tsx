@@ -1,7 +1,7 @@
 import "@/app/global.css";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { getUserSessions, SessionBooking } from "@/services/sessionService";
+import { getUserSessions, SessionBooking, updateSessionStatus } from "@/services/sessionService";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -136,6 +136,52 @@ export default function SessionsScreen() {
         })
       },
     ]);
+  };
+
+  const handleApproveSession = async (session: SessionBooking) => {
+    Alert.alert(
+      "Confirm Session",
+      `Approve session with ${session.clientName}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Approve",
+          style: "default",
+          onPress: async () => {
+            try {
+              await updateSessionStatus(session.id, "confirmed");
+              Alert.alert("Success", "Session confirmed!");
+              await loadSessions(); // Reload sessions
+            } catch (error) {
+              Alert.alert("Error", "Failed to confirm session. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRejectSession = async (session: SessionBooking) => {
+    Alert.alert(
+      "Reject Session",
+      `Reject session with ${session.clientName}? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reject",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await updateSessionStatus(session.id, "cancelled");
+              Alert.alert("Session Rejected", "The session has been cancelled.");
+              await loadSessions(); // Reload sessions
+            } catch (error) {
+              Alert.alert("Error", "Failed to reject session. Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const createNewSession = () => {
@@ -462,6 +508,52 @@ export default function SessionsScreen() {
                       )}
 
                       {/* Actions */}
+                      {/* Counsellor: Show Approve/Reject for pending sessions */}
+                      {userProfile?.role === "counsellor" && session.status === "pending" && activeTab === "upcoming" && (
+                        <View style={{ flexDirection: "row", gap: 12 }}>
+                          <TouchableOpacity
+                            onPress={() => handleApproveSession(session)}
+                            style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}
+                          >
+                            <LinearGradient
+                              colors={['#2AA79D', '#3A9C94']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 0 }}
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                paddingVertical: 14,
+                              }}
+                            >
+                              <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+                              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
+                                Approve
+                              </Text>
+                            </LinearGradient>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
+                            onPress={() => handleRejectSession(session)}
+                            style={{
+                              flex: 1,
+                              paddingVertical: 14,
+                              borderRadius: 12,
+                              backgroundColor: colors.errorContainer,
+                              flexDirection: "row",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Ionicons name="close-circle" size={18} color={colors.error} />
+                            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.error, marginLeft: 6 }}>
+                              Reject
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+
+                      {/* All Users: Join confirmed sessions */}
                       {session.status === "confirmed" && activeTab === "upcoming" && (
                         <View style={{ flexDirection: "row", gap: 12 }}>
                           <TouchableOpacity
@@ -497,6 +589,24 @@ export default function SessionsScreen() {
                           >
                             <Ionicons name="share-outline" size={18} color={colors.text} />
                           </TouchableOpacity>
+                        </View>
+                      )}
+
+                      {/* Client: Show waiting message for pending sessions */}
+                      {userProfile?.role !== "counsellor" && session.status === "pending" && activeTab === "upcoming" && (
+                        <View 
+                          style={{
+                            backgroundColor: colors.warningContainer,
+                            borderRadius: 12,
+                            padding: 14,
+                            flexDirection: "row",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Ionicons name="time-outline" size={20} color={colors.warning} />
+                          <Text style={{ fontSize: 13, color: colors.warning, marginLeft: 8, flex: 1, fontWeight: "600" }}>
+                            Awaiting counsellor approval
+                          </Text>
                         </View>
                       )}
                     </View>

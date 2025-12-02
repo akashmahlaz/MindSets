@@ -1,6 +1,4 @@
-import { getSoundSource, SOUND_IDS } from "@/lib/soundAssets";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { useAmbientSound, useBreathingSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -115,11 +113,6 @@ export default function BreathingScreen() {
 
   const circleScale = useRef(new Animated.Value(0.6)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Sound hooks
-  const breathingSound = useBreathingSound();
-  const ambientSound = useAmbientSound(getSoundSource(SOUND_IDS.BREATHING_AMBIENT), { volume: 0.3 });
-  const uiSound = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -137,7 +130,6 @@ export default function BreathingScreen() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      ambientSound.stop();
     };
   }, []);
 

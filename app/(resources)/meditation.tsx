@@ -1,19 +1,18 @@
 import { useColorScheme } from "@/lib/useColorScheme";
-import { useMeditationSound, useUISound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    View,
+  Animated,
+  Dimensions,
+  Easing,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -108,10 +107,6 @@ export default function MeditationScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const breathAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Sound hooks
-  const meditationSound = useMeditationSound(selectedSession?.id || 'calm');
-  const uiSound = useUISound();
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -130,7 +125,6 @@ export default function MeditationScreen() {
     const timer = timerRef.current;
     return () => {
       if (timer) clearInterval(timer);
-      meditationSound.endSession();
     };
   }, []);
 
@@ -182,11 +176,6 @@ export default function MeditationScreen() {
     setIsPlaying(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Start ambient sound if enabled
-    if (soundEnabled) {
-      await meditationSound.startSession();
-    }
-
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -207,12 +196,7 @@ export default function MeditationScreen() {
     }
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Stop ambient sound
-    if (soundEnabled) {
-      await meditationSound.endSession();
-    }
-  }, [soundEnabled, meditationSound]);
+  }, []);
 
   const pauseMeditation = useCallback(async () => {
     if (timerRef.current) {
@@ -221,21 +205,11 @@ export default function MeditationScreen() {
     }
     setIsPlaying(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Pause ambient sound
-    if (soundEnabled) {
-      await meditationSound.pauseSession();
-    }
-  }, [soundEnabled, meditationSound]);
+  }, []);
 
   const resumeMeditation = useCallback(async () => {
     setIsPlaying(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Resume ambient sound
-    if (soundEnabled) {
-      await meditationSound.resumeSession();
-    }
     
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -247,7 +221,7 @@ export default function MeditationScreen() {
         return prev - 1;
       });
     }, 1000);
-  }, [stopMeditation, soundEnabled, meditationSound]);
+  }, [stopMeditation]);
 
   const endSession = useCallback(async () => {
     await stopMeditation();
@@ -256,17 +230,11 @@ export default function MeditationScreen() {
     setTotalTime(0);
   }, [stopMeditation]);
 
-  // Toggle sound on/off
+  // Toggle sound on/off (disabled - sounds removed)
   const toggleSound = useCallback(() => {
     setSoundEnabled(prev => !prev);
-    if (isPlaying && meditationSound.isActive) {
-      if (soundEnabled) {
-        meditationSound.pauseSession();
-      } else {
-        meditationSound.resumeSession();
-      }
-    }
-  }, [isPlaying, soundEnabled, meditationSound]);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

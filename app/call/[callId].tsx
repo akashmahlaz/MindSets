@@ -108,10 +108,16 @@ export default function CallScreen() {
       router.back();
     };
 
-    const handleCallRejected = () => {
-      console.log("Call was rejected");
+    const handleCallRejected = (event: any) => {
+      console.log("Call was rejected", event);
+      // Only show "declined" if explicitly rejected (not ended normally)
       if (!isEndingCall.current) {
-        Alert.alert("Call Declined", "The call was declined.");
+        const rejectReason = event?.call?.state?.rejectReason;
+        // Only show alert for actual rejection (decline/busy/timeout)
+        if (rejectReason === 'decline' || rejectReason === 'busy' || rejectReason === 'timeout') {
+          Alert.alert("Call Declined", "The other person declined the call.");
+        }
+        // For normal endings or other reasons, just navigate back silently
       }
       router.back();
     };

@@ -4,31 +4,30 @@ import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActionSheetIOS,
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StatusBar,
-    Text,
-    TouchableWithoutFeedback,
-    View
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-    Channel,
-    MessageInput,
-    MessageList,
+  Channel,
+  MessageInput,
+  MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -37,10 +36,36 @@ export default function ChatScreen() {
   const { createCall, isVideoConnected, isCreatingCall } = useVideo();
   const { user } = useAuth();
   const router = useRouter();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Hide tab bar when chat screen is active
+  useEffect(() => {
+    const parent = navigation.getParent();
+    if (parent) {
+      parent.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+    }
+
+    // Restore tab bar when leaving chat screen
+    return () => {
+      if (parent) {
+        parent.setOptions({
+          tabBarStyle: {
+            display: 'flex',
+            backgroundColor: isDarkColorScheme ? '#1C2128' : '#FFFFFF',
+            borderTopColor: isDarkColorScheme ? '#30363D' : '#E5E7EB',
+            borderTopWidth: 1,
+            height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
+          },
+        });
+      }
+    };
+  }, [navigation, isDarkColorScheme, insets.bottom]);
 
   // Premium colors - matching app theme
   const colors = {
@@ -380,7 +405,7 @@ export default function ChatScreen() {
       {/* Chat Area - Stream handles keyboard */}
         <KeyboardAvoidingView 
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
         >
           <Channel
@@ -389,7 +414,9 @@ export default function ChatScreen() {
             enforceUniqueReaction={true}
           >
             <MessageList />
-            <MessageInput />
+            <View style={{ paddingBottom: Platform.OS === "android" ? insets.bottom : 0 }}>
+              <MessageInput />
+            </View>
           </Channel>
         </KeyboardAvoidingView>
       </SafeAreaView>

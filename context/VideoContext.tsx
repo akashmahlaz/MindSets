@@ -448,66 +448,68 @@ const RingingSound = () => {
   const isCallCreatedByMe = call?.isCreatedByMe || callCreator === user?.uid;
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
+
   useEffect(() => {
-    if (callingState !== CallingState.RINGING) return;
-    console.log("RingingSound: Call state:", {
+    if (callingState !== CallingState.RINGING) {
+      // Stop any ringing when not in RINGING state
+      InCallManager.stopRingtone();
+      InCallManager.stop();
+      return;
+    }
+
+    console.log("RingingSound: Starting ringtone", {
       callingState,
       isCallCreatedByMe,
       callCreator,
       currentUser: user?.uid,
-      sdkIsCreatedByMe: call?.isCreatedByMe,
     });
 
-    // Enhanced debugging for sound selection
-    console.log("🎵 SOUND SELECTION DEBUG:");
-    console.log("   - Call Creator ID:", callCreator);
-    console.log("   - Current User ID:", user?.uid);
-    console.log("   - SDK isCreatedByMe:", call?.isCreatedByMe);
-    console.log("   - Computed isCallCreatedByMe:", isCallCreatedByMe);
-    console.log(
-      "   - Will play:",
-      isCallCreatedByMe ? "OUTGOING sound" : "INCOMING sound",
-    );
     if (isCallCreatedByMe) {
-      // Play outgoing call sound (ringback tone) - NO SOUND for outgoing
-      console.log("🔊 OUTGOING call - Playing silent ringback (no sound)");
-
-      // For outgoing calls, let's make it silent so it's clearly different
-      InCallManager.start({
-        media: "audio",
-        auto: true,
-        // No ringback parameter = silent outgoing call
-      });
+      // OUTGOING CALL - Play ringback tone (the beeping sound caller hears)
+      console.log("🔊 OUTGOING call - Playing ringback tone");
+      try {
+        InCallManager.start({
+          media: "audio",
+          auto: true,
+          ringback: "_BUNDLE_", // Built-in ringback tone
+        });
+      } catch (error) {
+        console.error("Error starting ringback:", error);
+      }
 
       return () => {
-        console.log("⏹️ Stopping outgoing call (silent)");
-        InCallManager.stop();
+        console.log("⏹️ Stopping outgoing ringback");
+        try {
+          InCallManager.stop();
+        } catch (error) {
+          console.error("Error stopping ringback:", error);
+        }
       };
     } else {
-      // Play incoming call sound (ringtone) - SYSTEM DEFAULT
-      console.log("📞 Playing INCOMING call sound (ringtone)");
+      // INCOMING CALL - Play ringtone (the sound callee hears)
+      console.log("📞 INCOMING call - Playing ringtone");
       try {
         InCallManager.startRingtone(
-          "_DEFAULT_", // System default ringtone for incoming calls
-          [500, 1000, 500], // Different vibration pattern
-          "ringtone", // Use "ringtone" instead of "playback"
-          30000,
+          "_BUNDLE_", // Use built-in ringtone
+          [500, 1000, 500, 1000], // Vibration pattern
+          "ringtone", // iOS category
+          30000, // Timeout after 30 seconds
         );
       } catch (error) {
-        console.log("Error starting ringtone:", error);
+        console.error("Error starting ringtone:", error);
       }
+
       return () => {
-        console.log("⏹️ Stopping incoming call sound");
+        console.log("⏹️ Stopping incoming ringtone");
         try {
           InCallManager.stopRingtone();
         } catch (error) {
-          console.log("Error stopping ringtone:", error);
+          console.error("Error stopping ringtone:", error);
         }
       };
     }
   }, [callingState, isCallCreatedByMe, callCreator, user?.uid]);
 
-  // Renderless component
   return null;
 };
 

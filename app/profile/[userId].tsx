@@ -102,6 +102,12 @@ export default function ProfileScreen() {
   const userProfileData = userData as any;
   const isOwnProfile = user?.uid === userId;
   const canReview = user && !isOwnProfile && isCounsellor;
+  
+  // Check if current viewer is a counsellor (for showing sensitive client info)
+  const viewerIsCounsellor = (useAuth().userProfile as any)?.role === "counsellor";
+  
+  // Only show Book Session if profile is a VERIFIED counsellor
+  const canBookSession = isCounsellor && counsellorData?.verificationStatus === "verified";
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -449,10 +455,11 @@ export default function ProfileScreen() {
     </Animated.View>
   );
 
-  // User Profile View (for when counsellors view users)
+  // User Profile View (for when others view users)
+  // Sensitive mental health info only shown to counsellors
   const renderUserProfileContent = () => (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], gap: 16 }}>
-      {/* Client Information */}
+      {/* Basic Information - visible to everyone */}
       <View
         style={{
           backgroundColor: colors.surface,
@@ -464,114 +471,250 @@ export default function ProfileScreen() {
       >
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
           <Ionicons name="person-outline" size={20} color={colors.primary} />
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>Client Information</Text>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>About</Text>
         </View>
 
         <View style={{ gap: 14 }}>
-          {userProfileData.firstName && userProfileData.lastName && (
+          {/* Full Name */}
+          {(userProfileData.firstName || userProfileData.lastName || userProfileData.displayName) && (
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              <Text style={{ color: colors.textSecondary }}>Full Name</Text>
+              <Text style={{ color: colors.textSecondary }}>Name</Text>
               <Text style={{ color: colors.text, fontWeight: "600" }}>
-                {userProfileData.firstName} {userProfileData.lastName}
+                {userProfileData.firstName && userProfileData.lastName 
+                  ? `${userProfileData.firstName} ${userProfileData.lastName}` 
+                  : userProfileData.displayName || "N/A"}
               </Text>
             </View>
           )}
-          {userProfileData.gender && (
+          
+          {/* Member Since - visible to everyone */}
+          {userData.createdAt && (
             <>
               <View style={{ height: 1, backgroundColor: colors.border }} />
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ color: colors.textSecondary }}>Gender</Text>
-                <Text style={{ color: colors.text, fontWeight: "600", textTransform: "capitalize" }}>
-                  {userProfileData.gender === "prefer-not-to-say" ? "Prefer not to say" : userProfileData.gender}
+                <Text style={{ color: colors.textSecondary }}>Member Since</Text>
+                <Text style={{ color: colors.text, fontWeight: "600" }}>
+                  {userData.createdAt?.toDate ? userData.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'N/A'}
                 </Text>
               </View>
             </>
           )}
-          {userProfileData.primaryConcerns && userProfileData.primaryConcerns.length > 0 && (
-            <>
-              <View style={{ height: 1, backgroundColor: colors.border }} />
-              <View>
-                <Text style={{ color: colors.textSecondary, marginBottom: 10 }}>Primary Concerns</Text>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                  {userProfileData.primaryConcerns.slice(0, 4).map((concern: string, index: number) => (
-                    <View
-                      key={index}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        backgroundColor: colors.primaryContainer,
-                        borderRadius: 16,
-                      }}
-                    >
-                      <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "500" }}>
-                        {concern.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                      </Text>
-                    </View>
-                  ))}
+        </View>
+      </View>
+
+      {/* COUNSELLOR-ONLY SECTION: Detailed Client Information */}
+      {viewerIsCounsellor && (
+        <>
+          {/* Contact Info - only for counsellors */}
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+              <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>Client Details</Text>
+            </View>
+
+            <View style={{ gap: 14 }}>
+              {/* Email */}
+              {userData.email && (
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ color: colors.textSecondary }}>Email</Text>
+                  <Text style={{ color: colors.text, fontWeight: "600" }}>
+                    {userData.email}
+                  </Text>
                 </View>
+              )}
+              
+              {/* Phone */}
+              {userProfileData.phone && (
+                <>
+                  <View style={{ height: 1, backgroundColor: colors.border }} />
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ color: colors.textSecondary }}>Phone</Text>
+                    <Text style={{ color: colors.text, fontWeight: "600" }}>
+                      {userProfileData.phone}
+                    </Text>
+                  </View>
+                </>
+              )}
+              
+              {/* Gender */}
+              {userProfileData.gender && (
+                <>
+                  <View style={{ height: 1, backgroundColor: colors.border }} />
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ color: colors.textSecondary }}>Gender</Text>
+                    <Text style={{ color: colors.text, fontWeight: "600", textTransform: "capitalize" }}>
+                      {userProfileData.gender === "prefer-not-to-say" ? "Prefer not to say" : userProfileData.gender}
+                    </Text>
+                  </View>
+                </>
+              )}
+              
+              {/* Preferred Session Type */}
+              {userProfileData.preferredSessionType && (
+                <>
+                  <View style={{ height: 1, backgroundColor: colors.border }} />
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ color: colors.textSecondary }}>Preferred Session</Text>
+                    <Text style={{ color: colors.text, fontWeight: "600", textTransform: "capitalize" }}>
+                      {userProfileData.preferredSessionType === "any" ? "Any" : userProfileData.preferredSessionType}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+      
+          {/* Mental Health Information - only for counsellors */}
+          {(userProfileData.primaryConcerns?.length > 0 || userProfileData.severityLevel) && (
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 16,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+                <Ionicons name="heart-outline" size={20} color={colors.primary} />
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>Mental Health</Text>
               </View>
-            </>
+
+              <View style={{ gap: 14 }}>
+                {userProfileData.primaryConcerns && userProfileData.primaryConcerns.length > 0 && (
+                  <View>
+                    <Text style={{ color: colors.textSecondary, marginBottom: 10 }}>Primary Concerns</Text>
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {userProfileData.primaryConcerns.map((concern: string, index: number) => (
+                        <View
+                          key={index}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            backgroundColor: colors.primaryContainer,
+                            borderRadius: 16,
+                          }}
+                        >
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "500" }}>
+                            {concern.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {userProfileData.severityLevel && (
+                  <>
+                    <View style={{ height: 1, backgroundColor: colors.border }} />
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                      <Text style={{ color: colors.textSecondary }}>Severity Level</Text>
+                      <View
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 4,
+                          borderRadius: 10,
+                          backgroundColor:
+                            userProfileData.severityLevel === "severe"
+                              ? "#FEE2E2"
+                              : userProfileData.severityLevel === "moderate"
+                              ? "#FEF3C7"
+                              : "#D1FAE5",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: "600",
+                            color:
+                              userProfileData.severityLevel === "severe"
+                                ? "#DC2626"
+                                : userProfileData.severityLevel === "moderate"
+                                ? "#D97706"
+                                : "#059669",
+                          }}
+                        >
+                          {userProfileData.severityLevel.charAt(0).toUpperCase() + userProfileData.severityLevel.slice(1)}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </View>
+            </View>
           )}
-          {userProfileData.severityLevel && (
-            <>
-              <View style={{ height: 1, backgroundColor: colors.border }} />
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: colors.textSecondary }}>Severity Level</Text>
-                <View
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 4,
-                    borderRadius: 10,
-                    backgroundColor:
-                      userProfileData.severityLevel === "severe"
-                        ? "#FEE2E2"
-                        : userProfileData.severityLevel === "moderate"
-                        ? "#FEF3C7"
-                        : "#D1FAE5",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: "600",
-                      color:
-                        userProfileData.severityLevel === "severe"
-                          ? "#DC2626"
-                          : userProfileData.severityLevel === "moderate"
-                          ? "#D97706"
-                          : "#059669",
-                    }}
-                  >
-                    {userProfileData.severityLevel.charAt(0).toUpperCase() + userProfileData.severityLevel.slice(1)}
+
+          {/* Emergency Contact - only for counsellors */}
+          {userProfileData.emergencyContact && (
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 16,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+                <Ionicons name="call-outline" size={20} color={colors.warning} />
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 8 }}>Emergency Contact</Text>
+              </View>
+
+              <View style={{ gap: 14 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ color: colors.textSecondary }}>Name</Text>
+                  <Text style={{ color: colors.text, fontWeight: "600" }}>
+                    {userProfileData.emergencyContact.name}
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ color: colors.textSecondary }}>Phone</Text>
+                  <Text style={{ color: colors.text, fontWeight: "600" }}>
+                    {userProfileData.emergencyContact.phone}
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ color: colors.textSecondary }}>Relationship</Text>
+                  <Text style={{ color: colors.text, fontWeight: "600", textTransform: "capitalize" }}>
+                    {userProfileData.emergencyContact.relationship}
                   </Text>
                 </View>
               </View>
-            </>
-          )}
-        </View>
-
-        {/* Crisis Alert */}
-        {userProfileData.inCrisis && (
-          <View
-            style={{
-              marginTop: 16,
-              padding: 14,
-              backgroundColor: "#FEF2F2",
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: "#FECACA",
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-              <Ionicons name="warning" size={18} color="#DC2626" />
-              <Text style={{ color: "#DC2626", fontWeight: "700", marginLeft: 8, fontSize: 14 }}>Crisis Alert</Text>
             </View>
-            <Text style={{ color: "#991B1B", fontSize: 12, lineHeight: 18 }}>
-              This client has indicated they are in crisis. Please prioritize immediate support.
-            </Text>
-          </View>
-        )}
-      </View>
+          )}
+
+          {/* Crisis Alert - only for counsellors */}
+          {userProfileData.inCrisis && (
+            <View
+              style={{
+                marginTop: 0,
+                padding: 14,
+                backgroundColor: "#FEF2F2",
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "#FECACA",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                <Ionicons name="warning" size={18} color="#DC2626" />
+                <Text style={{ color: "#DC2626", fontWeight: "700", marginLeft: 8, fontSize: 14 }}>Crisis Alert</Text>
+              </View>
+              <Text style={{ color: "#991B1B", fontSize: 12, lineHeight: 18 }}>
+                This client has indicated they are in crisis. Please prioritize immediate support.
+              </Text>
+            </View>
+          )}
+        </>
+      )}
     </Animated.View>
   );
 
@@ -790,9 +933,9 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>Message</Text>
           </TouchableOpacity>
 
-          {/* Conditional Action Button */}
-          {isCounsellor ? (
-            /* Book Session Button - for counsellor profiles */
+          {/* Conditional Action Button based on profile type and viewer role */}
+          {canBookSession ? (
+            /* Book Session Button - ONLY for approved counsellor profiles */
             <TouchableOpacity
               onPress={() => router.push({ pathname: "/(session)/book-session", params: { counsellorId: userData.uid } })}
               style={{ flex: 1.2 }}
@@ -813,10 +956,47 @@ export default function ProfileScreen() {
                 <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700", marginLeft: 8 }}>Book Session</Text>
               </LinearGradient>
             </TouchableOpacity>
-          ) : (
-            /* Session History Button - for client profiles (when counsellor views) */
+          ) : isCounsellor && counsellorData?.verificationStatus === "pending" ? (
+            /* Pending Approval indicator - only show for pending counsellors */
+            <View
+              style={{
+                flex: 1.2,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 16,
+                borderRadius: 16,
+                backgroundColor: colors.warningContainer,
+                opacity: 0.8,
+              }}
+            >
+              <Ionicons name="time-outline" size={20} color={colors.warning} />
+              <Text style={{ color: colors.warning, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>Verification Pending</Text>
+            </View>
+          ) : isCounsellor && counsellorData?.verificationStatus === "rejected" ? (
+            /* Rejected indicator */
+            <View
+              style={{
+                flex: 1.2,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 16,
+                borderRadius: 16,
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                opacity: 0.8,
+              }}
+            >
+              <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
+              <Text style={{ color: "#EF4444", fontSize: 14, fontWeight: "600", marginLeft: 8 }}>Verification Declined</Text>
+            </View>
+          ) : viewerIsCounsellor ? (
+            /* Session History Button - for client profiles when viewed by a counsellor */
             <TouchableOpacity
-              onPress={() => Alert.alert("Session History", "View past sessions with this client.")}
+              onPress={() => {
+                // Navigate to session history for this client
+                router.push(`/(session)/history/${userId}` as any);
+              }}
               style={{ flex: 1.2 }}
             >
               <LinearGradient
@@ -835,7 +1015,7 @@ export default function ProfileScreen() {
                 <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "700", marginLeft: 8 }}>Session History</Text>
               </LinearGradient>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       )}
 

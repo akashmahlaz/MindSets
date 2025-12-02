@@ -61,13 +61,20 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="chat"
+          listeners={{
+            tabPress: (e) => {
+              // Prevent default and navigate to chat list
+              e.preventDefault();
+              router.push('/(main)/chat/');
+            },
+          }}
           options={{
-            title: "Home",
+            title: "Chat",
             tabBarIcon: ({ color, focused }) => (
               <Ionicons 
                 size={24} 
-                name={focused ? "home" : "home-outline"} 
+                name={focused ? "chatbubbles" : "chatbubbles-outline"} 
                 color={color}
               />
             ),
