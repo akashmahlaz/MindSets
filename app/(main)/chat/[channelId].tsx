@@ -8,26 +8,25 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StatusBar,
-  Text,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Platform,
+    Pressable,
+    StatusBar,
+    Text,
+    View
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-  Channel,
-  MessageInput,
-  MessageList,
+    Channel,
+    MessageInput,
+    MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -42,28 +41,55 @@ export default function ChatScreen() {
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hide tab bar when chat screen is active
+  // Hide tab bar when chat screen is focused - more reliable approach
   useEffect(() => {
     const parent = navigation.getParent();
-    if (parent) {
-      parent.setOptions({
-        tabBarStyle: { display: 'none' },
-      });
-    }
+    if (!parent) return;
 
-    // Restore tab bar when leaving chat screen
+    // Hide tab bar immediately when this screen mounts
+    parent.setOptions({
+      tabBarStyle: { display: 'none', height: 0 },
+    });
+
+    // Also hide on focus (in case of navigation back to this screen)
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      parent.setOptions({
+        tabBarStyle: { display: 'none', height: 0 },
+      });
+    });
+
+    // Restore tab bar when leaving (blur)
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      parent.setOptions({
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
+          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
+          paddingTop: 4,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+      });
+    });
+
+    // Cleanup: restore tab bar when component unmounts
     return () => {
-      if (parent) {
-        parent.setOptions({
-          tabBarStyle: {
-            display: 'flex',
-            backgroundColor: isDarkColorScheme ? '#1C2128' : '#FFFFFF',
-            borderTopColor: isDarkColorScheme ? '#30363D' : '#E5E7EB',
-            borderTopWidth: 1,
-            height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
-          },
-        });
-      }
+      unsubscribeFocus();
+      unsubscribeBlur();
+      parent.setOptions({
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
+          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
+          paddingTop: 4,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+      });
     };
   }, [navigation, isDarkColorScheme, insets.bottom]);
 
@@ -266,7 +292,7 @@ export default function ChatScreen() {
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
-      {/* Safe area only for top - tab bar handles bottom */}
+      {/* Use top edge only - we'll handle bottom manually for Android */}
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
       {/* Premium Header - Clean design */}
@@ -402,23 +428,23 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      {/* Chat Area - Stream handles keyboard */}
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
-        >
+      {/* Chat Area */}
+        <View style={{ flex: 1 }}>
           <Channel
             channel={channel}
             keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
             enforceUniqueReaction={true}
           >
             <MessageList />
-            <View style={{ paddingBottom: Platform.OS === "android" ? insets.bottom : 0 }}>
+            {/* Wrap MessageInput with bottom padding for Android system nav bar */}
+            <View style={{ 
+              paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
+              backgroundColor: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
+            }}>
               <MessageInput />
             </View>
           </Channel>
-        </KeyboardAvoidingView>
+        </View>
       </SafeAreaView>
     </View>
   );

@@ -109,15 +109,22 @@ export default function CallScreen() {
     };
 
     const handleCallRejected = (event: any) => {
-      console.log("Call was rejected", event);
-      // Only show "declined" if explicitly rejected (not ended normally)
+      console.log("Call was rejected event:", JSON.stringify(event, null, 2));
+      // Only show "declined" if explicitly rejected by the OTHER person (not us ending our own call)
       if (!isEndingCall.current) {
-        const rejectReason = event?.call?.state?.rejectReason;
-        // Only show alert for actual rejection (decline/busy/timeout)
-        if (rejectReason === 'decline' || rejectReason === 'busy' || rejectReason === 'timeout') {
+        // Stream SDK sends reason in the event directly
+        const rejectReason = event?.reason || event?.call?.endedBy?.id !== user?.uid ? 'decline' : '';
+        const endedByMe = event?.call?.endedBy?.id === user?.uid;
+        
+        console.log("Reject analysis:", { rejectReason, endedByMe, userId: user?.uid });
+        
+        // Only show alert if:
+        // 1. It's a real rejection (decline/busy/timeout)
+        // 2. The call was NOT ended by us
+        if (!endedByMe && (rejectReason === 'decline' || rejectReason === 'busy' || rejectReason === 'timeout' || rejectReason === 'cancel')) {
           Alert.alert("Call Declined", "The other person declined the call.");
         }
-        // For normal endings or other reasons, just navigate back silently
+        // For normal endings or if we ended it, just navigate back silently
       }
       router.back();
     };

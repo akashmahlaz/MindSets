@@ -61,20 +61,13 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="chat"
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default and navigate to chat list
-              e.preventDefault();
-              router.push('/(main)/chat/');
-            },
-          }}
+          name="index"
           options={{
-            title: "Chat",
+            title: "Home",
             tabBarIcon: ({ color, focused }) => (
               <Ionicons 
                 size={24} 
-                name={focused ? "chatbubbles" : "chatbubbles-outline"} 
+                name={focused ? "home" : "home-outline"} 
                 color={color}
               />
             ),
@@ -108,6 +101,13 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="chat"
+          listeners={{
+            tabPress: (e) => {
+              // Always navigate to chat list when tab is pressed
+              e.preventDefault();
+              router.push('/(main)/chat/');
+            },
+          }}
           options={{
             title: "Chat",
             tabBarIcon: ({ color, focused }) => (
@@ -117,17 +117,6 @@ export default function TabLayout() {
                 color={color}
               />
             ),
-          }}
-          listeners={{
-            tabPress: (e) => {
-              // If we're already in chat but on a nested screen (like a specific chat),
-              // prevent default and navigate to chat list
-              const isInChatNested = segments.length > 2 && segments[1] === "chat";
-              if (isInChatNested) {
-                e.preventDefault();
-                router.replace("/(main)/chat");
-              }
-            },
           }}
         />
         <Tabs.Screen

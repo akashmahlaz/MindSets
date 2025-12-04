@@ -2,8 +2,8 @@
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Article, getUserArticles } from "@/services/articleService";
 import {
-  getUpcomingSessions,
-  getUserSessions,
+    getUpcomingSessions,
+    getUserSessions,
 } from "@/services/sessionService";
 import { getAllUsers } from "@/services/userService";
 import { CounsellorProfileData, UserProfile } from "@/types/user";
@@ -12,15 +12,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  View,
+    Animated,
+    Dimensions,
+    Image,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -326,6 +326,77 @@ export default function CounsellorDashboard() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
+        {/* Verification Status Banner - Only show if NOT verified */}
+        {counsellorProfile.verificationStatus === "pending" && (
+          <View style={{
+            marginHorizontal: 20,
+            marginTop: 12,
+            marginBottom: 8,
+            backgroundColor: isDarkColorScheme ? "rgba(251, 191, 36, 0.12)" : "rgba(251, 191, 36, 0.1)",
+            borderRadius: 16,
+            padding: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: isDarkColorScheme ? "rgba(251, 191, 36, 0.25)" : "rgba(251, 191, 36, 0.3)",
+          }}>
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: isDarkColorScheme ? "rgba(251, 191, 36, 0.2)" : "rgba(251, 191, 36, 0.15)",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 14,
+            }}>
+              <Ionicons name="time-outline" size={24} color={colors.warning} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: "700", color: colors.warning, marginBottom: 2 }}>
+                Verification Pending
+              </Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
+                Your profile is under review. You'll be notified once approved.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {counsellorProfile.verificationStatus === "rejected" && (
+          <View style={{
+            marginHorizontal: 20,
+            marginTop: 12,
+            marginBottom: 8,
+            backgroundColor: isDarkColorScheme ? "rgba(239, 68, 68, 0.12)" : "rgba(239, 68, 68, 0.1)",
+            borderRadius: 16,
+            padding: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: isDarkColorScheme ? "rgba(239, 68, 68, 0.25)" : "rgba(239, 68, 68, 0.3)",
+          }}>
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: isDarkColorScheme ? "rgba(239, 68, 68, 0.2)" : "rgba(239, 68, 68, 0.15)",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 14,
+            }}>
+              <Ionicons name="close-circle-outline" size={24} color={colors.error} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: "700", color: colors.error, marginBottom: 2 }}>
+                Verification Declined
+              </Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
+                Please contact support for more information.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* ============ HEADER ============ */}
         <Animated.View
           style={{
