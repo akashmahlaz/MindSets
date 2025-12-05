@@ -112,9 +112,44 @@ export default function SessionsScreen() {
     }
   };
 
+  // Check if session can be joined (within 15 minutes before start time or during session)
+  const canJoinSession = (session: SessionBooking): { canJoin: boolean; reason: string } => {
+    if (session.status === "pending") {
+      return { canJoin: false, reason: "Waiting for counsellor to confirm" };
+    }
+    if (session.status === "cancelled") {
+      return { canJoin: false, reason: "Session was cancelled" };
+    }
+    if (session.status === "completed") {
+      return { canJoin: false, reason: "Session has ended" };
+    }
+
+    const now = new Date();
+    const sessionStart = new Date(session.date);
+    const sessionEnd = new Date(sessionStart.getTime() + session.duration * 60000);
+    const joinWindowStart = new Date(sessionStart.getTime() - 15 * 60000); // 15 min before
+
+    if (now < joinWindowStart) {
+      const minutesUntil = Math.ceil((joinWindowStart.getTime() - now.getTime()) / 60000);
+      if (minutesUntil > 60) {
+        const hours = Math.floor(minutesUntil / 60);
+        return { canJoin: false, reason: `Available in ${hours}h ${minutesUntil % 60}m` };
+      }
+      return { canJoin: false, reason: `Available in ${minutesUntil} minutes` };
+    }
+    
+    if (now > sessionEnd) {
+      return { canJoin: false, reason: "Session time has passed" };
+    }
+
+    return { canJoin: true, reason: "Ready to join" };
+  };
+
   const joinSession = async (session: SessionBooking) => {
-    if (session.status !== "confirmed") {
-      Alert.alert("Session Not Available", "This session is not confirmed yet.");
+    const joinStatus = canJoinSession(session);
+    
+    if (!joinStatus.canJoin) {
+      Alert.alert("Cannot Join Yet", joinStatus.reason);
       return;
     }
 
@@ -599,43 +634,56 @@ export default function SessionsScreen() {
                       )}
 
                       {/* All Users: Join confirmed sessions */}
-                      {session.status === "confirmed" && activeTab === "upcoming" && (
-                        <View style={{ flexDirection: "row", gap: 12 }}>
-                          <TouchableOpacity
-                            onPress={() => joinSession(session)}
-                            style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}
-                          >
-                            <LinearGradient
-                              colors={['#2AA79D', '#3A9C94']}
-                              start={{ x: 0, y: 0 }}
-                              end={{ x: 1, y: 0 }}
+                      {session.status === "confirmed" && activeTab === "upcoming" && (() => {
+                        const joinStatus = canJoinSession(session);
+                        return (
+                          <View style={{ flexDirection: "row", gap: 12 }}>
+                            <TouchableOpacity
+                              onPress={() => joinSession(session)}
+                              disabled={!joinStatus.canJoin}
+                              style={{ flex: 1, overflow: 'hidden', borderRadius: 12, opacity: joinStatus.canJoin ? 1 : 0.6 }}
+                            >
+                              <LinearGradient
+                                colors={joinStatus.canJoin ? ['#2AA79D', '#3A9C94'] : [colors.surfaceVariant, colors.surfaceVariant]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  paddingVertical: 14,
+                                }}
+                              >
+                                <Ionicons 
+                                  name={joinStatus.canJoin ? "videocam" : "time-outline"} 
+                                  size={18} 
+                                  color={joinStatus.canJoin ? "#FFFFFF" : colors.textSecondary} 
+                                />
+                                <Text style={{ 
+                                  fontSize: 14, 
+                                  fontWeight: "600", 
+                                  color: joinStatus.canJoin ? "#FFFFFF" : colors.textSecondary, 
+                                  marginLeft: 6 
+                                }}>
+                                  {joinStatus.canJoin ? "Join Session" : joinStatus.reason}
+                                </Text>
+                              </LinearGradient>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity
+                              onPress={() => shareSessionDetails(session)}
                               style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                paddingHorizontal: 18,
                                 paddingVertical: 14,
+                                borderRadius: 12,
+                                backgroundColor: colors.surfaceVariant,
                               }}
                             >
-                              <Ionicons name="videocam" size={18} color="#FFFFFF" />
-                              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
-                                Join Session
-                              </Text>
-                            </LinearGradient>
-                          </TouchableOpacity>
-                          
-                          <TouchableOpacity
-                            onPress={() => shareSessionDetails(session)}
-                            style={{
-                              paddingHorizontal: 18,
-                              paddingVertical: 14,
-                              borderRadius: 12,
-                              backgroundColor: colors.surfaceVariant,
-                            }}
-                          >
-                            <Ionicons name="share-outline" size={18} color={colors.text} />
-                          </TouchableOpacity>
-                        </View>
-                      )}
+                              <Ionicons name="share-outline" size={18} color={colors.text} />
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })()}
 
                       {/* Client: Show waiting message for pending sessions */}
                       {userProfile?.role !== "counsellor" && session.status === "pending" && activeTab === "upcoming" && (

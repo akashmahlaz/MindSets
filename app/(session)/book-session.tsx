@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
+import { addSessionToCalendar } from "@/lib/calendarService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { createSessionBooking, SessionData } from "@/services/sessionService";
 import { getCounsellors, getUserProfile } from "@/services/userService";
@@ -11,14 +12,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    Share,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Share,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -219,9 +220,21 @@ export default function BookSessionScreen() {
       };
 
       // Save to database
-      await createSessionBooking(sessionData);
+      const sessionId = await createSessionBooking(sessionData);
 
-      // Show success with sharing option
+      // Add to device calendar with reminders
+      const calendarEventId = await addSessionToCalendar({
+        title: `${selectedSessionType.name} Session`,
+        counsellorName: selectedCounselor.displayName,
+        clientName: userProfile?.displayName || "",
+        startDate: sessionDateTime,
+        durationMinutes: selectedSessionType.duration,
+        sessionType: selectedSessionType.name,
+        notes: sessionNotes,
+        sessionId: sessionId,
+      });
+
+      // Show success with options
       const sessionDetails = `
 📅 Session Booked Successfully!
 
@@ -231,12 +244,16 @@ ${selectedSessionType.name} with ${selectedCounselor.displayName}
 ⏱️ Duration: ${selectedSessionType.duration} minutes
 ${sessionNotes ? `📝 Notes: ${sessionNotes}` : ""}
 
-MindConnect Mental Health Platform
+⚠️ Note: Your session is pending confirmation from the counsellor.
+You will be notified once it's confirmed.
+${calendarEventId ? "\n✅ Reminder added to your calendar!" : ""}
+
+MindHeal Mental Health Platform
       `.trim();
 
       Alert.alert(
-        "Session Booked!",
-        `Your ${selectedSessionType.name.toLowerCase()} with ${selectedCounselor.displayName} has been scheduled for ${sessionDateTime.toLocaleDateString()} at ${selectedTime.time}.`,
+        "Session Request Sent!",
+        `Your ${selectedSessionType.name.toLowerCase()} request with ${selectedCounselor.displayName} has been sent for ${sessionDateTime.toLocaleDateString()} at ${selectedTime.time}.\n\nThe counsellor will confirm your booking shortly.${calendarEventId ? "\n\n📅 A reminder has been added to your calendar." : ""}`,
         [
           {
             text: "Share Details",
@@ -315,7 +332,11 @@ MindConnect Mental Health Platform
         <TouchableOpacity
           onPress={() => {
             if (booking) return;
-            step > 1 ? setStep(step - 1) : router.back();
+            if (step > 1) {
+              setStep(step - 1);
+            } else {
+              router.back();
+            }
           }}
           disabled={booking}
           accessibilityRole="button"
@@ -511,20 +532,39 @@ MindConnect Mental Health Platform
                       {type.duration} minutes
                     </Text>
                   </View>
-                  <Text className="text-lg font-bold text-foreground">
-                    ${type.price}
-                  </Text>
+                  <View className="items-end">
+                    <Text className="text-lg font-bold text-foreground">
+                      ${type.price}
+                    </Text>
+                    <Text className="text-xs text-muted-foreground">
+                      per session
+                    </Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
 
-            <Text className="text-lg font-medium text-foreground mb-3 mt-4">
-              Additional Notes (Optional)
+            {/* Payment Note */}
+            <View className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="information-circle" size={20} color="#F59E0B" />
+                <Text className="text-amber-600 dark:text-amber-400 font-medium ml-2">
+                  Payment Information
+                </Text>
+              </View>
+              <Text className="text-muted-foreground text-sm">
+                Payment will be arranged directly with your counsellor. 
+                The displayed price is an estimate based on the counsellor&apos;s rate.
+              </Text>
+            </View>
+
+            <Text className="text-lg font-medium text-foreground mb-3">
+              What would you like to discuss? (Optional)
             </Text>
             <Input
               value={sessionNotes}
               onChangeText={setSessionNotes}
-              placeholder="Any specific topics or concerns you'd like to discuss..."
+              placeholder="Share any topics, concerns, or goals for this session..."
               multiline
               numberOfLines={3}
               className="mb-6"
