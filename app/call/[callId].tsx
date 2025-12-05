@@ -2,13 +2,13 @@ import { CustomCallControls } from "@/components/call/CustomCallControls";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
-    Call,
-    CallContent,
-    CallingState,
-    RingingCallContent,
-    StreamCall,
-    useCallStateHooks,
-    useStreamVideoClient,
+  Call,
+  CallContent,
+  CallingState,
+  RingingCallContent,
+  StreamCall,
+  useCallStateHooks,
+  useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -26,15 +26,10 @@ const parseIsVideoParam = (value?: string | boolean): boolean => {
 };
 
 export default function CallScreen() {
-  const {
-    callId,
-    callType = "default",
-    isVideo: rawIsVideo,
-  } = useLocalSearchParams<{
-    callId: string;
-    callType?: string;
-    isVideo?: string | boolean;
-  }>();
+  const params = useLocalSearchParams();
+  const callId = Array.isArray(params.callId) ? params.callId[0] : params.callId as string;
+  const callType = (Array.isArray(params.callType) ? params.callType[0] : params.callType as string) || "default";
+  const rawIsVideo = Array.isArray(params.isVideo) ? params.isVideo[0] : params.isVideo;
   const isVideo = parseIsVideoParam(rawIsVideo);
 
   const [call, setCall] = useState<Call | null>(null);
