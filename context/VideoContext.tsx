@@ -1,14 +1,14 @@
 import { CustomIncomingCall } from "@/components/call/CustomIncomingCall";
 import {
-    CallingState,
-    DeepPartial,
-    StreamCall,
-    StreamVideo,
-    StreamVideoClient,
-    Theme,
-    useCall,
-    useCalls,
-    useCallStateHooks,
+  CallingState,
+  DeepPartial,
+  StreamCall,
+  StreamVideo,
+  StreamVideoClient,
+  Theme,
+  useCall,
+  useCalls,
+  useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import InCallManager from "react-native-incall-manager";
@@ -257,6 +257,14 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       });
+      
+      // CRITICAL FIX: Caller must JOIN the call after creating it
+      // This puts the caller in RINGING state (waiting for callee to accept)
+      // Without joining, the caller is stuck and never enters the call
+      console.log("VideoContext: Joining call as caller...");
+      await call.join();
+      console.log("VideoContext: Caller joined call successfully - now in RINGING state");
+      
       console.log("VideoContext: Ring call created successfully");
       console.log("VideoContext: Call ID:", call.id, "CID:", call.cid);
       console.log("VideoContext: Call members:", allMembers);

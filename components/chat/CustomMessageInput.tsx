@@ -1,6 +1,6 @@
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     Keyboard,
     Platform,
@@ -14,6 +14,21 @@ import { useMessageInputContext } from "stream-chat-expo";
 export const CustomMessageInput = () => {
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  
+  // Track keyboard visibility so we only add bottom inset when keyboard is hidden
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+    
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   
   const {
     text,
@@ -39,13 +54,18 @@ export const CustomMessageInput = () => {
     await sendMessage();
   };
 
+  // Calculate bottom padding:
+  // - When keyboard is VISIBLE: minimal padding (keyboard pushes content up via resize on Android, KAV on iOS)
+  // - When keyboard is HIDDEN: add bottom safe-area inset so input stays above phone buttons
+  const bottomPadding = isKeyboardVisible ? 8 : Math.max(insets.bottom, 8);
+
   return (
     <View
       style={{
         backgroundColor: colors.background,
         paddingHorizontal: 12,
         paddingTop: 8,
-        paddingBottom: Platform.OS === "ios" ? 8 : Math.max(insets.bottom, 8),
+        paddingBottom: bottomPadding,
         borderTopWidth: 0,
       }}
     >

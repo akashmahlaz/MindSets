@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
+import CustomMessageInput from "@/components/chat/CustomMessageInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -294,8 +295,8 @@ export default function ChatScreen() {
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
-      {/* Use top and bottom edges to ensure input is above nav bar */}
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+      {/* Use top edge only - CustomMessageInput handles bottom safe area */}
+      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
       {/* Premium Header - Clean design */}
       <View style={{
@@ -421,41 +422,16 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Chat Area with proper keyboard handling */}
+      {/* Chat Area with proper keyboard & bottom safe-area handling */}
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
-            KeyboardCompatibleView={({ children }) => {
-              if (Platform.OS === 'ios') {
-                return (
-                  <KeyboardAvoidingView
-                    behavior="padding"
-                    keyboardVerticalOffset={insets.top + 60}
-                    style={{ flex: 1 }}
-                  >
-                    {children}
-                  </KeyboardAvoidingView>
-                );
-              }
-              // Android: rely on Expo's `softwareKeyboardLayoutMode: "resize"`
-              // and SafeAreaView bottom padding from `edges={["top", "bottom"]}`
-              // to keep the input above the system navigation bar.
-              return (
-                <View style={{ flex: 1 }}>
-                  {children}
-                </View>
-              );
-            }}
+            KeyboardCompatibleView={Platform.OS === 'ios' ? KeyboardAvoidingView : View}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 60 : 0}
+            Input={CustomMessageInput}
           >
             <MessageList 
               keyboardDismissMode="on-drag"
-            />
-            <MessageInput 
-              additionalTextInputProps={{
-                keyboardType: "default",
-                returnKeyType: "default",
-                blurOnSubmit: false,
-              }}
             />
           </Channel>
       </SafeAreaView>

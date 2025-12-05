@@ -43,8 +43,8 @@ export default function CallScreen() {
 
   useEffect(() => {
     if (!client || !callId || !user) {
-      setError("Missing client, call ID, or user");
-      setIsLoading(false);
+      // Don't set error immediately - client might still be loading
+      console.log("Waiting for client/callId/user:", { client: !!client, callId, user: !!user });
       return;
     }
 
@@ -59,26 +59,23 @@ export default function CallScreen() {
         const callToSetup = client.call(callType, callId);
 
         try {
-          // Get or join the call
+          // Get the call info - the call should already exist and we should already be joined
+          // (VideoContext.createCall already joined the call for outgoing calls)
           await callToSetup.get();
           console.log("Found existing call:", callToSetup.cid);
+          console.log("Call state:", {
+            callingState: callToSetup.state.callingState,
+            isCreatedByMe: callToSetup.isCreatedByMe,
+            ringing: callToSetup.ringing,
+          });
           
           if (isMounted) {
             setCall(callToSetup);
           }
         } catch (getError) {
-          console.log("Call not found, attempting to create:", getError);
-          // Try to create the call if it doesn't exist
-          try {
-            await callToSetup.getOrCreate();
-            if (isMounted) {
-              setCall(callToSetup);
-            }
-          } catch (createError) {
-            console.error("Failed to create call:", createError);
-            if (isMounted) {
-              setError("Call not found or has expired");
-            }
+          console.error("Failed to get call:", getError);
+          if (isMounted) {
+            setError("Call not found or has expired");
           }
         }
       } catch (error) {
