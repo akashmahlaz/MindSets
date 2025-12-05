@@ -1,18 +1,19 @@
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useMeditationSound } from "@/lib/useSound";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Easing,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  View,
+    Animated,
+    Dimensions,
+    Easing,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -96,6 +97,9 @@ export default function MeditationScreen() {
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+
+  // Initialize sound hook
+  const meditationSound = useMeditationSound('calm');
   
   const [selectedSession, setSelectedSession] = useState<MeditationSession | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -106,7 +110,7 @@ export default function MeditationScreen() {
   
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const breathAnim = useRef(new Animated.Value(0)).current;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const colors = {
     background: isDarkColorScheme ? "#0F1419" : "#FAFBFC",
@@ -130,7 +134,7 @@ export default function MeditationScreen() {
 
   // Breathing phase interval - separate from animation
   useEffect(() => {
-    let breathInterval: NodeJS.Timeout | null = null;
+    let breathInterval: ReturnType<typeof setInterval> | null = null;
     
     if (isPlaying) {
       breathInterval = setInterval(() => {

@@ -1,14 +1,16 @@
 import { CustomCallControls } from "@/components/call/CustomCallControls";
+import { CustomIncomingCall } from "@/components/call/CustomIncomingCall";
+import { CustomOutgoingCall } from "@/components/call/CustomOutgoingCall";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
-    Call,
-    CallContent,
-    CallingState,
-    RingingCallContent,
-    StreamCall,
-    useCallStateHooks,
-    useStreamVideoClient,
+  Call,
+  CallContent,
+  CallingState,
+  StreamCall,
+  useCall,
+  useCallStateHooks,
+  useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -26,16 +28,11 @@ const parseIsVideoParam = (value?: string | boolean): boolean => {
 };
 
 export default function CallScreen() {
-  const {
-    callId,
-    callType = "default",
-    isVideo: rawIsVideo,
-  } = useLocalSearchParams<{
-    callId: string;
-    callType?: string;
-    isVideo?: string | boolean;
-  }>();
-  const isVideo = parseIsVideoParam(rawIsVideo);
+  const params = useLocalSearchParams();
+  const callId = params.callId as string;
+  const callType = (params.callType as string) || "default";
+  const rawIsVideo = params.isVideo;
+  const isVideo = parseIsVideoParam(rawIsVideo as string | boolean | undefined);
 
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +48,8 @@ export default function CallScreen() {
       return;
     }
 
+    let isMounted = true;
+
     const setupCall = async () => {
       try {
         console.log("Setting up call:", callId, callType);
@@ -60,22 +59,39 @@ export default function CallScreen() {
         const callToSetup = client.call(callType, callId);
 
         try {
-          // Get the call to check if it exists and get its current state
+          // Get or join the call
           await callToSetup.get();
           console.log("Found existing call:", callToSetup.cid);
-          setCall(callToSetup);
+          
+          if (isMounted) {
+            setCall(callToSetup);
+          }
         } catch (getError) {
-          console.log("Call not found:", getError);
-          setError("Call not found or has expired");
-          return;
+          console.log("Call not found, attempting to create:", getError);
+          // Try to create the call if it doesn't exist
+          try {
+            await callToSetup.getOrCreate();
+            if (isMounted) {
+              setCall(callToSetup);
+            }
+          } catch (createError) {
+            console.error("Failed to create call:", createError);
+            if (isMounted) {
+              setError("Call not found or has expired");
+            }
+          }
         }
       } catch (error) {
         console.error("Error setting up call:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to setup call",
-        );
+        if (isMounted) {
+          setError(
+            error instanceof Error ? error.message : "Failed to setup call",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -83,81 +99,74 @@ export default function CallScreen() {
 
     // Cleanup on unmount
     return () => {
-      if (call) {
+      isMounted = false;
+      if (call && !isEndingCall.current) {
         call.leave().catch(console.error);
       }
     };
-  }, [client, callId, callType, user?.uid]); // Handle call events and state changes
+  }, [client, callId, callType, user?.uid]);
   useEffect(() => {
     if (!call) return;
 
     const handleCallEnded = () => {
-      console.log("Call ended event received, isEndingCall:", isEndingCall.current);
-      // Don't show any alert - just navigate back silently
-      // The user knows they ended the call
-      if (!isEndingCall.current) {
-        // Only log, don't show alert to avoid confusion
-        console.log("Call ended by remote user");
-      }
-      router.back();
+      console.log("Call ended event received");
+      // Navigate back without showing alerts
+      setTimeout(() => {
+        router.back();
+      }, 300);
     };
 
     const handleCallSessionEnded = () => {
-      console.log("Call session ended, isEndingCall:", isEndingCall.current);
-      // Navigate back without alert
-      router.back();
+      console.log("Call session ended");
+      setTimeout(() => {
+        router.back();
+      }, 300);
     };
 
     const handleCallRejected = (event: any) => {
-      console.log("Call was rejected event:", JSON.stringify(event, null, 2));
-      // Only show "declined" if explicitly rejected by the OTHER person (not us ending our own call)
-      if (!isEndingCall.current) {
-        // Stream SDK sends reason in the event directly
-        const rejectReason = event?.reason || event?.call?.endedBy?.id !== user?.uid ? 'decline' : '';
-        const endedByMe = event?.call?.endedBy?.id === user?.uid;
-        
-        console.log("Reject analysis:", { rejectReason, endedByMe, userId: user?.uid });
-        
-        // Only show alert if:
-        // 1. It's a real rejection (decline/busy/timeout)
-        // 2. The call was NOT ended by us
-        if (!endedByMe && (rejectReason === 'decline' || rejectReason === 'busy' || rejectReason === 'timeout' || rejectReason === 'cancel')) {
-          Alert.alert("Call Declined", "The other person declined the call.");
-        }
-        // For normal endings or if we ended it, just navigate back silently
+      console.log("Call was rejected");
+      
+      if (isEndingCall.current) {
+        router.back();
+        return;
       }
-      router.back();
+      
+      const reason = event?.reason;
+      
+      // Only show declined alert for explicit rejection
+      if (reason === 'decline' || reason === 'busy') {
+        Alert.alert("Call Declined", "The other person declined the call.", [
+          { text: "OK", onPress: () => router.back() }
+        ]);
+      } else {
+        router.back();
+      }
     };
 
     const handleCallMissed = () => {
       console.log("Call was missed");
       if (!isEndingCall.current) {
-        Alert.alert("No Answer", "The call was not answered.");
+        Alert.alert("No Answer", "The call was not answered.", [
+          { text: "OK", onPress: () => router.back() }
+        ]);
+      } else {
+        router.back();
       }
-      router.back();
     };
 
     const handleParticipantLeft = () => {
-      console.log("Participant left the call, isEndingCall:", isEndingCall.current);
-      // Check if there are still participants in the call
-      const participants = call.state.participants;
-      if (participants.length <= 1 && !isEndingCall.current) {
-        console.log("Other participant left");
-        // Navigate back without confusing alert
-        router.back();
-      }
+      console.log("Participant left the call");
+      // Small delay to allow state to settle
+      setTimeout(() => {
+        const participants = call.state.participants;
+        if (participants.length <= 1 && !isEndingCall.current) {
+          console.log("Last participant left");
+          router.back();
+        }
+      }, 500);
     };
 
-    const handleCallUpdated = () => {
-      // Don't show alerts on call updates - just handle state
-      const callState = call.state;
-      if (callState.endedAt && !isEndingCall.current) {
-        console.log("Call state shows ended");
-        router.back();
-      }
-    };
-
-    // Subscribe to all relevant call lifecycle events
+    // Subscribe to call lifecycle events
     const unsubscribeEnded = call.on("call.ended", handleCallEnded);
     const unsubscribeSessionEnded = call.on(
       "call.session_ended",
@@ -169,7 +178,6 @@ export default function CallScreen() {
       "call.session_participant_left",
       handleParticipantLeft,
     );
-    const unsubscribeUpdated = call.on("call.updated", handleCallUpdated);
 
     return () => {
       unsubscribeEnded();
@@ -177,36 +185,34 @@ export default function CallScreen() {
       unsubscribeRejected();
       unsubscribeMissed();
       unsubscribeParticipantLeft();
-      unsubscribeUpdated();
     };
-  }, [call]);
+  }, [call, user?.uid]);
   const handleEndCall = async () => {
-    // Set flag to prevent showing "ended by another user" alerts
+    if (isEndingCall.current) return; // Prevent double calls
+    
     isEndingCall.current = true;
     
     try {
       if (call) {
-        console.log("Ending call for all participants (user initiated)");
-        // According to Stream.io documentation:
-        // call.endCall() terminates the call for ALL participants
-        // This sends call.ended event to all call members
-        await call.endCall();
-        console.log("Call ended successfully for all participants");
-      }
-      router.back();
-    } catch (error) {
-      console.error("Error ending call:", error);
-      // If endCall fails (permission issue), fall back to leave
-      // But note: this only removes the current user, doesn't end for everyone
-      try {
-        if (call) {
-          console.log("Fallback: Leaving call instead of ending");
+        console.log("Ending call");
+        
+        // Try to end the call for all participants
+        try {
+          await call.endCall();
+          console.log("Call ended successfully");
+        } catch (endError) {
+          console.log("Failed to end call, leaving instead:", endError);
+          // Fallback to leaving if we can't end it
           await call.leave();
         }
-      } catch (leaveError) {
-        console.error("Error leaving call:", leaveError);
       }
-      router.back();
+    } catch (error) {
+      console.error("Error in handleEndCall:", error);
+    } finally {
+      // Always navigate back after a short delay
+      setTimeout(() => {
+        router.back();
+      }, 200);
     }
   };
 
@@ -258,17 +264,66 @@ function CallUI({
   isVideo: boolean;
   onEndCall: () => void;
 }) {
-  const { useCallCallingState } = useCallStateHooks();
+  const call = useCall();
+  const { useCallCallingState, useCameraState } = useCallStateHooks();
   const callingState = useCallCallingState();
+  const { camera } = useCameraState();
+  const hasEnabledCamera = React.useRef(false);
+  const hasNavigatedBack = React.useRef(false);
 
-  console.log("Current calling state:", callingState);
+  console.log("Current calling state:", callingState, "isVideo:", isVideo);
 
-  // Handle different call states using Stream.io's built-in components
+  // Auto-navigate back when call is LEFT
+  React.useEffect(() => {
+    if (hasNavigatedBack.current) return;
+    
+    if (callingState === CallingState.LEFT) {
+      // Delay to ensure cleanup
+      const timer = setTimeout(() => {
+        if (!hasNavigatedBack.current) {
+          hasNavigatedBack.current = true;
+          console.log("Call LEFT state - navigating back");
+          router.back();
+        }
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [callingState]);
+
+  // Enable/disable camera based on isVideo when call is joined
+  React.useEffect(() => {
+    if (callingState === CallingState.JOINED && call && !hasEnabledCamera.current) {
+      hasEnabledCamera.current = true;
+      
+      // Small delay to ensure call is fully established
+      const timer = setTimeout(() => {
+        if (isVideo) {
+          console.log("Enabling camera for video call");
+          camera.enable().catch((err: any) => {
+            console.warn("Failed to enable camera:", err);
+          });
+        } else {
+          console.log("Disabling camera for voice call");
+          camera.disable().catch((err: any) => console.warn("Failed to disable camera:", err));
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [callingState, call, isVideo, camera]);
+
+  // Handle different call states using custom professional components
   switch (callingState) {
     case CallingState.RINGING:
-      // Use Stream.io's built-in RingingCallContent for both incoming and outgoing calls
-      // This component automatically detects if it's incoming or outgoing and shows appropriate UI
-      return <RingingCallContent />;
+      // Use our custom professional ringing UI
+      // Check if this is an incoming or outgoing call
+      if (call?.isCreatedByMe) {
+        // Outgoing call - we initiated it
+        return <CustomOutgoingCall />;
+      } else {
+        // Incoming call - someone is calling us
+        return <CustomIncomingCall />;
+      }
     case CallingState.JOINED: // Use Stream.io's built-in CallContent with custom CallControls for proper safe area handling
       return (
         <CallContent

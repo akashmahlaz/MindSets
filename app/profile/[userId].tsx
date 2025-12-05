@@ -178,26 +178,35 @@ export default function ProfileScreen() {
   }, [userId]);
 
   const startChat = async (targetUser: UserProfile) => {
-    if (!user || !chatClient) {
-      Alert.alert("Error", "Chat not available");
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to send a message");
       return;
     }
 
+    // If not connected, try to connect first
     if (!isChatConnected) {
       try {
         await connectToChat();
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      } catch {
-        Alert.alert("Error", "Failed to connect to chat");
+        // Wait a bit for connection to establish and state to update
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (err) {
+        console.error("Failed to connect to chat:", err);
+        Alert.alert("Error", "Failed to connect to chat service. Please check your internet connection.");
         return;
       }
+    }
+
+    // Check client again after connection attempt
+    if (!chatClient && !isChatConnected) {
+      Alert.alert("Error", "Chat service is currently unavailable. Please try again later.");
+      return;
     }
 
     try {
       const { createOrGetDirectChannel } = await import("@/services/chatHelpers");
       const channel = await createOrGetDirectChannel(user, targetUser.uid);
       router.push(`/(main)/chat/${channel.id}` as any);
-    } catch {
+    } catch (err) {
       Alert.alert(
         "Chat Error",
         `Failed to start chat with ${targetUser.displayName}. Please try again.`

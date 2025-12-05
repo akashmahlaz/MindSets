@@ -4,7 +4,6 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useCall, useCallStateHooks } from "@stream-io/video-react-native-sdk";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Image, Pressable, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -198,7 +197,7 @@ export const CustomOutgoingCall = () => {
     if (!call) return;
 
     const handleCallAccepted = () => {
-      console.log("Call was accepted, navigating to call screen...");
+      console.log("Call was accepted - callingState will change to JOINED automatically");
       // Stop outgoing tone and play connected sound
       soundService.unloadSound(outgoingToneId.current);
       const connectedSource = getSoundSource(SOUND_IDS.CALL_CONNECTED);
@@ -206,15 +205,8 @@ export const CustomOutgoingCall = () => {
         soundService.playUISound(connectedSource, 0.5);
       }
       setIsWaiting(false);
-
-      router.push({
-        pathname: "/call/[callId]",
-        params: {
-          callId: call.id,
-          callType: call.type,
-          isVideo: isVideoCall,
-        },
-      });
+      // No need to navigate - the callingState will change to JOINED
+      // and the parent CallUI will render the CallContent component
     };
 
     const unsubscribe = call.on("call.session_started", handleCallAccepted);

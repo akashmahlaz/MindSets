@@ -93,10 +93,10 @@ export default function UserSignUpScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: Theme.colors.background }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default }}>
       <StatusBar
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={Theme.colors.background}
+        backgroundColor={isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default}
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -165,7 +165,7 @@ export default function UserSignUpScreen() {
                         onChangeText={(text) => setFormData((prev) => ({ ...prev, firstName: text }))}
                         placeholder="First Name"
                         className="h-14 rounded-xl px-4 border-0"
-                        style={{ backgroundColor: Theme.colors.background, color: Theme.colors.text }}
+                        style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default, color: Theme.colors.text }}
                         placeholderTextColor="#9CA3AF"
                       />
                     </View>
@@ -176,7 +176,7 @@ export default function UserSignUpScreen() {
                         onChangeText={(text) => setFormData((prev) => ({ ...prev, lastName: text }))}
                         placeholder="Last Name"
                         className="h-14 rounded-xl px-4 border-0"
-                        style={{ backgroundColor: Theme.colors.background, color: Theme.colors.text }}
+                        style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default, color: Theme.colors.text }}
                         placeholderTextColor="#9CA3AF"
                       />
                     </View>
@@ -189,7 +189,7 @@ export default function UserSignUpScreen() {
                       onChangeText={(text) => setFormData((prev) => ({ ...prev, email: text }))}
                       placeholder="name@example.com"
                       className="h-14 rounded-xl px-4 border-0"
-                      style={{ backgroundColor: Theme.colors.background, color: Theme.colors.text }}
+                      style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default, color: Theme.colors.text }}
                       placeholderTextColor="#9CA3AF"
                       keyboardType="email-address"
                       autoCapitalize="none"
@@ -203,7 +203,7 @@ export default function UserSignUpScreen() {
                       onChangeText={(text) => setFormData((prev) => ({ ...prev, password: text }))}
                       placeholder="••••••••"
                       className="h-14 rounded-xl px-4 border-0"
-                      style={{ backgroundColor: Theme.colors.background, color: Theme.colors.text }}
+                      style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default, color: Theme.colors.text }}
                       placeholderTextColor="#9CA3AF"
                       secureTextEntry
                     />
@@ -216,7 +216,7 @@ export default function UserSignUpScreen() {
                       onChangeText={(text) => setFormData((prev) => ({ ...prev, confirmPassword: text }))}
                       placeholder="••••••••"
                       className="h-14 rounded-xl px-4 border-0"
-                      style={{ backgroundColor: Theme.colors.background, color: Theme.colors.text }}
+                      style={{ backgroundColor: isDarkColorScheme ? Theme.colors.background.dark : Theme.colors.background.default, color: Theme.colors.text }}
                       placeholderTextColor="#9CA3AF"
                       secureTextEntry
                     />

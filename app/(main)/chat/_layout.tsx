@@ -201,16 +201,6 @@ export default function ChatLayout() {
         height: 52,
         borderRadius: 26,
       },
-      presenceIndicator: {
-        backgroundColor: "#2AA79D",
-        borderWidth: 2.5,
-        borderColor: colors.background,
-        width: 14,
-        height: 14,
-        borderRadius: 7,
-        bottom: 0,
-        right: 0,
-      },
     },
   };
 
@@ -245,7 +235,8 @@ export default function ChatLayout() {
       <Chat client={chatClient} style={chatTheme}>
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          translucent={false}
+          translucent={true}
+          backgroundColor="transparent"
         />
         <Stack
           screenOptions={{

@@ -47,9 +47,28 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
-    // Sessions collection
+    // Sessions collection - booking and counselling sessions
     match /sessions/{sessionId} {
-      allow read, write: if isAuthenticated();
+      // Users can read sessions they are part of
+      allow read: if isAuthenticated() && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.counselorId == request.auth.uid);
+      
+      // Admins can read all sessions
+      allow read: if isAdmin();
+      
+      // Users can create sessions for themselves
+      allow create: if isAuthenticated() && 
+        (request.resource.data.clientId == request.auth.uid || 
+         request.resource.data.counselorId == request.auth.uid);
+      
+      // Users can update sessions they are part of
+      allow update: if isAuthenticated() && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.counselorId == request.auth.uid);
+      
+      // Admins can update/delete any session
+      allow update, delete: if isAdmin();
     }
     
     // Articles/Stories collection

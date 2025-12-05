@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, Alert } from "react-native";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useVideo } from "@/context/VideoContext";
 import { router } from "expo-router";
+import React, { useState } from "react";
+import { Alert, Text, View } from "react-native";
 
 export const CallTester = () => {
   const { user } = useAuth();
@@ -37,7 +37,7 @@ export const CallTester = () => {
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: false,
+          isVideo: "false",
         },
       });
     } catch (error) {
@@ -69,7 +69,7 @@ export const CallTester = () => {
         params: {
           callId: call.id,
           callType: call.type,
-          isVideo: true,
+          isVideo: "true",
         },
       });
     } catch (error) {

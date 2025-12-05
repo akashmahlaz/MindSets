@@ -8,14 +8,15 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActionSheetIOS,
     ActivityIndicator,
     Alert,
     Image,
+    KeyboardAvoidingView,
     Platform,
     Pressable,
     StatusBar,
     Text,
+    TouchableOpacity,
     View
 } from "react-native";
 import {
@@ -40,6 +41,7 @@ export default function ChatScreen() {
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCallOptions, setShowCallOptions] = useState(false);
 
   // Hide tab bar when chat screen is focused - more reliable approach
   useEffect(() => {
@@ -251,7 +253,7 @@ export default function ChatScreen() {
     }
 
     if (!isVideoConnected) {
-      Alert.alert("Error", "Video service not connected. Please try again.");
+      Alert.alert("Call Unavailable", "Video service is connecting. Please try again in a moment.");
       return;
     }
 
@@ -278,7 +280,7 @@ export default function ChatScreen() {
           }
         });
       } else {
-        Alert.alert("Error", "Failed to create call. Please try again.");
+        Alert.alert("Error", "Failed to create call. Please check your internet connection.");
       }
     } catch (error) {
       console.error("Error initiating call:", error);
@@ -292,8 +294,8 @@ export default function ChatScreen() {
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
-      {/* Use top edge only - we'll handle bottom manually for Android */}
-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+      {/* Use top and bottom edges to ensure input is above nav bar */}
+      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
       
       {/* Premium Header - Clean design */}
       <View style={{
@@ -384,67 +386,78 @@ export default function ChatScreen() {
           </Text>
         </View>
         
-        {/* Call button - shows options */}
-        <Pressable
-          onPress={() => {
-            if (Platform.OS === 'ios') {
-              ActionSheetIOS.showActionSheetWithOptions(
-                {
-                  options: ['Cancel', 'Voice Call', 'Video Call'],
-                  cancelButtonIndex: 0,
-                },
-                (buttonIndex) => {
-                  if (buttonIndex === 1) handleCall(false);
-                  else if (buttonIndex === 2) handleCall(true);
-                }
-              );
-            } else {
-              Alert.alert(
-                'Start Call',
-                'Choose call type',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Voice Call', onPress: () => handleCall(false) },
-                  { text: 'Video Call', onPress: () => handleCall(true) },
-                ]
-              );
-            }
-          }}
+        {/* Call buttons - Voice and Video */}
+        <TouchableOpacity
+          onPress={() => handleCall(false)}
           disabled={isCreatingCall}
-          accessibilityLabel="Start a call"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isCreatingCall }}
-          style={({ pressed }) => ({
+          style={{
             width: 38,
             height: 38,
             borderRadius: 12,
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
-            opacity: pressed || isCreatingCall ? 0.6 : 1,
-          })}
+            marginRight: 8,
+            opacity: isCreatingCall ? 0.5 : 1,
+          }}
         >
           <Ionicons name="call-outline" size={20} color={colors.primary} />
-        </Pressable>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          onPress={() => handleCall(true)}
+          disabled={isCreatingCall}
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 12,
+            backgroundColor: colors.primary,
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: isCreatingCall ? 0.5 : 1,
+          }}
+        >
+          <Ionicons name="videocam-outline" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
 
-      {/* Chat Area */}
-        <View style={{ flex: 1 }}>
+      {/* Chat Area with proper keyboard handling */}
           <Channel
             channel={channel}
-            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
             enforceUniqueReaction={true}
+            KeyboardCompatibleView={({ children }) => {
+              if (Platform.OS === 'ios') {
+                return (
+                  <KeyboardAvoidingView
+                    behavior="padding"
+                    keyboardVerticalOffset={insets.top + 60}
+                    style={{ flex: 1 }}
+                  >
+                    {children}
+                  </KeyboardAvoidingView>
+                );
+              }
+              // Android: rely on Expo's `softwareKeyboardLayoutMode: "resize"`
+              // and SafeAreaView bottom padding from `edges={["top", "bottom"]}`
+              // to keep the input above the system navigation bar.
+              return (
+                <View style={{ flex: 1 }}>
+                  {children}
+                </View>
+              );
+            }}
           >
-            <MessageList />
-            {/* Wrap MessageInput with bottom padding for Android system nav bar */}
-            <View style={{ 
-              paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
-              backgroundColor: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
-            }}>
-              <MessageInput />
-            </View>
+            <MessageList 
+              keyboardDismissMode="on-drag"
+            />
+            <MessageInput 
+              additionalTextInputProps={{
+                keyboardType: "default",
+                returnKeyType: "default",
+                blurOnSubmit: false,
+              }}
+            />
           </Channel>
-        </View>
       </SafeAreaView>
     </View>
   );

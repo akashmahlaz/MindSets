@@ -1,7 +1,7 @@
+import { CustomIncomingCall } from "@/components/call/CustomIncomingCall";
 import {
     CallingState,
     DeepPartial,
-    RingingCallContent,
     StreamCall,
     StreamVideo,
     StreamVideoClient,
@@ -11,7 +11,6 @@ import {
     useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
 import InCallManager from "react-native-incall-manager";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createVideoClient } from "../services/stream";
@@ -34,14 +33,12 @@ interface VideoContextType {
 
 const VideoContext = createContext<VideoContextType | null>(null);
 
-// Component to handle incoming and outgoing ringing calls
+// Component to handle INCOMING ringing calls when user is anywhere in the app
+// This acts as an overlay for incoming calls only - outgoing calls are handled by the call screen
 const RingingCalls = () => {
   const { user } = useAuth();
   const calls = useCalls();
   const ringingCalls = calls.filter((c) => c.ringing);
-
-  // Always call hooks at the top level - never conditionally
-  const { top, right, bottom, left } = useSafeAreaInsets();
 
   // Log call state changes
   useEffect(() => {
@@ -51,17 +48,13 @@ const RingingCalls = () => {
       callStates: calls.map((c) => ({
         id: c.id,
         cid: c.cid,
-        state: c.state,
         ringing: c.ringing,
-        currentUserId: c.currentUserId,
         isCreatedByMe: c.isCreatedByMe,
-        members: c.state.members?.map((m) => m.user_id),
       })),
     });
-  }, [calls]);
+  }, [calls, ringingCalls.length]);
 
   if (!ringingCalls.length || !user) {
-    console.log("RingingCalls: No ringing calls or no user");
     return null;
   }
 
@@ -69,56 +62,28 @@ const RingingCalls = () => {
   const ringingCall = ringingCalls[0];
 
   if (!ringingCall || !user) {
-    console.log("RingingCalls: No ringing call or no user");
     return null;
   }
-
-  console.log("RingingCalls: Rendering with call:", {
-    id: ringingCall.id,
-    cid: ringingCall.cid,
-    state: ringingCall.state,
-    ringing: ringingCall.ringing,
-    currentUserId: ringingCall.currentUserId,
-    isCreatedByMe: ringingCall.isCreatedByMe,
-    members: ringingCall.state.members?.map((m) => ({
-      user_id: m.user_id,
-      role: m.role,
-    })),
-  });
 
   // Check if current user is the creator of the call
   const callCreator = ringingCall.state.custom?.createdBy;
   const isCallCreatedByMe =
     ringingCall.isCreatedByMe || callCreator === user.uid;
-  console.log(
-    "RingingCalls: Call creator:",
-    callCreator,
-    "Current user:",
-    user.uid,
-    "Is creator:",
-    isCallCreatedByMe,
-    "SDK isCreatedByMe:",
-    ringingCall.isCreatedByMe,
-  );
 
-  // Show Stream.io's built-in ringing UI for both callers and callees
-  // RingingCallContent automatically handles incoming vs outgoing call UI
+  // ONLY show overlay for INCOMING calls (calls we did NOT create)
+  // Outgoing calls are handled by the call screen where user navigates after creating the call
+  if (isCallCreatedByMe) {
+    console.log("RingingCalls: Skipping - this is an outgoing call, handled by call screen");
+    return null;
+  }
+
+  console.log("RingingCalls: Showing incoming call overlay");
+
+  // Show custom professional incoming call UI
   return (
     <StreamCall call={ringingCall}>
       <RingingSound />
-      <SafeAreaView
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            paddingTop: top,
-            paddingRight: right,
-            paddingBottom: bottom,
-            paddingLeft: left,
-          },
-        ]}
-      >
-        <RingingCallContent />
-      </SafeAreaView>
+      <CustomIncomingCall />
     </StreamCall>
   );
 };

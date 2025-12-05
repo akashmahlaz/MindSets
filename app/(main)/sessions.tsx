@@ -1,5 +1,6 @@
 import "@/app/global.css";
 import { useAuth } from "@/context/AuthContext";
+import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getUserSessions, SessionBooking, updateSessionStatus } from "@/services/sessionService";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +24,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function SessionsScreen() {
   const { userProfile } = useAuth();
+  const { createCall, isVideoConnected, isCreatingCall } = useVideo();
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
@@ -110,30 +112,73 @@ export default function SessionsScreen() {
     }
   };
 
-  const joinSession = (session: SessionBooking) => {
+  const joinSession = async (session: SessionBooking) => {
     if (session.status !== "confirmed") {
       Alert.alert("Session Not Available", "This session is not confirmed yet.");
       return;
     }
+
+    if (!isVideoConnected) {
+      Alert.alert("Error", "Video service not connected. Please try again.");
+      return;
+    }
+
+    if (isCreatingCall) {
+      return; // Already creating a call
+    }
+
+    // Get the other participant ID
+    const otherUserId = userProfile?.role === "counsellor" 
+      ? session.clientId 
+      : session.counselorId;
+
+    if (!otherUserId) {
+      Alert.alert("Error", "Cannot find session participant.");
+      return;
+    }
     
     // Generate a unique call ID based on session ID
-    const callId = `session-${session.id}`;
+    const callId = `session-${session.id}-${Date.now().toString(36)}`;
     
     Alert.alert("Join Session", "Choose how to join:", [
       { text: "Cancel", style: "cancel" },
       { 
         text: "Video Call", 
-        onPress: () => router.push({
-          pathname: "/call/[callId]",
-          params: { callId, callType: "default", isVideo: "true" }
-        })
+        onPress: async () => {
+          try {
+            const call = await createCall(callId, [otherUserId], true);
+            if (call) {
+              router.push({
+                pathname: "/call/[callId]",
+                params: { callId: call.id, callType: "default", isVideo: "true" }
+              });
+            } else {
+              Alert.alert("Error", "Failed to create call. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error creating video call:", error);
+            Alert.alert("Error", "Failed to start video call.");
+          }
+        }
       },
       { 
         text: "Voice Call", 
-        onPress: () => router.push({
-          pathname: "/call/[callId]",
-          params: { callId, callType: "default", isVideo: "false" }
-        })
+        onPress: async () => {
+          try {
+            const call = await createCall(callId, [otherUserId], false);
+            if (call) {
+              router.push({
+                pathname: "/call/[callId]",
+                params: { callId: call.id, callType: "default", isVideo: "false" }
+              });
+            } else {
+              Alert.alert("Error", "Failed to create call. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error creating voice call:", error);
+            Alert.alert("Error", "Failed to start voice call.");
+          }
+        }
       },
     ]);
   };

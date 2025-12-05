@@ -101,7 +101,7 @@ export const useStartCall = () => {
           params: {
             callId: call.id,
             callType: call.type,
-            isVideo,
+            isVideo: isVideo.toString(),
           },
         });
       } else {
