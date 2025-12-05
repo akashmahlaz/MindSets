@@ -1,16 +1,17 @@
-import { CustomIncomingCall } from "@/components/call/CustomIncomingCall";
 import {
-  CallingState,
-  DeepPartial,
-  StreamCall,
-  StreamVideo,
-  StreamVideoClient,
-  Theme,
-  useCall,
-  useCalls,
-  useCallStateHooks,
+    CallingState,
+    DeepPartial,
+    RingingCallContent,
+    StreamCall,
+    StreamVideo,
+    StreamVideoClient,
+    Theme,
+    useCall,
+    useCalls,
+    useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { SafeAreaView, StyleSheet } from "react-native";
 import InCallManager from "react-native-incall-manager";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createVideoClient } from "../services/stream";
@@ -33,12 +34,14 @@ interface VideoContextType {
 
 const VideoContext = createContext<VideoContextType | null>(null);
 
-// Component to handle INCOMING ringing calls when user is anywhere in the app
-// This acts as an overlay for incoming calls only - outgoing calls are handled by the call screen
+// Component to handle incoming and outgoing ringing calls
 const RingingCalls = () => {
   const { user } = useAuth();
   const calls = useCalls();
   const ringingCalls = calls.filter((c) => c.ringing);
+
+  // Always call hooks at the top level - never conditionally
+  const { top, right, bottom, left } = useSafeAreaInsets();
 
   // Log call state changes
   useEffect(() => {
@@ -48,13 +51,17 @@ const RingingCalls = () => {
       callStates: calls.map((c) => ({
         id: c.id,
         cid: c.cid,
+        state: c.state,
         ringing: c.ringing,
+        currentUserId: c.currentUserId,
         isCreatedByMe: c.isCreatedByMe,
+        members: c.state.members?.map((m) => m.user_id),
       })),
     });
-  }, [calls, ringingCalls.length]);
+  }, [calls]);
 
   if (!ringingCalls.length || !user) {
+    console.log("RingingCalls: No ringing calls or no user");
     return null;
   }
 
@@ -62,28 +69,56 @@ const RingingCalls = () => {
   const ringingCall = ringingCalls[0];
 
   if (!ringingCall || !user) {
+    console.log("RingingCalls: No ringing call or no user");
     return null;
   }
+
+  console.log("RingingCalls: Rendering with call:", {
+    id: ringingCall.id,
+    cid: ringingCall.cid,
+    state: ringingCall.state,
+    ringing: ringingCall.ringing,
+    currentUserId: ringingCall.currentUserId,
+    isCreatedByMe: ringingCall.isCreatedByMe,
+    members: ringingCall.state.members?.map((m) => ({
+      user_id: m.user_id,
+      role: m.role,
+    })),
+  });
 
   // Check if current user is the creator of the call
   const callCreator = ringingCall.state.custom?.createdBy;
   const isCallCreatedByMe =
     ringingCall.isCreatedByMe || callCreator === user.uid;
+  console.log(
+    "RingingCalls: Call creator:",
+    callCreator,
+    "Current user:",
+    user.uid,
+    "Is creator:",
+    isCallCreatedByMe,
+    "SDK isCreatedByMe:",
+    ringingCall.isCreatedByMe,
+  );
 
-  // ONLY show overlay for INCOMING calls (calls we did NOT create)
-  // Outgoing calls are handled by the call screen where user navigates after creating the call
-  if (isCallCreatedByMe) {
-    console.log("RingingCalls: Skipping - this is an outgoing call, handled by call screen");
-    return null;
-  }
-
-  console.log("RingingCalls: Showing incoming call overlay");
-
-  // Show custom professional incoming call UI
+  // Show Stream.io's built-in ringing UI for both callers and callees
+  // RingingCallContent automatically handles incoming vs outgoing call UI
   return (
     <StreamCall call={ringingCall}>
       <RingingSound />
-      <CustomIncomingCall />
+      <SafeAreaView
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            paddingTop: top,
+            paddingRight: right,
+            paddingBottom: bottom,
+            paddingLeft: left,
+          },
+        ]}
+      >
+        <RingingCallContent />
+      </SafeAreaView>
     </StreamCall>
   );
 };
@@ -257,14 +292,6 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       });
-      
-      // CRITICAL FIX: Caller must JOIN the call after creating it
-      // This puts the caller in RINGING state (waiting for callee to accept)
-      // Without joining, the caller is stuck and never enters the call
-      console.log("VideoContext: Joining call as caller...");
-      await call.join();
-      console.log("VideoContext: Caller joined call successfully - now in RINGING state");
-      
       console.log("VideoContext: Ring call created successfully");
       console.log("VideoContext: Call ID:", call.id, "CID:", call.cid);
       console.log("VideoContext: Call members:", allMembers);
@@ -421,68 +448,66 @@ const RingingSound = () => {
   const isCallCreatedByMe = call?.isCreatedByMe || callCreator === user?.uid;
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-
   useEffect(() => {
-    if (callingState !== CallingState.RINGING) {
-      // Stop any ringing when not in RINGING state
-      InCallManager.stopRingtone();
-      InCallManager.stop();
-      return;
-    }
-
-    console.log("RingingSound: Starting ringtone", {
+    if (callingState !== CallingState.RINGING) return;
+    console.log("RingingSound: Call state:", {
       callingState,
       isCallCreatedByMe,
       callCreator,
       currentUser: user?.uid,
+      sdkIsCreatedByMe: call?.isCreatedByMe,
     });
 
+    // Enhanced debugging for sound selection
+    console.log("🎵 SOUND SELECTION DEBUG:");
+    console.log("   - Call Creator ID:", callCreator);
+    console.log("   - Current User ID:", user?.uid);
+    console.log("   - SDK isCreatedByMe:", call?.isCreatedByMe);
+    console.log("   - Computed isCallCreatedByMe:", isCallCreatedByMe);
+    console.log(
+      "   - Will play:",
+      isCallCreatedByMe ? "OUTGOING sound" : "INCOMING sound",
+    );
     if (isCallCreatedByMe) {
-      // OUTGOING CALL - Play ringback tone (the beeping sound caller hears)
-      console.log("🔊 OUTGOING call - Playing ringback tone");
-      try {
-        InCallManager.start({
-          media: "audio",
-          auto: true,
-          ringback: "_BUNDLE_", // Built-in ringback tone
-        });
-      } catch (error) {
-        console.error("Error starting ringback:", error);
-      }
+      // Play outgoing call sound (ringback tone) - NO SOUND for outgoing
+      console.log("🔊 OUTGOING call - Playing silent ringback (no sound)");
+
+      // For outgoing calls, let's make it silent so it's clearly different
+      InCallManager.start({
+        media: "audio",
+        auto: true,
+        // No ringback parameter = silent outgoing call
+      });
 
       return () => {
-        console.log("⏹️ Stopping outgoing ringback");
-        try {
-          InCallManager.stop();
-        } catch (error) {
-          console.error("Error stopping ringback:", error);
-        }
+        console.log("⏹️ Stopping outgoing call (silent)");
+        InCallManager.stop();
       };
     } else {
-      // INCOMING CALL - Play ringtone (the sound callee hears)
-      console.log("📞 INCOMING call - Playing ringtone");
+      // Play incoming call sound (ringtone) - SYSTEM DEFAULT
+      console.log("📞 Playing INCOMING call sound (ringtone)");
       try {
         InCallManager.startRingtone(
-          "_BUNDLE_", // Use built-in ringtone
-          [500, 1000, 500, 1000], // Vibration pattern
-          "ringtone", // iOS category
-          30000, // Timeout after 30 seconds
+          "_DEFAULT_", // System default ringtone for incoming calls
+          [500, 1000, 500], // Different vibration pattern
+          "ringtone", // Use "ringtone" instead of "playback"
+          30000,
         );
       } catch (error) {
-        console.error("Error starting ringtone:", error);
+        console.log("Error starting ringtone:", error);
       }
-
       return () => {
-        console.log("⏹️ Stopping incoming ringtone");
+        console.log("⏹️ Stopping incoming call sound");
         try {
           InCallManager.stopRingtone();
         } catch (error) {
-          console.error("Error stopping ringtone:", error);
+          console.log("Error stopping ringtone:", error);
         }
       };
     }
   }, [callingState, isCallCreatedByMe, callCreator, user?.uid]);
 
+  // Renderless component
   return null;
 };
 

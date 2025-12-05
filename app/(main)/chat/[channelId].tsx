@@ -3,21 +3,18 @@ import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
-import CustomMessageInput from "@/components/chat/CustomMessageInput";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+    ActionSheetIOS,
     ActivityIndicator,
     Alert,
     Image,
-    KeyboardAvoidingView,
     Platform,
     Pressable,
     StatusBar,
     Text,
-    TouchableOpacity,
     View
 } from "react-native";
 import {
@@ -37,64 +34,10 @@ export default function ChatScreen() {
   const { createCall, isVideoConnected, isCreatingCall } = useVideo();
   const { user } = useAuth();
   const router = useRouter();
-  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCallOptions, setShowCallOptions] = useState(false);
-
-  // Hide tab bar when chat screen is focused - more reliable approach
-  useEffect(() => {
-    const parent = navigation.getParent();
-    if (!parent) return;
-
-    // Hide tab bar immediately when this screen mounts
-    parent.setOptions({
-      tabBarStyle: { display: 'none', height: 0 },
-    });
-
-    // Also hide on focus (in case of navigation back to this screen)
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      parent.setOptions({
-        tabBarStyle: { display: 'none', height: 0 },
-      });
-    });
-
-    // Restore tab bar when leaving (blur)
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      parent.setOptions({
-        tabBarStyle: {
-          display: 'flex',
-          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
-          borderTopWidth: 0,
-          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
-          paddingTop: 4,
-          paddingBottom: insets.bottom,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-      });
-    });
-
-    // Cleanup: restore tab bar when component unmounts
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-      parent.setOptions({
-        tabBarStyle: {
-          display: 'flex',
-          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
-          borderTopWidth: 0,
-          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
-          paddingTop: 4,
-          paddingBottom: insets.bottom,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-      });
-    };
-  }, [navigation, isDarkColorScheme, insets.bottom]);
 
   // Premium colors - matching app theme
   const colors = {
@@ -254,7 +197,7 @@ export default function ChatScreen() {
     }
 
     if (!isVideoConnected) {
-      Alert.alert("Call Unavailable", "Video service is connecting. Please try again in a moment.");
+      Alert.alert("Error", "Video service not connected. Please try again.");
       return;
     }
 
@@ -281,7 +224,7 @@ export default function ChatScreen() {
           }
         });
       } else {
-        Alert.alert("Error", "Failed to create call. Please check your internet connection.");
+        Alert.alert("Error", "Failed to create call. Please try again.");
       }
     } catch (error) {
       console.error("Error initiating call:", error);
@@ -295,7 +238,7 @@ export default function ChatScreen() {
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
-      {/* Use top edge only - CustomMessageInput handles bottom safe area */}
+      {/* Safe area only for top - tab bar handles bottom */}
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
       {/* Premium Header - Clean design */}
@@ -387,53 +330,61 @@ export default function ChatScreen() {
           </Text>
         </View>
         
-        {/* Call buttons - Voice and Video */}
-        <TouchableOpacity
-          onPress={() => handleCall(false)}
+        {/* Call button - shows options */}
+        <Pressable
+          onPress={() => {
+            if (Platform.OS === 'ios') {
+              ActionSheetIOS.showActionSheetWithOptions(
+                {
+                  options: ['Cancel', 'Voice Call', 'Video Call'],
+                  cancelButtonIndex: 0,
+                },
+                (buttonIndex) => {
+                  if (buttonIndex === 1) handleCall(false);
+                  else if (buttonIndex === 2) handleCall(true);
+                }
+              );
+            } else {
+              Alert.alert(
+                'Start Call',
+                'Choose call type',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Voice Call', onPress: () => handleCall(false) },
+                  { text: 'Video Call', onPress: () => handleCall(true) },
+                ]
+              );
+            }
+          }}
           disabled={isCreatingCall}
-          style={{
+          accessibilityLabel="Start a call"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isCreatingCall }}
+          style={({ pressed }) => ({
             width: 38,
             height: 38,
             borderRadius: 12,
             backgroundColor: colors.surfaceVariant,
             justifyContent: 'center',
             alignItems: 'center',
-            marginRight: 8,
-            opacity: isCreatingCall ? 0.5 : 1,
-          }}
+            opacity: pressed || isCreatingCall ? 0.6 : 1,
+          })}
         >
           <Ionicons name="call-outline" size={20} color={colors.primary} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={() => handleCall(true)}
-          disabled={isCreatingCall}
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.primary,
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: isCreatingCall ? 0.5 : 1,
-          }}
-        >
-          <Ionicons name="videocam-outline" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
-      {/* Chat Area with proper keyboard & bottom safe-area handling */}
+      {/* Chat Area - Stream handles keyboard */}
+        <View style={{ flex: 1 }}>
           <Channel
             channel={channel}
+            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
             enforceUniqueReaction={true}
-            KeyboardCompatibleView={Platform.OS === 'ios' ? KeyboardAvoidingView : View}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 60 : 0}
-            Input={CustomMessageInput}
           >
-            <MessageList 
-              keyboardDismissMode="on-drag"
-            />
+            <MessageList />
+            <MessageInput />
           </Channel>
+        </View>
       </SafeAreaView>
     </View>
   );
