@@ -13,10 +13,17 @@ import * as functions from "firebase-functions";
 import { StreamChat } from "stream-chat";
 
 admin.initializeApp();
-const serverClient = StreamChat.getInstance(
-  "egq2n55kb4yn",
-  "7ynbrpypd7mvnksac5q7dn2vjmawhs6dvn6vtz8qbzjajgc4zjb2as77msqseack",
-);
+
+// Stream credentials should be set via Firebase Functions config:
+// firebase functions:config:set stream.api_key="your-key" stream.api_secret="your-secret"
+const streamApiKey = functions.config().stream?.api_key || process.env.STREAM_API_KEY || "";
+const streamApiSecret = functions.config().stream?.api_secret || process.env.STREAM_API_SECRET || "";
+
+if (!streamApiKey || !streamApiSecret) {
+  console.error("Stream API credentials not configured. Set via: firebase functions:config:set stream.api_key='key' stream.api_secret='secret'");
+}
+
+const serverClient = StreamChat.getInstance(streamApiKey, streamApiSecret);
 
 export const generateStreamToken = functions.https.onRequest(
   async (req: Request, res: Response) => {

@@ -1,3 +1,4 @@
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
 import { StreamProvider } from "@/context/StreamContext";
@@ -224,23 +225,25 @@ function SplashScreen() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <AuthProvider>
-          <ChatProvider>
-            <StreamChatWrapper>
-              <StreamProvider>
-                <VideoProvider>
-                  <PushNotificationInitializer>
-                    <RootNavigator />
-                  </PushNotificationInitializer>
-                </VideoProvider>
-              </StreamProvider>
-            </StreamChatWrapper>
-          </ChatProvider>
-        </AuthProvider>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AuthProvider>
+            <ChatProvider>
+              <StreamChatWrapper>
+                <StreamProvider>
+                  <VideoProvider>
+                    <PushNotificationInitializer>
+                      <RootNavigator />
+                    </PushNotificationInitializer>
+                  </VideoProvider>
+                </StreamProvider>
+              </StreamChatWrapper>
+            </ChatProvider>
+          </AuthProvider>
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

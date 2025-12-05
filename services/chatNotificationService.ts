@@ -175,59 +175,29 @@ export class ChatNotificationService {
 
   /**
    * Send push notifications for chat messages
+   * NOTE: In production, Stream Chat SDK handles push notifications natively.
+   * This function is disabled as the API endpoint requires a server.
+   * To enable custom push notifications, deploy a Cloud Function and update the URL.
    */ private async sendChatNotifications(params: {
     tokens: string[];
     title: string;
     body: string;
     data: Record<string, string>;
   }): Promise<void> {
-    try {
-      console.log("🌐 Making API call to /api/push-notification");
-      console.log("📦 Request payload:", {
+    // Stream Chat SDK handles push notifications natively.
+    // This custom implementation is disabled in production.
+    // If you need custom push notifications, deploy a Cloud Function
+    // and update this URL to your Cloud Function endpoint.
+    if (__DEV__) {
+      console.log("📱 [DEV] Chat notification would be sent:", {
         tokenCount: params.tokens.length,
         title: params.title,
         body: params.body,
-        data: params.data,
-        channelId: "chat_messages",
       });
-
-      const response = await fetch("/api/push-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tokens: params.tokens,
-          title: params.title,
-          body: params.body,
-          data: params.data,
-          channelId: "chat_messages",
-        }),
-      });
-
-      console.log("📡 API Response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ API Response error:", errorText);
-        throw new Error(
-          `API request failed: ${response.status} - ${errorText}`,
-        );
-      }
-
-      const result = await response.json();
-      console.log("📊 API Response result:", result);
-
-      if (!result.success) {
-        console.error("❌ Failed to send chat notifications:", result.error);
-      } else {
-        console.log(
-          `✅ Chat notifications sent successfully: ${result.successCount || "N/A"} success, ${result.failureCount || "N/A"} failed`,
-        );
-      }
-    } catch (error) {
-      console.error("❌ Error sending chat notifications:", error);
     }
+    // For production, Stream Chat SDK should handle push notifications
+    // via the Stream Dashboard push notification settings
+    return;
   }
 
   /**

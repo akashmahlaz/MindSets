@@ -76,7 +76,7 @@ export const createUserProfile = async (user: User): Promise<void> => {
       try {
         const existingProfile = userDoc.data() as UserProfile;
         await createStreamChatUser(existingProfile);
-        console.log("✅ Stream Chat user ensured for existing user:", user.uid);
+        if (__DEV__) console.log("✅ Stream Chat user ensured for existing user:", user.uid);
       } catch (streamError) {
         console.error("⚠️ Failed to ensure Stream Chat user:", streamError);
       }
@@ -87,8 +87,16 @@ export const createUserProfile = async (user: User): Promise<void> => {
   }
 };
 
-// Debug function to check total users
+/**
+ * Debug function to check total users
+ * @deprecated Only for development debugging - will be no-op in production
+ */
 export const debugUsersCollection = async (): Promise<void> => {
+  // Only run in development mode
+  if (!__DEV__) {
+    return;
+  }
+  
   try {
     const usersCollection = collection(db, "users");
     const querySnapshot = await getDocs(usersCollection);
@@ -101,10 +109,9 @@ export const debugUsersCollection = async (): Promise<void> => {
       console.log("User document:", {
         id: doc.id,
         uid: userData.uid,
-        email: userData.email,
+        // Don't log email in debug to protect privacy
         displayName: userData.displayName,
         status: userData.status,
-        createdAt: userData.createdAt,
       });
     });
     console.log("=== END DEBUG ===");
@@ -140,11 +147,18 @@ export const getAllUsers = async (
       }
     });
 
-    // Sort by lastSeen in memory
+    // Sort by lastSeen in memory with safe timestamp handling
     users.sort((a, b) => {
       if (!a.lastSeen) return 1;
       if (!b.lastSeen) return -1;
-      return b.lastSeen.toMillis() - a.lastSeen.toMillis();
+      // Safe handling: check if toMillis exists (Firestore Timestamp)
+      const aTime = typeof a.lastSeen?.toMillis === 'function' 
+        ? a.lastSeen.toMillis() 
+        : (a.lastSeen instanceof Date ? a.lastSeen.getTime() : 0);
+      const bTime = typeof b.lastSeen?.toMillis === 'function' 
+        ? b.lastSeen.toMillis() 
+        : (b.lastSeen instanceof Date ? b.lastSeen.getTime() : 0);
+      return bTime - aTime;
     });
 
     console.log("Filtered users (excluding current):", users.length);
