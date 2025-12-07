@@ -744,6 +744,91 @@ export default function SettingsScreen() {
               </View>
             </View>
 
+            {/* Legal & About Section */}
+            <View style={{
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 20,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <View style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 12,
+                }}>
+                  <Ionicons name="document-text-outline" size={18} color="#64748B" />
+                </View>
+                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Legal & About</Text>
+              </View>
+
+              <View style={{ gap: 12 }}>
+                {[
+                  { icon: "shield-checkmark-outline", label: "Privacy Policy", url: "https://github.com/akashmahlax/MindSets/blob/main/PRIVACY_POLICY.md", color: "#2AA79D" },
+                  { icon: "document-outline", label: "Terms of Service", url: "https://github.com/akashmahlax/MindSets/blob/main/TERMS_OF_SERVICE.md", color: "#3A9C94" },
+                  { icon: "information-circle-outline", label: "About MindSets", url: null, color: "#64748B" },
+                ].map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={async () => {
+                      if (item.url) {
+                        const { Linking } = await import('react-native');
+                        Linking.openURL(item.url);
+                      } else {
+                        Alert.alert(
+                          "About MindSets",
+                          "MindSets v1.0.0\n\nA mental health platform connecting you with licensed counsellors for video therapy sessions.\n\n© 2025 MindSets. All rights reserved.",
+                          [{ text: "OK" }]
+                        );
+                      }
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 16,
+                      borderRadius: 14,
+                      backgroundColor: colors.surfaceVariant,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        backgroundColor: `${item.color}15`,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 14,
+                      }}>
+                        <Ionicons name={item.icon as any} size={20} color={item.color} />
+                      </View>
+                      <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>{item.label}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={{ 
+                fontSize: 12, 
+                color: colors.textSecondary, 
+                textAlign: 'center', 
+                marginTop: 16 
+              }}>
+                Version 1.0.0 • Made with 💚 for mental wellness
+              </Text>
+            </View>
+
             {/* Save Button - Only when editing */}
             {isEditing && (
               <TouchableOpacity
