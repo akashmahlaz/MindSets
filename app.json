@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Mind Sets",
-    "slug": "mind-sets",
+    "slug": "mindfull",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
@@ -58,11 +58,7 @@
         "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
-    "web": {
-      "bundler": "metro",
-      "output": "server",
-      "favicon": "./assets/images/adaptive-icon.png"
-    },
+   
     "plugins": [
       "expo-router",
       [
