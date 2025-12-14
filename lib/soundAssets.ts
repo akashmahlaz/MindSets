@@ -339,51 +339,58 @@ export const SOUND_META: Record<SoundId, SoundMeta> = {
  * Get sound source by ID
  * 
  * Returns the actual sound source for each sound ID.
+ * 
+ * NOTE: Sound files are currently disabled. Will be added in a future update
+ * with better quality audio assets.
  */
 export function getSoundSource(id: SoundId): AVPlaybackSource | null {
+  // TODO: Add sound files in future update
+  // Sound files have been temporarily removed to reduce app size
+  // When adding sounds back, uncomment the appropriate require() statements below
+  
   const soundPaths: Partial<Record<SoundId, AVPlaybackSource>> = {
-    // Meditation sounds
-    [SOUND_IDS.MEDITATION_CALM]: require('@/assets/sounds/meditation-calm.mp3'),
-    [SOUND_IDS.MEDITATION_GRATITUDE]: require('@/assets/sounds/meditation-gratitude.mp3'),
-    [SOUND_IDS.MEDITATION_FOCUS]: require('@/assets/sounds/meditation-focus.mp3'),
-    [SOUND_IDS.MEDITATION_SLEEP_PREP]: require('@/assets/sounds/meditation-sleep.mp3'),
-    [SOUND_IDS.MEDITATION_BODY_SCAN]: require('@/assets/sounds/meditation-body-scan.mp3'),
-    [SOUND_IDS.MEDITATION_MORNING]: require('@/assets/sounds/meditation-morning.mp3'),
-    [SOUND_IDS.MEDITATION_COMPLETE]: require('@/assets/sounds/meditation-complete.mp3'),
+    // === MEDITATION SOUNDS (disabled) ===
+    // [SOUND_IDS.MEDITATION_CALM]: require('@/assets/sounds/meditation-calm.mp3'),
+    // [SOUND_IDS.MEDITATION_GRATITUDE]: require('@/assets/sounds/meditation-gratitude.mp3'),
+    // [SOUND_IDS.MEDITATION_FOCUS]: require('@/assets/sounds/meditation-focus.mp3'),
+    // [SOUND_IDS.MEDITATION_SLEEP_PREP]: require('@/assets/sounds/meditation-sleep.mp3'),
+    // [SOUND_IDS.MEDITATION_BODY_SCAN]: require('@/assets/sounds/meditation-body-scan.mp3'),
+    // [SOUND_IDS.MEDITATION_MORNING]: require('@/assets/sounds/meditation-morning.mp3'),
+    // [SOUND_IDS.MEDITATION_COMPLETE]: require('@/assets/sounds/meditation-complete.mp3'),
 
-    // Breathing sounds
-    [SOUND_IDS.BREATHING_INHALE]: require('@/assets/sounds/breathing-inhale.mp3'),
-    [SOUND_IDS.BREATHING_EXHALE]: require('@/assets/sounds/breathing-exhale.mp3'),
-    [SOUND_IDS.BREATHING_HOLD]: require('@/assets/sounds/breathing-hold.mp3'),
-    [SOUND_IDS.BREATHING_BELL]: require('@/assets/sounds/breathing-bell.mp3'),
-    [SOUND_IDS.BREATHING_AMBIENT]: require('@/assets/sounds/breathing-ambient.mp3'),
-    [SOUND_IDS.BREATHING_COMPLETE]: require('@/assets/sounds/breathing-complete.mp3'),
+    // === BREATHING SOUNDS (disabled) ===
+    // [SOUND_IDS.BREATHING_INHALE]: require('@/assets/sounds/breathing-inhale.mp3'),
+    // [SOUND_IDS.BREATHING_EXHALE]: require('@/assets/sounds/breathing-exhale.mp3'),
+    // [SOUND_IDS.BREATHING_HOLD]: require('@/assets/sounds/breathing-hold.mp3'),
+    // [SOUND_IDS.BREATHING_BELL]: require('@/assets/sounds/breathing-bell.mp3'),
+    // [SOUND_IDS.BREATHING_AMBIENT]: require('@/assets/sounds/breathing-ambient.mp3'),
+    // [SOUND_IDS.BREATHING_COMPLETE]: require('@/assets/sounds/breathing-complete.mp3'),
 
-    // Sleep sounds
-    [SOUND_IDS.SLEEP_RAIN]: require('@/assets/sounds/sleep-rain.wav'),
-    [SOUND_IDS.SLEEP_OCEAN]: require('@/assets/sounds/sleep-ocean.wav'),
-    [SOUND_IDS.SLEEP_FOREST]: require('@/assets/sounds/sleep-forest.wav'),
-    [SOUND_IDS.SLEEP_WHITE_NOISE]: require('@/assets/sounds/sleep-white-noise.mp3'),
-    [SOUND_IDS.SLEEP_THUNDERSTORM]: require('@/assets/sounds/sleep-thunderstorm.mp3'),
-    [SOUND_IDS.SLEEP_PIANO]: require('@/assets/sounds/sleep-piano.mp3'),
+    // === SLEEP SOUNDS (disabled) ===
+    // [SOUND_IDS.SLEEP_RAIN]: require('@/assets/sounds/sleep-rain.wav'),
+    // [SOUND_IDS.SLEEP_OCEAN]: require('@/assets/sounds/sleep-ocean.wav'),
+    // [SOUND_IDS.SLEEP_FOREST]: require('@/assets/sounds/sleep-forest.wav'),
+    // [SOUND_IDS.SLEEP_WHITE_NOISE]: require('@/assets/sounds/sleep-white-noise.mp3'),
+    // [SOUND_IDS.SLEEP_THUNDERSTORM]: require('@/assets/sounds/sleep-thunderstorm.mp3'),
+    // [SOUND_IDS.SLEEP_PIANO]: require('@/assets/sounds/sleep-piano.mp3'),
 
-    // UI sounds
-    [SOUND_IDS.UI_NOTIFICATION]: require('@/assets/sounds/ui-notification.mp3'),
-    [SOUND_IDS.UI_MESSAGE_RECEIVED]: require('@/assets/sounds/ui-message-received.mp3'),
+    // === UI SOUNDS (disabled) ===
+    // [SOUND_IDS.UI_NOTIFICATION]: require('@/assets/sounds/ui-notification.mp3'),
+    // [SOUND_IDS.UI_MESSAGE_RECEIVED]: require('@/assets/sounds/ui-message-received.mp3'),
 
-    // Call sounds
-    [SOUND_IDS.CALL_RINGTONE]: require('@/assets/sounds/call-ringtone.mp3'),
-    [SOUND_IDS.CALL_OUTGOING]: require('@/assets/sounds/call-outgoing.mp3'),
-    [SOUND_IDS.CALL_CONNECTED]: require('@/assets/sounds/call-connected.mp3'),
-    [SOUND_IDS.CALL_ENDED]: require('@/assets/sounds/call-ended.mp3'),
+    // === CALL SOUNDS (disabled) ===
+    // [SOUND_IDS.CALL_RINGTONE]: require('@/assets/sounds/call-ringtone.mp3'),
+    // [SOUND_IDS.CALL_OUTGOING]: require('@/assets/sounds/call-outgoing.mp3'),
+    // [SOUND_IDS.CALL_CONNECTED]: require('@/assets/sounds/call-connected.mp3'),
+    // [SOUND_IDS.CALL_ENDED]: require('@/assets/sounds/call-ended.mp3'),
 
-    // Session sounds
-    [SOUND_IDS.SESSION_START]: require('@/assets/sounds/session-start.mp3'),
-    [SOUND_IDS.SESSION_END]: require('@/assets/sounds/session-end.mp3'),
-    [SOUND_IDS.SESSION_REMINDER]: require('@/assets/sounds/session-reminder.mp3'),
+    // === SESSION SOUNDS (disabled) ===
+    // [SOUND_IDS.SESSION_START]: require('@/assets/sounds/session-start.mp3'),
+    // [SOUND_IDS.SESSION_END]: require('@/assets/sounds/session-end.mp3'),
+    // [SOUND_IDS.SESSION_REMINDER]: require('@/assets/sounds/session-reminder.mp3'),
 
-    // Achievement
-    [SOUND_IDS.GOAL_ACHIEVED]: require('@/assets/sounds/goal-achieved.mp3'),
+    // === ACHIEVEMENT SOUNDS (disabled) ===
+    // [SOUND_IDS.GOAL_ACHIEVED]: require('@/assets/sounds/goal-achieved.mp3'),
   };
 
   return soundPaths[id] ?? null;
