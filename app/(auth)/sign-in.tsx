@@ -452,13 +452,13 @@ export default function SignInScreen() {
             </Animated.View>
 
             {/* Divider */}
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
+            {/* <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
               <Text style={{ paddingHorizontal: 16, fontSize: 13, color: colors.textMuted, fontWeight: "500" }}>
                 or continue with
               </Text>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-            </View>
+            </View> */}
 
             {/* Social Sign In */}
             <View style={{ gap: 12, marginBottom: 32 }}>
