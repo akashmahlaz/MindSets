@@ -8,26 +8,26 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActionSheetIOS,
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StatusBar,
-    Text,
-    View
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-    Channel,
-    MessageInput,
-    MessageList,
+  Channel,
+  MessageInput,
+  MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -295,11 +295,11 @@ export default function ChatScreen() {
       />
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+        behavior={Platform.OS === "android" ? "height" : undefined}
+        keyboardVerticalOffset={0}
       >
-      {/* Safe area for top and bottom - tab bar is hidden in chat */}
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+      {/* Safe area only for top - tab bar handles bottom */}
+      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       
       {/* Premium Header - Clean design */}
       <View style={{
@@ -435,21 +435,15 @@ export default function ChatScreen() {
       </View>
 
       {/* Chat Area */}
+        <View style={{ flex: 1, paddingBottom: insets.bottom }}>
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
           >
-            <MessageList
-              keyboardDismissMode="on-drag"
-            />
-            <MessageInput
-              additionalTextInputProps={{
-                keyboardType: "default",
-                returnKeyType: "default",
-                blurOnSubmit: false,
-              }}
-            />
+            <MessageList />
+            <MessageInput />
           </Channel>
+        </View>
       </SafeAreaView>
       </KeyboardAvoidingView>
     </View>
