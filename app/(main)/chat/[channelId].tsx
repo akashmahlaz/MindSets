@@ -8,26 +8,26 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StatusBar,
-  Text,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    StatusBar,
+    Text,
+    View
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-  Channel,
-  MessageInput,
-  MessageList,
+    Channel,
+    MessageInput,
+    MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -293,6 +293,11 @@ export default function ChatScreen() {
         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
       />
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+      >
       {/* Safe area for top and bottom - tab bar is hidden in chat */}
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
       
@@ -429,31 +434,10 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      {/* Chat Area with proper keyboard handling */}
+      {/* Chat Area */}
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
-            KeyboardCompatibleView={({ children }) => {
-              if (Platform.OS === 'ios') {
-                return (
-                  <KeyboardAvoidingView
-                    behavior="padding"
-                    keyboardVerticalOffset={insets.top + 60}
-                    style={{ flex: 1 }}
-                  >
-                    {children}
-                  </KeyboardAvoidingView>
-                );
-              }
-              // Android: rely on Expo's `softwareKeyboardLayoutMode: "resize"`
-              // and SafeAreaView bottom padding from `edges={["top", "bottom"]}`
-              // to keep the input above the system navigation bar.
-              return (
-                <View style={{ flex: 1 }}>
-                  {children}
-                </View>
-              );
-            }}
           >
             <MessageList
               keyboardDismissMode="on-drag"
@@ -467,6 +451,7 @@ export default function ChatScreen() {
             />
           </Channel>
       </SafeAreaView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
