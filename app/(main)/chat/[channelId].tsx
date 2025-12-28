@@ -4,28 +4,31 @@ import { useChat } from "@/context/ChatContext";
 import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActionSheetIOS,
-    ActivityIndicator,
-    Alert,
-    Image,
-    Platform,
-    Pressable,
-    StatusBar,
-    Text,
-    View
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-    Channel,
-    MessageInput,
-    MessageList,
+  Channel,
+  MessageInput,
+  MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -34,10 +37,85 @@ export default function ChatScreen() {
   const { createCall, isVideoConnected, isCreatingCall } = useVideo();
   const { user } = useAuth();
   const router = useRouter();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Track keyboard height
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
+
+  // Hide tab bar when chat screen is focused - more reliable approach
+  useEffect(() => {
+    const parent = navigation.getParent();
+    if (!parent) return;
+
+    // Hide tab bar immediately when this screen mounts
+    parent.setOptions({
+      tabBarStyle: { display: 'none', height: 0 },
+    });
+
+    // Also hide on focus (in case of navigation back to this screen)
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      parent.setOptions({
+        tabBarStyle: { display: 'none', height: 0 },
+      });
+    });
+
+    // Restore tab bar when leaving (blur)
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      parent.setOptions({
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
+          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
+          paddingTop: 4,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+      });
+    });
+
+    // Cleanup: restore tab bar when component unmounts
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+      parent.setOptions({
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: isDarkColorScheme ? '#0C0F14' : '#FAFBFC',
+          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 52 + insets.bottom : 60 + insets.bottom,
+          paddingTop: 4,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+      });
+    };
+  }, [navigation, isDarkColorScheme, insets.bottom]);
 
   // Premium colors - matching app theme
   const colors = {
@@ -234,157 +312,161 @@ export default function ChatScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={colors.background}
-      />
-      {/* Safe area only for top - tab bar handles bottom */}
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      
-      {/* Premium Header - Clean design */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: colors.background,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-      }}>
-        <Pressable
-          onPress={handleBack}
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-          style={({ pressed }) => ({
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 10,
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
-        </Pressable>
+        <StatusBar
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
         
-        {/* Avatar */}
-        <View 
-          style={{ position: 'relative', marginRight: 10 }}
-          accessibilityLabel={`${getDisplayName()}'s profile picture${isOnline ? ', online' : ', offline'}`}
-        >
-          <View style={{
-            width: 42,
-            height: 42,
-            borderRadius: 21,
-            overflow: 'hidden',
-            backgroundColor: colors.surfaceVariant,
-          }}>
-            {getAvatarUrl() ? (
-              <Image
-                source={{ uri: getAvatarUrl() }}
-                style={{ width: 42, height: 42 }}
-                accessibilityIgnoresInvertColors
-              />
-            ) : (
-              <View style={{
-                width: 42,
-                height: 42,
-                backgroundColor: colors.primary + '20',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <Ionicons name="person" size={20} color={colors.primary} />
-              </View>
+        {/* Premium Header - Clean design */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          backgroundColor: colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}>
+          <Pressable
+            onPress={handleBack}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+            style={({ pressed }) => ({
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: colors.surfaceVariant,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 10,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Ionicons name="chevron-back" size={22} color={colors.text} />
+          </Pressable>
+          
+          {/* Avatar */}
+          <View 
+            style={{ position: 'relative', marginRight: 10 }}
+            accessibilityLabel={`${getDisplayName()}'s profile picture${isOnline ? ', online' : ', offline'}`}
+          >
+            <View style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              overflow: 'hidden',
+              backgroundColor: colors.surfaceVariant,
+            }}>
+              {getAvatarUrl() ? (
+                <Image
+                  source={{ uri: getAvatarUrl() }}
+                  style={{ width: 42, height: 42 }}
+                  accessibilityIgnoresInvertColors
+                />
+              ) : (
+                <View style={{
+                  width: 42,
+                  height: 42,
+                  backgroundColor: colors.primary + '20',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  <Ionicons name="person" size={20} color={colors.primary} />
+                </View>
+              )}
+            </View>
+            {/* Online indicator */}
+            {isOnline && (
+              <View 
+                style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: colors.online,
+                borderWidth: 2,
+                borderColor: colors.background,
+              }} />
             )}
           </View>
-          {/* Online indicator */}
-          {isOnline && (
-            <View 
-              style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: colors.online,
-              borderWidth: 2,
-              borderColor: colors.background,
-            }} />
-          )}
+          
+          {/* Name & Status */}
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }} numberOfLines={1}>
+              {getDisplayName()}
+            </Text>
+            <Text style={{ 
+              fontSize: 12, 
+              color: isOnline ? colors.online : colors.textSecondary,
+              marginTop: 1,
+            }}>
+              {isOnline ? "Online" : "Offline"}
+            </Text>
+          </View>
+          
+          {/* Call button - shows options */}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: ['Cancel', 'Voice Call', 'Video Call'],
+                    cancelButtonIndex: 0,
+                  },
+                  (buttonIndex) => {
+                    if (buttonIndex === 1) handleCall(false);
+                    else if (buttonIndex === 2) handleCall(true);
+                  }
+                );
+              } else {
+                Alert.alert(
+                  'Start Call',
+                  'Choose call type',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Voice Call', onPress: () => handleCall(false) },
+                    { text: 'Video Call', onPress: () => handleCall(true) },
+                  ]
+                );
+              }
+            }}
+            disabled={isCreatingCall}
+            accessibilityLabel="Start a call"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isCreatingCall }}
+            style={({ pressed }) => ({
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: colors.surfaceVariant,
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: pressed || isCreatingCall ? 0.6 : 1,
+            })}
+          >
+            <Ionicons name="call-outline" size={20} color={colors.primary} />
+          </Pressable>
         </View>
-        
-        {/* Name & Status */}
-        <View style={{ flex: 1, marginRight: 8 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }} numberOfLines={1}>
-            {getDisplayName()}
-          </Text>
-          <Text style={{ 
-            fontSize: 12, 
-            color: isOnline ? colors.online : colors.textSecondary,
-            marginTop: 1,
-          }}>
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-        </View>
-        
-        {/* Call button - shows options */}
-        <Pressable
-          onPress={() => {
-            if (Platform.OS === 'ios') {
-              ActionSheetIOS.showActionSheetWithOptions(
-                {
-                  options: ['Cancel', 'Voice Call', 'Video Call'],
-                  cancelButtonIndex: 0,
-                },
-                (buttonIndex) => {
-                  if (buttonIndex === 1) handleCall(false);
-                  else if (buttonIndex === 2) handleCall(true);
-                }
-              );
-            } else {
-              Alert.alert(
-                'Start Call',
-                'Choose call type',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Voice Call', onPress: () => handleCall(false) },
-                  { text: 'Video Call', onPress: () => handleCall(true) },
-                ]
-              );
-            }
-          }}
-          disabled={isCreatingCall}
-          accessibilityLabel="Start a call"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isCreatingCall }}
-          style={({ pressed }) => ({
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: pressed || isCreatingCall ? 0.6 : 1,
-          })}
-        >
-          <Ionicons name="call-outline" size={20} color={colors.primary} />
-        </Pressable>
-      </View>
 
-      {/* Chat Area - Stream handles keyboard */}
-        <View style={{ flex: 1 }}>
+        {/* Chat Area with proper keyboard handling */}
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={0}
+        >
           <Channel
             channel={channel}
-            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
             enforceUniqueReaction={true}
           >
             <MessageList />
-            <MessageInput />
+            <View style={{ marginBottom: keyboardHeight > 0 ? 0 : -insets.bottom }}>
+              <MessageInput />
+            </View>
           </Channel>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

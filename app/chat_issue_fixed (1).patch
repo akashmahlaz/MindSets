@@ -1,0 +1,176 @@
+diff --git a/node_modules/stream-chat-react-native-core/src/components/MessageInput/MessageInput.tsx b/node_modules/stream-chat-react-native-core/src/components/MessageInput/MessageInput.tsx
+index 0000000..0000000 100644
+--- a/node_modules/stream-chat-react-native-core/src/components/MessageInput/MessageInput.tsx
++++ b/node_modules/stream-chat-react-native-core/src/components/MessageInput/MessageInput.tsx
+@@ -1,13 +1,15 @@
+-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+-import {
+-  Modal,
+-  NativeSyntheticEvent,
+-  SafeAreaView,
+-  StyleSheet,
+-  TextInputFocusEventData,
+-  View,
+-} from 'react-native';
++import React, { useCallback, useEffect, useMemo, useState } from 'react';
++import {
++  KeyboardAvoidingView,
++  Modal,
++  NativeSyntheticEvent,
++  Platform,
++  SafeAreaView,
++  StyleSheet,
++  TextInputFocusEventData,
++  View,
++} from 'react-native';
+@@
+ const styles = StyleSheet.create({
+   attachmentSeparator: {
+     borderBottomWidth: 1,
+@@
+   composerContainer: {
+     alignItems: 'center',
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+   },
+   container: {
+     borderTopWidth: 1,
+-    padding: 10,
++    paddingTop: 10,
++    paddingHorizontal: 10,
++    paddingBottom: 0,
+   },
+@@
+   const { aiState } = useAIState(channel);
+ 
+   const stopGenerating = useCallback(() => channel?.stopAIResponse(), [channel]);
+   const shouldDisplayStopAIGeneration =
+     [AIStates.Thinking, AIStates.Generating].includes(aiState) && !!StopMessageStreamingButton;
+ 
+   return (
+-      <>
+-        <View
++    <>
++      <KeyboardAvoidingView
++        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
++        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
++      >
++        <View
+           onLayout={({
+             nativeEvent: {
+               layout: { height: newHeight },
+@@
+           </View>
+ 
+           <View style={[styles.composerContainer, composerContainer]}>
+@@
+                   </GestureDetector>
+                 )}
+               </>
+             )}
+           </View>
+           <ShowThreadMessageInChannelButton threadList={threadList} />
+         </View>
+@@
+         {selectedPicker && (
+           <View
+             style={[
+               {
+                 backgroundColor: white_smoke,
+                 height:
+                   attachmentPickerBottomSheetHeight + attachmentSelectionBarHeight - bottomInset,
+               },
+               attachmentSelectionBar,
+             ]}
+           >
+             <AttachmentPickerSelectionBar />
+           </View>
+         )}
+-      </>
++      </KeyboardAvoidingView>
++      {showPollCreationDialog ? (
++        <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
++          <Modal
++            animationType='slide'
++            onRequestClose={closePollCreationDialog}
++            visible={showPollCreationDialog}
++          >
++            <GestureHandlerRootView style={{ flex: 1 }}>
++              <SafeAreaView style={{ backgroundColor: white, flex: 1 }}>
++                <CreatePoll
++                  closePollCreationDialog={closePollCreationDialog}
++                  CreatePollContent={CreatePollContent}
++                  sendMessage={sendMessage}
++                />
++              </SafeAreaView>
++            </GestureHandlerRootView>
++          </Modal>
++        </View>
++      ) : null}
++    </>
+   );
+ };
+ 
+diff --git a/app/(main)/chat/[channelId].tsx b/app/(main)/chat/[channelId].tsx
+index 0000000..0000000 100644
+--- a/app/(main)/chat/[channelId].tsx
++++ b/app/(main)/chat/[channelId].tsx
+@@ -6,12 +6,13 @@ import { useColorScheme } from "@/lib/useColorScheme";
+ import { Ionicons } from "@expo/vector-icons";
+ import { useLocalSearchParams, useRouter } from "expo-router";
+ import React, { useEffect, useState } from "react";
+ import {
+   ActionSheetIOS,
+   ActivityIndicator,
+   Alert,
+   Image,
++  KeyboardAvoidingView,
+   Platform,
+   Pressable,
+   StatusBar,
+   Text,
+   View
+@@
+   return (
+     <View style={{ flex: 1, backgroundColor: colors.background }}>
+       <StatusBar
+         barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+         backgroundColor={colors.background}
+       />
+-      {/* Safe area only for top - tab bar handles bottom */}
+-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
++      <KeyboardAvoidingView
++        style={{ flex: 1 }}
++        behavior={Platform.OS === "android" ? "height" : undefined}
++        keyboardVerticalOffset={0}
++      >
++      {/* Safe area only for top - tab bar handles bottom */}
++      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+@@
+-      {/* Chat Area - Stream handles keyboard */}
+-        <View style={{ flex: 1 }}>
+-          <Channel
+-            channel={channel}
+-            enforceUniqueReaction={true}
+-            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
+-          >
+-            <MessageList />
+-            <MessageInput />
+-          </Channel>
+-        </View>
+-      </SafeAreaView>
++      {/* Chat Area */}
++        <View style={{ flex: 1 }}>
++          <Channel
++            channel={channel}
++            enforceUniqueReaction={true}
++          >
++            <MessageList />
++            <MessageInput />
++          </Channel>
++        </View>
++      </SafeAreaView>
++      </KeyboardAvoidingView>
+     </View>
+   );
+ }

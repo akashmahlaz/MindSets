@@ -51,3 +51,5 @@ app-example
 # SSH Keys
 gitssh
 gitssh.pub
+bun.lock/
+bun.lock
