@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useRootNavigationState, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -71,9 +71,13 @@ const slides: OnboardingSlide[] = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const navigationState = useRootNavigationState();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+
+  // Check if navigation is ready
+  const isNavigationReady = navigationState?.key != null;
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -101,16 +105,22 @@ export default function OnboardingScreen() {
   const handleComplete = async () => {
     try {
       await AsyncStorage.setItem("@onboarding_completed", "true");
-      router.replace("/(auth)/role-selection");
+      if (isNavigationReady) {
+        router.replace("/(auth)/role-selection");
+      }
     } catch (error) {
       console.error("Error saving onboarding status:", error);
-      router.replace("/(auth)/role-selection");
+      if (isNavigationReady) {
+        router.replace("/(auth)/role-selection");
+      }
     }
   };
 
   const handleSkip = async () => {
     await AsyncStorage.setItem("@onboarding_completed", "true");
-    router.replace("/(auth)/role-selection");
+    if (isNavigationReady) {
+      router.replace("/(auth)/role-selection");
+    }
   };
 
   // Screen 1: Main illustration
@@ -221,16 +231,36 @@ export default function OnboardingScreen() {
     </View>
   );
 
+  const handlePrivacyPress = () => {
+    if (isNavigationReady) {
+      try {
+        router.push("/(resources)/privacy-policy");
+      } catch (error) {
+        console.log("Navigation error:", error);
+      }
+    }
+  };
+
+  const handleTermsPress = () => {
+    if (isNavigationReady) {
+      try {
+        router.push("/(resources)/terms");
+      } catch (error) {
+        console.log("Navigation error:", error);
+      }
+    }
+  };
+
   const renderFooterLinks = () => {
     if (currentIndex !== slides.length - 1) return null;
     
     return (
       <View style={styles.footerLinks}>
-        <Pressable onPress={() => router.push("/(resources)/privacy-policy")}>
+        <Pressable onPress={handlePrivacyPress}>
           <Text style={styles.footerLinkText}>Privacy Policy</Text>
         </Pressable>
         <Text style={styles.footerDot}>•</Text>
-        <Pressable onPress={() => router.push("/(resources)/terms")}>
+        <Pressable onPress={handleTermsPress}>
           <Text style={styles.footerLinkText}>Terms of Service</Text>
         </Pressable>
       </View>
@@ -284,17 +314,14 @@ export default function OnboardingScreen() {
 
         {/* Action Button */}
         <Pressable
-          style={({ pressed }) => [
-            styles.actionButton,
-            pressed && styles.actionButtonPressed,
-          ]}
+          className="bg-[#007f80] rounded-full py-4 px-6 flex-row items-center justify-center shadow-lg active:opacity-90 active:scale-[0.98]"
           onPress={handleNext}
         >
-          <Text style={styles.actionButtonText}>
+          <Text className="text-white text-base font-bold text-center">
             {slides[currentIndex].buttonText}
           </Text>
           {currentIndex < slides.length - 1 && (
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} style={styles.buttonIcon} />
+            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" className="ml-2" />
           )}
         </Pressable>
 
