@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -41,6 +42,28 @@ export default function ChatScreen() {
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Track keyboard height
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   // Hide tab bar when chat screen is focused - more reliable approach
   useEffect(() => {
@@ -289,163 +312,162 @@ export default function ChatScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar
-        barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-        backgroundColor={colors.background}
-      />
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === "android" ? "height" : undefined}
-        keyboardVerticalOffset={0}
-      >
-      {/* Safe area only for top - tab bar handles bottom */}
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      
-      {/* Premium Header - Clean design */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: colors.background,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-      }}>
-        <Pressable
-          onPress={handleBack}
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-          style={({ pressed }) => ({
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 10,
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
-        </Pressable>
+        <StatusBar
+          barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
         
-        {/* Avatar */}
-        <View 
-          style={{ position: 'relative', marginRight: 10 }}
-          accessibilityLabel={`${getDisplayName()}'s profile picture${isOnline ? ', online' : ', offline'}`}
-        >
-          <View style={{
-            width: 42,
-            height: 42,
-            borderRadius: 21,
-            overflow: 'hidden',
-            backgroundColor: colors.surfaceVariant,
-          }}>
-            {getAvatarUrl() ? (
-              <Image
-                source={{ uri: getAvatarUrl() }}
-                style={{ width: 42, height: 42 }}
-                accessibilityIgnoresInvertColors
-              />
-            ) : (
-              <View style={{
-                width: 42,
-                height: 42,
-                backgroundColor: colors.primary + '20',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <Ionicons name="person" size={20} color={colors.primary} />
-              </View>
+        {/* Premium Header - Clean design */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          backgroundColor: colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}>
+          <Pressable
+            onPress={handleBack}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+            style={({ pressed }) => ({
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: colors.surfaceVariant,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 10,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Ionicons name="chevron-back" size={22} color={colors.text} />
+          </Pressable>
+          
+          {/* Avatar */}
+          <View 
+            style={{ position: 'relative', marginRight: 10 }}
+            accessibilityLabel={`${getDisplayName()}'s profile picture${isOnline ? ', online' : ', offline'}`}
+          >
+            <View style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              overflow: 'hidden',
+              backgroundColor: colors.surfaceVariant,
+            }}>
+              {getAvatarUrl() ? (
+                <Image
+                  source={{ uri: getAvatarUrl() }}
+                  style={{ width: 42, height: 42 }}
+                  accessibilityIgnoresInvertColors
+                />
+              ) : (
+                <View style={{
+                  width: 42,
+                  height: 42,
+                  backgroundColor: colors.primary + '20',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  <Ionicons name="person" size={20} color={colors.primary} />
+                </View>
+              )}
+            </View>
+            {/* Online indicator */}
+            {isOnline && (
+              <View 
+                style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: colors.online,
+                borderWidth: 2,
+                borderColor: colors.background,
+              }} />
             )}
           </View>
-          {/* Online indicator */}
-          {isOnline && (
-            <View 
-              style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: colors.online,
-              borderWidth: 2,
-              borderColor: colors.background,
-            }} />
-          )}
+          
+          {/* Name & Status */}
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }} numberOfLines={1}>
+              {getDisplayName()}
+            </Text>
+            <Text style={{ 
+              fontSize: 12, 
+              color: isOnline ? colors.online : colors.textSecondary,
+              marginTop: 1,
+            }}>
+              {isOnline ? "Online" : "Offline"}
+            </Text>
+          </View>
+          
+          {/* Call button - shows options */}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: ['Cancel', 'Voice Call', 'Video Call'],
+                    cancelButtonIndex: 0,
+                  },
+                  (buttonIndex) => {
+                    if (buttonIndex === 1) handleCall(false);
+                    else if (buttonIndex === 2) handleCall(true);
+                  }
+                );
+              } else {
+                Alert.alert(
+                  'Start Call',
+                  'Choose call type',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Voice Call', onPress: () => handleCall(false) },
+                    { text: 'Video Call', onPress: () => handleCall(true) },
+                  ]
+                );
+              }
+            }}
+            disabled={isCreatingCall}
+            accessibilityLabel="Start a call"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isCreatingCall }}
+            style={({ pressed }) => ({
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: colors.surfaceVariant,
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: pressed || isCreatingCall ? 0.6 : 1,
+            })}
+          >
+            <Ionicons name="call-outline" size={20} color={colors.primary} />
+          </Pressable>
         </View>
-        
-        {/* Name & Status */}
-        <View style={{ flex: 1, marginRight: 8 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }} numberOfLines={1}>
-            {getDisplayName()}
-          </Text>
-          <Text style={{ 
-            fontSize: 12, 
-            color: isOnline ? colors.online : colors.textSecondary,
-            marginTop: 1,
-          }}>
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-        </View>
-        
-        {/* Call button - shows options */}
-        <Pressable
-          onPress={() => {
-            if (Platform.OS === 'ios') {
-              ActionSheetIOS.showActionSheetWithOptions(
-                {
-                  options: ['Cancel', 'Voice Call', 'Video Call'],
-                  cancelButtonIndex: 0,
-                },
-                (buttonIndex) => {
-                  if (buttonIndex === 1) handleCall(false);
-                  else if (buttonIndex === 2) handleCall(true);
-                }
-              );
-            } else {
-              Alert.alert(
-                'Start Call',
-                'Choose call type',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Voice Call', onPress: () => handleCall(false) },
-                  { text: 'Video Call', onPress: () => handleCall(true) },
-                ]
-              );
-            }
-          }}
-          disabled={isCreatingCall}
-          accessibilityLabel="Start a call"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isCreatingCall }}
-          style={({ pressed }) => ({
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: colors.surfaceVariant,
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: pressed || isCreatingCall ? 0.6 : 1,
-          })}
-        >
-          <Ionicons name="call-outline" size={20} color={colors.primary} />
-        </Pressable>
-      </View>
 
-      {/* Chat Area */}
-        <View style={{ flex: 1, paddingBottom: insets.bottom }}>
+        {/* Chat Area with proper keyboard handling */}
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={0}
+        >
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
           >
             <MessageList />
-            <MessageInput />
+            <View style={{ marginBottom: keyboardHeight > 0 ? 0 : -insets.bottom }}>
+              <MessageInput />
+            </View>
           </Channel>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
-      </KeyboardAvoidingView>
     </View>
   );
 }
