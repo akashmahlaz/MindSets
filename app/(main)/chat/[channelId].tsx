@@ -8,27 +8,26 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActionSheetIOS,
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StatusBar,
-    Text,
-    View
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-    Channel,
-    MessageInput,
-    MessageList,
+  Channel,
+  MessageInput,
+  MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -42,28 +41,6 @@ export default function ChatScreen() {
   const { isDarkColorScheme } = useColorScheme();
   const [channel, setChannel] = useState<StreamChannel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // Track keyboard height
-  useEffect(() => {
-    const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
-    );
-    const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      }
-    );
-
-    return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
-    };
-  }, []);
 
   // Hide tab bar when chat screen is focused - more reliable approach
   useEffect(() => {
@@ -312,10 +289,15 @@ export default function ChatScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+      {/* SafeAreaView for top edge only - bottom handled by MessageInput */}
+      <SafeAreaView 
+        style={{ flex: 1 }} 
+        edges={["top"]}
+      >
         <StatusBar
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
-          backgroundColor={colors.background}
+          backgroundColor="transparent"
+          translucent={true}
         />
         
         {/* Premium Header - Clean design */}
@@ -452,25 +434,36 @@ export default function ChatScreen() {
         </View>
 
         {/* Chat Area with proper keyboard handling */}
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }} 
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
+        <View style={{ flex: 1 }}>
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
-            keyboardVerticalOffset={0}
+            // Custom KeyboardCompatibleView for proper keyboard handling
+            KeyboardCompatibleView={({ children }) => {
+              if (Platform.OS === 'ios') {
+                return (
+                  <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior="padding"
+                    keyboardVerticalOffset={insets.top + 56}
+                  >
+                    {children}
+                  </KeyboardAvoidingView>
+                );
+              }
+              // Android: softwareKeyboardLayoutMode: "resize" handles keyboard
+              // Just add bottom padding for navigation bar
+              return (
+                <View style={{ flex: 1, paddingBottom: insets.bottom }}>
+                  {children}
+                </View>
+              );
+            }}
           >
             <MessageList />
-            {/* Add bottom padding when keyboard is hidden to stay above navigation bar */}
-            <View style={{ 
-              paddingBottom: Platform.OS === 'android' && keyboardHeight === 0 ? Math.max(insets.bottom, 16) : 0 
-            }}>
-              <MessageInput />
-            </View>
+            <MessageInput />
           </Channel>
-        </KeyboardAvoidingView>
+        </View>
       </SafeAreaView>
     </View>
   );

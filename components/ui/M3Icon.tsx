@@ -217,6 +217,20 @@ const ICON_MAP = {
   "water": { mci: "water", ion: "water" },
   "water-outline": { mci: "water-outline", ion: "water-outline" },
   
+  // Grid & Layout
+  "grid": { mci: "view-grid", ion: "grid" },
+  "grid-outline": { mci: "view-grid-outline", ion: "grid-outline" },
+  "apps": { mci: "apps", ion: "apps" },
+  "apps-outline": { mci: "apps", ion: "apps-outline" },
+  
+  // Weather & Nature
+  "cloudy": { mci: "cloud", ion: "cloudy" },
+  "cloudy-outline": { mci: "cloud-outline", ion: "cloudy-outline" },
+  "cloud": { mci: "cloud", ion: "cloud" },
+  "cloud-outline": { mci: "cloud-outline", ion: "cloud-outline" },
+  "rainy": { mci: "weather-rainy", ion: "rainy" },
+  "rainy-outline": { mci: "weather-rainy", ion: "rainy-outline" },
+  
   // Additional icons for dashboard
   "hourglass": { mci: "timer-sand", ion: "hourglass" },
   "hourglass-outline": { mci: "timer-sand-empty", ion: "hourglass-outline" },

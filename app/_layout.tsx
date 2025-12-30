@@ -7,7 +7,6 @@ import { initializeSound } from "@/lib/SoundService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { setupVideoPushConfig } from "@/lib/videoPushConfig";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useRootNavigationState, useRouter, useSegments } from "expo-router";
 import * as SplashScreenModule from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
@@ -133,134 +132,58 @@ function StreamChatWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Premium Animated Splash Screen Component
+// Clean & Elegant Splash Screen Component
 function SplashScreen({ onReady }: { onReady?: () => void }) {
   const { isDarkColorScheme } = useColorScheme();
   
-  // Animation values
+  // Simple animation values
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const scaleAnim = React.useRef(new Animated.Value(0.3)).current;
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
-  const pulseAnim = React.useRef(new Animated.Value(1)).current;
-  const glowAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
   const textFadeAnim = React.useRef(new Animated.Value(0)).current;
-  const textSlideAnim = React.useRef(new Animated.Value(30)).current;
-  const dotAnim1 = React.useRef(new Animated.Value(0)).current;
-  const dotAnim2 = React.useRef(new Animated.Value(0)).current;
-  const dotAnim3 = React.useRef(new Animated.Value(0)).current;
-  const ringScale1 = React.useRef(new Animated.Value(0.8)).current;
-  const ringScale2 = React.useRef(new Animated.Value(0.8)).current;
-  const ringOpacity1 = React.useRef(new Animated.Value(0)).current;
-  const ringOpacity2 = React.useRef(new Animated.Value(0)).current;
+  const progressAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Hide native splash screen
     SplashScreenModule.hideAsync();
     
-    // Orchestrated animation sequence
+    // Simple, elegant animation sequence
     Animated.sequence([
-      // Phase 1: Logo appears with scale + rotation
+      // Phase 1: Logo fades in with subtle scale
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 600,
+          duration: 500,
           useNativeDriver: true,
           easing: Easing.out(Easing.cubic),
         }),
         Animated.spring(scaleAnim, {
           toValue: 1,
-          tension: 40,
-          friction: 5,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.back(1.5)),
-        }),
-      ]),
-      // Phase 2: Glow effect + text appears
-      Animated.parallel([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(textFadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.spring(textSlideAnim, {
-          toValue: 0,
-          tension: 50,
+          tension: 60,
           friction: 8,
           useNativeDriver: true,
         }),
       ]),
+      // Phase 2: Text appears
+      Animated.timing(textFadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
     ]).start();
 
-    // Continuous pulse animation for brain icon
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 1200,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ])
-    ).start();
-
-    // Expanding ring animations
-    Animated.loop(
-      Animated.parallel([
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(ringScale1, { toValue: 2.5, duration: 2000, useNativeDriver: true }),
-            Animated.timing(ringOpacity1, { toValue: 0.6, duration: 200, useNativeDriver: true }),
-          ]),
-          Animated.timing(ringOpacity1, { toValue: 0, duration: 1800, useNativeDriver: true }),
-          Animated.timing(ringScale1, { toValue: 0.8, duration: 0, useNativeDriver: true }),
-        ]),
-        Animated.sequence([
-          Animated.delay(1000),
-          Animated.parallel([
-            Animated.timing(ringScale2, { toValue: 2.5, duration: 2000, useNativeDriver: true }),
-            Animated.timing(ringOpacity2, { toValue: 0.6, duration: 200, useNativeDriver: true }),
-          ]),
-          Animated.timing(ringOpacity2, { toValue: 0, duration: 1800, useNativeDriver: true }),
-          Animated.timing(ringScale2, { toValue: 0.8, duration: 0, useNativeDriver: true }),
-        ]),
-      ])
-    ).start();
-
-    // Loading dots animation
-    const animateDot = (anim: Animated.Value, delay: number) => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(anim, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.timing(anim, { toValue: 0, duration: 300, useNativeDriver: true }),
-          Animated.delay(600 - delay),
-        ])
-      ).start();
-    };
-    animateDot(dotAnim1, 0);
-    animateDot(dotAnim2, 200);
-    animateDot(dotAnim3, 400);
+    // Progress bar animation
+    Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: 1500,
+      useNativeDriver: false, // width animation can't use native driver
+      easing: Easing.inOut(Easing.ease),
+    }).start();
 
     // Call onReady after animations settle
     const timer = setTimeout(() => {
       onReady?.();
-    }, 1800);
+    }, 1600);
 
     return () => clearTimeout(timer);
   }, []);
@@ -268,16 +191,14 @@ function SplashScreen({ onReady }: { onReady?: () => void }) {
   const colors = {
     background: isDarkColorScheme ? "#0F1117" : "#FFFFFF",
     primary: "#2AA79D",
-    primaryLight: "#3DBDB3",
-    primaryDark: "#248F87",
-    text: isDarkColorScheme ? "#E5E7EB" : "#1F2937",
-    textSecondary: isDarkColorScheme ? "#9CA3AF" : "#6B7280",
-    glow: isDarkColorScheme ? "rgba(42, 167, 157, 0.3)" : "rgba(42, 167, 157, 0.2)",
+    text: isDarkColorScheme ? "#F1F5F9" : "#1F2937",
+    textSecondary: isDarkColorScheme ? "#94A3B8" : "#64748B",
+    progressBg: isDarkColorScheme ? "#1E2533" : "#E2E8F0",
   };
 
-  const spin = rotateAnim.interpolate({
+  const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ['0%', '100%'],
   });
 
   return (
@@ -294,170 +215,85 @@ function SplashScreen({ onReady }: { onReady?: () => void }) {
         backgroundColor={colors.background}
       />
       
-      {/* Animated Logo Section */}
+      {/* Clean Logo Section */}
       <Animated.View
         style={{
           alignItems: "center",
           opacity: fadeAnim,
-          transform: [
-            { scale: Animated.multiply(scaleAnim, pulseAnim) },
-          ],
+          transform: [{ scale: scaleAnim }],
         }}
       >
-        {/* Expanding Rings */}
-        <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }}>
-          <Animated.View
-            style={{
-              position: 'absolute',
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              borderWidth: 2,
-              borderColor: colors.primary,
-              opacity: ringOpacity1,
-              transform: [{ scale: ringScale1 }],
-            }}
-          />
-          <Animated.View
-            style={{
-              position: 'absolute',
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              borderWidth: 2,
-              borderColor: colors.primary,
-              opacity: ringOpacity2,
-              transform: [{ scale: ringScale2 }],
-            }}
-          />
-        </View>
-
-        {/* Main Logo Container */}
-        <Animated.View
+        {/* Simple Logo Container with subtle shadow */}
+        <View
           style={{
-            transform: [{ rotate: spin }],
+            width: 100,
+            height: 100,
+            borderRadius: 28,
+            backgroundColor: colors.primary,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.35,
+            shadowRadius: 12,
+            elevation: 10,
           }}
         >
-          <LinearGradient
-            colors={[colors.primary, colors.primaryLight, colors.primaryDark]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 36,
-              padding: 4,
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.4,
-              shadowRadius: 20,
-              elevation: 15,
-            }}
-          >
-            <Animated.View
-              style={{
-                flex: 1,
-                borderRadius: 32,
-                backgroundColor: colors.background,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: glowAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-              }}
-            >
-              {/* Brain Icon with Glow Effect */}
-              <View style={{ position: 'relative' }}>
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    top: -5,
-                    left: -5,
-                    opacity: glowAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 0.5],
-                    }),
-                  }}
-                >
-                  <MaterialCommunityIcons 
-                    name="brain" 
-                    size={62} 
-                    color={colors.primary} 
-                  />
-                </Animated.View>
-                <MaterialCommunityIcons 
-                  name="brain" 
-                  size={52} 
-                  color={colors.primary} 
-                />
-              </View>
-            </Animated.View>
-          </LinearGradient>
-        </Animated.View>
+          <MaterialCommunityIcons 
+            name="brain" 
+            size={50} 
+            color="#FFFFFF" 
+          />
+        </View>
       </Animated.View>
       
       {/* App Name & Tagline */}
       <Animated.View
         style={{
           alignItems: "center",
-          marginTop: 32,
+          marginTop: 28,
           opacity: textFadeAnim,
-          transform: [{ translateY: textSlideAnim }],
         }}
       >
         <Animated.Text
           style={{
-            fontSize: 36,
-            fontWeight: "800",
+            fontSize: 32,
+            fontWeight: "700",
             color: colors.text,
-            letterSpacing: -1,
-            marginBottom: 8,
+            letterSpacing: -0.5,
+            marginBottom: 6,
           }}
         >
           MindSets
         </Animated.Text>
         <Animated.Text
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: colors.textSecondary,
             textAlign: "center",
-            maxWidth: 280,
-            lineHeight: 24,
           }}
         >
           Your journey to mental wellness
         </Animated.Text>
       </Animated.View>
       
-      {/* Animated Loading Dots */}
+      {/* Simple Progress Bar */}
       <View style={{ 
-        flexDirection: 'row', 
         marginTop: 48, 
-        gap: 8,
-        alignItems: 'center',
+        width: 180,
+        height: 4,
+        backgroundColor: colors.progressBg,
+        borderRadius: 2,
+        overflow: 'hidden',
       }}>
-        {[dotAnim1, dotAnim2, dotAnim3].map((anim, i) => (
-          <Animated.View
-            key={i}
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: colors.primary,
-              opacity: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.3, 1],
-              }),
-              transform: [{
-                scale: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1.2],
-                }),
-              }],
-            }}
-          />
-        ))}
+        <Animated.View
+          style={{
+            height: '100%',
+            backgroundColor: colors.primary,
+            borderRadius: 2,
+            width: progressWidth,
+          }}
+        />
       </View>
     </View>
   );
