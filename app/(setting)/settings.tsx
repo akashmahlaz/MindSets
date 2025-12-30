@@ -5,11 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/firebaseConfig";
 import { useColorScheme } from "@/lib/useColorScheme";
 import {
-    deleteProfilePhoto,
-    updateUserProfile,
-    uploadProfilePhoto,
+  deleteProfilePhoto,
+  updateUserProfile,
+  uploadProfilePhoto,
 } from "@/services/userService";
-import { MENTAL_HEALTH_CONCERNS, UserProfileData } from "@/types/user";
+import { DEFAULT_NOTIFICATION_SETTINGS, MENTAL_HEALTH_CONCERNS, NotificationSettings, UserProfileData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,19 +18,19 @@ import { deleteUser } from "firebase/auth";
 import { deleteDoc, doc } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -84,12 +84,34 @@ export default function SettingsScreen() {
     preferredSessionType: userProfileData?.preferredSessionType || "any",
   });
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    pushNotifications: true,
-    emailNotifications: true,
-    sessionReminders: true,
-    messageNotifications: true,
-  });
+  // Load notification settings from user profile or use defaults
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(
+    userProfileData?.notificationSettings || DEFAULT_NOTIFICATION_SETTINGS
+  );
+
+  // Update notification settings when profile changes
+  useEffect(() => {
+    if (userProfileData?.notificationSettings) {
+      setNotificationSettings(userProfileData.notificationSettings);
+    }
+  }, [userProfileData?.notificationSettings]);
+
+  // Save notification settings to Firestore
+  const handleNotificationSettingChange = async (key: keyof NotificationSettings, value: boolean) => {
+    if (!user) return;
+    
+    const newSettings = { ...notificationSettings, [key]: value };
+    setNotificationSettings(newSettings);
+    
+    try {
+      await updateUserProfile(user.uid, { notificationSettings: newSettings });
+    } catch (error) {
+      console.error("Failed to save notification settings:", error);
+      // Revert on error
+      setNotificationSettings(notificationSettings);
+      Alert.alert("Error", "Failed to save notification settings");
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!user || !userProfile) return;
@@ -665,9 +687,9 @@ export default function SettingsScreen() {
                       <Switch
                         value={value}
                         onValueChange={(newValue) =>
-                          setNotificationSettings((prev) => ({ ...prev, [key]: newValue }))
+                          handleNotificationSettingChange(key as keyof NotificationSettings, newValue)
                         }
-                        trackColor={{ false: colors.surfaceVariant, true: 'rgba(99, 102, 241, 0.3)' }}
+                        trackColor={{ false: colors.surfaceVariant, true: 'rgba(42, 167, 157, 0.3)' }}
                         thumbColor={value ? colors.primary : colors.textSecondary}
                       />
                     </View>

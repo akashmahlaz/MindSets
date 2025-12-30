@@ -2,6 +2,22 @@
 
 export type UserRole = "user" | "counsellor" | "admin";
 
+// Notification settings interface
+export interface NotificationSettings {
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+  sessionReminders: boolean;
+  messageNotifications: boolean;
+}
+
+// Default notification settings
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  pushNotifications: true,
+  emailNotifications: true,
+  sessionReminders: true,
+  messageNotifications: true,
+};
+
 export interface DocumentFile {
   name: string;
   url: string;
@@ -31,6 +47,7 @@ export interface BaseUserProfile {
   role: UserRole;
   isProfileComplete: boolean;
   isApproved?: boolean; // For counsellors
+  notificationSettings?: NotificationSettings; // User notification preferences
 }
 
 // User-specific profile data

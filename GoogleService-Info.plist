@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>952214463855-jo9926luot59cn7cdorviuoo4827quqn.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.952214463855-jo9926luot59cn7cdorviuoo4827quqn</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBfwfb4hmIel5MP8uI6iIhZzIM5_4hnlTU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>952214463855</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.akashmahlax.streams</string>
+	<key>PROJECT_ID</key>
+	<string>mental-health-f7b7f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mental-health-f7b7f.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:952214463855:ios:1aafd087e4cffb4d61349a</string>
+	<key>DATABASE_URL</key>
+	<string>https://mental-health-f7b7f-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
