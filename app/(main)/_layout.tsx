@@ -4,8 +4,8 @@ import { Platform, StatusBar } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
+import { M3Icon } from "@/components/ui/M3Icon";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   const { isDarkColorScheme } = useColorScheme();
@@ -39,6 +39,12 @@ export default function TabLayout() {
           tabBarInactiveTintColor: colors.onSurfaceVariant,
           headerShown: false,
           tabBarButton: HapticTab,
+          // CRITICAL: Prevent white flash during tab transitions
+          sceneStyle: {
+            backgroundColor: colors.background,
+          },
+          // Use fade animation to prevent jarring transitions
+          animation: "fade",
           tabBarLabelStyle: {
             fontSize: 10,
             fontWeight: "600",
@@ -65,7 +71,7 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons 
+              <M3Icon 
                 size={24} 
                 name={focused ? "home" : "home-outline"} 
                 color={color}
@@ -78,7 +84,7 @@ export default function TabLayout() {
           options={{
             title: "Counselors",
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons 
+              <M3Icon 
                 size={24} 
                 name={focused ? "people" : "people-outline"} 
                 color={color}
@@ -91,7 +97,7 @@ export default function TabLayout() {
           options={{
             title: "Sessions",
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons 
+              <M3Icon 
                 size={24} 
                 name={focused ? "calendar" : "calendar-outline"} 
                 color={color}
@@ -111,7 +117,7 @@ export default function TabLayout() {
           options={{
             title: "Chat",
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons 
+              <M3Icon 
                 size={24} 
                 name={focused ? "chatbubbles" : "chatbubbles-outline"} 
                 color={color}
@@ -124,7 +130,7 @@ export default function TabLayout() {
           options={{
             title: "Profile",
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons 
+              <M3Icon 
                 size={24} 
                 name={focused ? "person" : "person-outline"} 
                 color={color}

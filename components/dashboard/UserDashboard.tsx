@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { M3Icon } from "@/components/ui/M3Icon";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Article, getFeaturedArticles } from "@/services/articleService";
@@ -8,7 +9,6 @@ import {
     UserProfile,
     UserProfileData,
 } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -274,7 +274,7 @@ export default function UserDashboard() {
                 borderWidth: 3,
                 borderColor: colors.cardBg,
               }}>
-                <Ionicons name="checkmark" size={14} color="#FFF" />
+                <M3Icon name="check" size={14} color="#FFF" />
               </View>
             )}
           </View>
@@ -333,7 +333,7 @@ export default function UserDashboard() {
             }}>
               <View style={{ alignItems: "center", flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Ionicons name="star" size={16} color="#FBBF24" />
+                  <M3Icon name="star" size={16} color="#FBBF24" />
                   <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginLeft: 4 }}>
                     {counsellor.averageRating?.toFixed(1) || "4.9"}
                   </Text>
@@ -370,7 +370,7 @@ export default function UserDashboard() {
                   justifyContent: "center",
                 }}
               >
-                <Ionicons name="chatbubble-outline" size={16} color={colors.primary} />
+                <M3Icon name="chat-outline" size={16} color={colors.primary} />
                 <Text style={{ color: colors.primary, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Message</Text>
               </Pressable>
               <Pressable onPress={() => handleCounsellorPress(counsellor)} style={{ flex: 1 }}>
@@ -386,7 +386,7 @@ export default function UserDashboard() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="calendar-outline" size={16} color="#FFF" />
+                  <M3Icon name="calendar-outline" size={16} color="#FFF" />
                   <Text style={{ color: "#FFF", fontSize: 13, fontWeight: "600", marginLeft: 6 }}>Book</Text>
                 </LinearGradient>
               </Pressable>
@@ -412,7 +412,7 @@ export default function UserDashboard() {
               marginBottom: 16,
             }}
           >
-            <Ionicons name="hourglass-outline" size={28} color={colors.primary} />
+            <M3Icon name="hourglass-outline" size={28} color={colors.primary} />
           </View>
           <Text style={{ fontSize: 16, color: colors.text }}>Loading dashboard...</Text>
         </View>
@@ -469,7 +469,7 @@ export default function UserDashboard() {
                   style={{ width: 48, height: 48, borderRadius: 16 }}
                 />
               ) : (
-                <Ionicons name="person" size={22} color={colors.textSecondary} />
+                <M3Icon name="person" size={22} color={colors.textSecondary} />
               )}
             </Pressable>
           </View>
@@ -516,7 +516,7 @@ export default function UserDashboard() {
                   justifyContent: "center",
                 }}
               >
-                <Ionicons name="chevron-forward" size={20} color="#FFF" />
+                <M3Icon name="chevron-right" size={20} color="#FFF" />
               </View>
             </View>
           </Pressable>
@@ -555,7 +555,7 @@ export default function UserDashboard() {
                     marginBottom: 10,
                   }}
                 >
-                  <Ionicons name={action.icon as any} size={24} color="#FFF" />
+                  <M3Icon name={action.icon as any} size={24} color="#FFF" />
                 </LinearGradient>
                 <Text
                   style={{
@@ -584,7 +584,7 @@ export default function UserDashboard() {
               paddingHorizontal: 16,
             }}
           >
-            <Ionicons name="search" size={20} color={colors.textSecondary} />
+            <M3Icon name="search" size={20} color={colors.textSecondary} />
             <Input
               placeholder="Search counselors by name or specialty..."
               placeholderTextColor={colors.textSecondary}
@@ -649,7 +649,7 @@ export default function UserDashboard() {
                   marginBottom: 16,
                 }}
               >
-                <Ionicons name="people-outline" size={36} color={colors.textSecondary} />
+                <M3Icon name="people-outline" size={36} color={colors.textSecondary} />
               </View>
               <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
                 No counselors found
@@ -754,7 +754,7 @@ export default function UserDashboard() {
                           justifyContent: "center",
                         }}
                       >
-                        <Ionicons name="document-text" size={40} color="rgba(255,255,255,0.8)" />
+                        <M3Icon name="document-text" size={40} color="rgba(255,255,255,0.8)" />
                       </LinearGradient>
                     )}
                     
@@ -788,7 +788,7 @@ export default function UserDashboard() {
                         {article.title}
                       </Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Ionicons name="time-outline" size={12} color={colors.textMuted} />
+                        <M3Icon name="time-outline" size={12} color={colors.textMuted} />
                         <Text style={{ fontSize: 11, color: colors.textMuted, marginLeft: 4 }}>
                           {article.readTime || 5} min read
                         </Text>
@@ -807,7 +807,7 @@ export default function UserDashboard() {
                 alignItems: "center",
               }}
             >
-              <Ionicons name="newspaper-outline" size={40} color={colors.textSecondary} />
+              <M3Icon name="newspaper-outline" size={40} color={colors.textSecondary} />
               <Text style={{ fontSize: 15, color: colors.textSecondary, marginTop: 12 }}>
                 No stories available
               </Text>
@@ -863,13 +863,13 @@ export default function UserDashboard() {
                     marginRight: 14,
                   }}
                 >
-                  <Ionicons name={item.icon as any} size={24} color={item.color} />
+                  <M3Icon name={item.icon as any} size={24} color={item.color} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{item.label}</Text>
                   <Text style={{ fontSize: 13, color: colors.textSecondary }}>{item.desc}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                <M3Icon name="chevron-right" size={20} color={colors.textMuted} />
               </Pressable>
             ))}
           </View>

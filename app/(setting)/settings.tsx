@@ -1,6 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { M3Icon } from "@/components/ui/M3Icon";
+import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/firebaseConfig";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -10,7 +12,6 @@ import {
   uploadProfilePhoto,
 } from "@/services/userService";
 import { DEFAULT_NOTIFICATION_SETTINGS, MENTAL_HEALTH_CONCERNS, NotificationSettings, UserProfileData } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -18,7 +19,6 @@ import { deleteUser } from "firebase/auth";
 import { deleteDoc, doc } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   KeyboardAvoidingView,
@@ -290,7 +290,7 @@ export default function SettingsScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <M3CircularProgress size={48} color={colors.primary} />
           <Text style={{ color: colors.text, marginTop: 12, fontSize: 16 }}>Loading settings...</Text>
         </View>
       </SafeAreaView>
@@ -327,7 +327,7 @@ export default function SettingsScreen() {
               alignItems: 'center',
             }}
           >
-            <Ionicons name="arrow-back" size={22} color={colors.text} />
+            <M3Icon name="arrow-back" size={22} color={colors.text} />
           </TouchableOpacity>
           
           <Text style={{
@@ -348,7 +348,7 @@ export default function SettingsScreen() {
               alignItems: 'center',
             }}
           >
-            <Ionicons
+            <M3Icon
               name={isEditing ? "close" : "create-outline"}
               size={22}
               color={isEditing ? colors.error : colors.primary}
@@ -389,7 +389,7 @@ export default function SettingsScreen() {
                     alignItems: 'center',
                     marginRight: 12,
                   }}>
-                    <Ionicons name="camera-outline" size={18} color={colors.primary} />
+                    <M3Icon name="camera-outline" size={18} color={colors.primary} />
                   </View>
                   <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Profile Photo</Text>
                 </View>
@@ -416,7 +416,7 @@ export default function SettingsScreen() {
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                        <ActivityIndicator color="white" />
+                        <M3CircularProgress size={32} color="white" />
                       </View>
                     )}
                   </View>
@@ -434,7 +434,7 @@ export default function SettingsScreen() {
                         backgroundColor: colors.primaryContainer,
                       }}
                     >
-                      <Ionicons name="camera" size={18} color={colors.primary} />
+                      <M3Icon name="camera" size={18} color={colors.primary} />
                       <Text style={{ color: colors.primary, marginLeft: 8, fontWeight: '600' }}>Change</Text>
                     </TouchableOpacity>
                     {userProfile.photoURL && (
@@ -450,7 +450,7 @@ export default function SettingsScreen() {
                           backgroundColor: colors.errorContainer,
                         }}
                       >
-                        <Ionicons name="trash-outline" size={18} color={colors.error} />
+                        <M3Icon name="trash-outline" size={18} color={colors.error} />
                         <Text style={{ color: colors.error, marginLeft: 8, fontWeight: '600' }}>Remove</Text>
                       </TouchableOpacity>
                     )}
@@ -481,7 +481,7 @@ export default function SettingsScreen() {
                   alignItems: 'center',
                   marginRight: 12,
                 }}>
-                  <Ionicons name="person-outline" size={18} color={colors.primary} />
+                  <M3Icon name="person-outline" size={18} color={colors.primary} />
                 </View>
                 <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Personal Information</Text>
               </View>
@@ -556,7 +556,7 @@ export default function SettingsScreen() {
                     alignItems: 'center',
                     marginRight: 12,
                   }}>
-                    <Ionicons name="heart-outline" size={18} color="#EC4899" />
+                    <M3Icon name="heart-outline" size={18} color="#EC4899" />
                   </View>
                   <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Mental Health Preferences</Text>
                 </View>
@@ -625,7 +625,7 @@ export default function SettingsScreen() {
                               borderColor: isSelected ? colors.primary : colors.border,
                             }}
                           >
-                            <Ionicons 
+                            <M3Icon 
                               name={option.icon as any} 
                               size={20} 
                               color={isSelected ? colors.primary : colors.textSecondary} 
@@ -638,7 +638,7 @@ export default function SettingsScreen() {
                             }}>{option.label}</Text>
                             {isSelected && (
                               <View style={{ marginLeft: 'auto' }}>
-                                <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                                <M3Icon name="checkmark-circle" size={22} color={colors.primary} />
                               </View>
                             )}
                           </Pressable>
@@ -672,7 +672,7 @@ export default function SettingsScreen() {
                   alignItems: 'center',
                   marginRight: 12,
                 }}>
-                  <Ionicons name="notifications-outline" size={18} color="#F59E0B" />
+                  <M3Icon name="notifications-outline" size={18} color="#F59E0B" />
                 </View>
                 <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Notifications</Text>
               </View>
@@ -723,7 +723,7 @@ export default function SettingsScreen() {
                   alignItems: 'center',
                   marginRight: 12,
                 }}>
-                  <Ionicons name="flash-outline" size={18} color={colors.success} />
+                  <M3Icon name="flash-outline" size={18} color={colors.success} />
                 </View>
                 <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Quick Actions</Text>
               </View>
@@ -756,11 +756,11 @@ export default function SettingsScreen() {
                         alignItems: 'center',
                         marginRight: 14,
                       }}>
-                        <Ionicons name={action.icon as any} size={20} color={action.color} />
+                        <M3Icon name={action.icon as any} size={20} color={action.color} />
                       </View>
                       <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>{action.label}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                    <M3Icon name="chevron-forward" size={20} color={colors.textSecondary} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -788,7 +788,7 @@ export default function SettingsScreen() {
                   alignItems: 'center',
                   marginRight: 12,
                 }}>
-                  <Ionicons name="document-text-outline" size={18} color="#64748B" />
+                  <M3Icon name="document-text-outline" size={18} color="#64748B" />
                 </View>
                 <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>Legal & About</Text>
               </View>
@@ -832,11 +832,11 @@ export default function SettingsScreen() {
                         alignItems: 'center',
                         marginRight: 14,
                       }}>
-                        <Ionicons name={item.icon as any} size={20} color={item.color} />
+                        <M3Icon name={item.icon as any} size={20} color={item.color} />
                       </View>
                       <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>{item.label}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                    <M3Icon name="chevron-forward" size={20} color={colors.textSecondary} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -872,12 +872,12 @@ export default function SettingsScreen() {
                 >
                   {loading ? (
                     <>
-                      <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 10 }} />
+                      <M3CircularProgress size={20} color="#ffffff" style={{ marginRight: 10 }} />
                       <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Saving...</Text>
                     </>
                   ) : (
                     <>
-                      <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                      <M3Icon name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
                       <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Save Changes</Text>
                     </>
                   )}
@@ -901,7 +901,7 @@ export default function SettingsScreen() {
                     backgroundColor: colors.surface,
                   }}
                 >
-                  <Ionicons name="log-out-outline" size={20} color={colors.error} />
+                  <M3Icon name="log-out-outline" size={20} color={colors.error} />
                   <Text style={{ color: colors.error, marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
                     Sign Out
                   </Text>
@@ -918,7 +918,7 @@ export default function SettingsScreen() {
                     backgroundColor: colors.errorContainer,
                   }}
                 >
-                  <Ionicons name="trash-outline" size={20} color={colors.error} />
+                  <M3Icon name="trash-outline" size={20} color={colors.error} />
                   <Text style={{ color: colors.error, marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
                     Delete Account
                   </Text>
@@ -978,7 +978,7 @@ export default function SettingsScreen() {
                       paddingVertical: 16,
                     }}
                   >
-                    <Ionicons name="camera" size={20} color="#FFFFFF" />
+                    <M3Icon name="camera" size={20} color="#FFFFFF" />
                     <Text style={{ color: '#FFFFFF', marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
                       Take Photo
                     </Text>
@@ -997,7 +997,7 @@ export default function SettingsScreen() {
                     borderColor: colors.border,
                   }}
                 >
-                  <Ionicons name="images" size={20} color={colors.text} />
+                  <M3Icon name="images" size={20} color={colors.text} />
                   <Text style={{ color: colors.text, marginLeft: 10, fontSize: 16, fontWeight: '600' }}>
                     Choose from Gallery
                   </Text>
@@ -1048,7 +1048,7 @@ export default function SettingsScreen() {
                   alignItems: 'center',
                   marginBottom: 16,
                 }}>
-                  <Ionicons name="warning" size={36} color={colors.error} />
+                  <M3Icon name="warning" size={36} color={colors.error} />
                 </View>
                 <Text style={{
                   fontSize: 22,
@@ -1113,7 +1113,7 @@ export default function SettingsScreen() {
                     }}
                   >
                     {loading ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <M3CircularProgress size={20} color="#ffffff" />
                     ) : (
                       <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Delete</Text>
                     )}

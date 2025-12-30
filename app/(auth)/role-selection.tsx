@@ -1,6 +1,6 @@
 import { useColorScheme } from "@/lib/useColorScheme";
 import { UserRole } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -354,7 +354,7 @@ export default function RoleSelectionScreen() {
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 44 }}>🧠</Text>
+                <MaterialCommunityIcons name="brain" size={44} color="#2AA79D" />
               </View>
             </LinearGradient>
           </View>

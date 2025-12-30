@@ -19,7 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 interface M3ProgressIndicatorProps {
-  size?: "small" | "medium" | "large";
+  size?: "small" | "medium" | "large" | number;
   color?: string;
   style?: ViewStyle;
 }
@@ -36,13 +36,21 @@ export function M3CircularProgress({
   const { isDarkColorScheme } = useColorScheme();
   const primaryColor = color || "#2AA79D";
   
-  const sizes = {
+  const presetSizes = {
     small: { container: 24, dot: 4 },
     medium: { container: 40, dot: 6 },
     large: { container: 56, dot: 8 },
   };
   
-  const { container: containerSize, dot: dotSize } = sizes[size];
+  // Support both preset sizes and custom numeric sizes
+  const getSize = () => {
+    if (typeof size === "number") {
+      return { container: size, dot: Math.max(4, size / 6) };
+    }
+    return presetSizes[size];
+  };
+  
+  const { container: containerSize, dot: dotSize } = getSize();
   const radius = (containerSize - dotSize) / 2;
   
   // Create 3 animated dots with staggered animations
@@ -132,14 +140,22 @@ export function M3WaveProgress({
   const { isDarkColorScheme } = useColorScheme();
   const primaryColor = color || "#2AA79D";
   
-  const sizes = {
+  const presetSizes = {
     small: { bar: 4, gap: 3, count: 4 },
     medium: { bar: 6, gap: 4, count: 5 },
     large: { bar: 8, gap: 5, count: 6 },
   };
   
-  const { bar: barWidth, gap, count } = sizes[size];
-  const maxHeight = size === "small" ? 20 : size === "medium" ? 28 : 36;
+  // Support both preset sizes and custom numeric sizes
+  const getConfig = () => {
+    if (typeof size === "number") {
+      return { bar: Math.max(4, size / 5), gap: Math.max(3, size / 8), count: 5 };
+    }
+    return presetSizes[size];
+  };
+  
+  const { bar: barWidth, gap, count } = getConfig();
+  const maxHeight = typeof size === "number" ? size : size === "small" ? 20 : size === "medium" ? 28 : 36;
   
   const bars = Array.from({ length: count }).map((_, index) => {
     const height = useSharedValue(0.3);
@@ -213,13 +229,14 @@ export function M3PulseProgress({
   const { isDarkColorScheme } = useColorScheme();
   const primaryColor = color || "#2AA79D";
   
-  const sizes = {
+  const presetSizes = {
     small: 24,
     medium: 40,
     large: 56,
   };
   
-  const containerSize = sizes[size];
+  // Support both preset sizes and custom numeric sizes
+  const containerSize = typeof size === "number" ? size : presetSizes[size];
   
   const scale1 = useSharedValue(0.5);
   const scale2 = useSharedValue(0.5);

@@ -1,24 +1,24 @@
 import "@/app/global.css";
+import { M3Icon } from "@/components/ui/M3Icon";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getCounsellors } from "@/services/userService";
 import { CounsellorProfileData } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Image,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -151,7 +151,7 @@ function CounsellorCard({
                 borderRadius: 10,
               }}
             >
-              <Ionicons name="checkmark-circle" size={12} color="#FFF" />
+              <M3Icon name="checkmark-circle" size={12} color="#FFF" />
               <Text style={{ fontSize: 10, color: "#FFF", fontWeight: "600", marginLeft: 4 }}>
                 Verified
               </Text>
@@ -220,7 +220,7 @@ function CounsellorCard({
           >
             {/* Rating */}
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="star" size={14} color="#FBBF24" />
+              <M3Icon name="star" size={14} color="#FBBF24" />
               <Text style={{ fontSize: 14, color: isDark ? "#FFF" : "#1F2937", fontWeight: "600", marginLeft: 4 }}>
                 {rating}
               </Text>
@@ -451,7 +451,7 @@ export default function CounselorsScreen() {
               borderColor: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
             }}
           >
-            <Ionicons name="search" size={20} color={isDarkColorScheme ? "#9CA3AF" : "#6B7280"} />
+            <M3Icon name="search" size={20} color={isDarkColorScheme ? "#9CA3AF" : "#6B7280"} />
             <TextInput
               placeholder="Search by name or specialty..."
               placeholderTextColor={isDarkColorScheme ? "#9CA3AF" : "#9CA3AF"}
@@ -461,7 +461,7 @@ export default function CounselorsScreen() {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                <M3Icon name="close-circle" size={20} color="#9CA3AF" />
               </TouchableOpacity>
             )}
           </View>
@@ -488,7 +488,7 @@ export default function CounselorsScreen() {
                 borderColor: isDarkColorScheme ? "#2D3139" : "#E5E7EB",
               }}
             >
-              <Ionicons
+              <M3Icon
                 name={f.icon as any}
                 size={16}
                 color={selectedFilter === f.id ? "#FFF" : isDarkColorScheme ? "#9CA3AF" : "#6B7280"}
@@ -544,7 +544,7 @@ export default function CounselorsScreen() {
               marginBottom: 20,
             }}
           >
-            <Ionicons name="search" size={44} color={colors.primary} />
+            <M3Icon name="search" size={44} color={colors.primary} />
           </View>
           <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>No counselors found</Text>
           <Text
@@ -578,7 +578,7 @@ export default function CounselorsScreen() {
               elevation: 4,
             }}
           >
-            <Ionicons name="refresh" size={18} color="#FFF" style={{ marginRight: 8 }} />
+            <M3Icon name="refresh" size={18} color="#FFF" style={{ marginRight: 8 }} />
             <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 15 }}>Reset Filters</Text>
           </TouchableOpacity>
         </View>
@@ -615,7 +615,7 @@ export default function CounselorsScreen() {
                 marginRight: 10,
               }}
             >
-              <Ionicons name="people" size={18} color={colors.primary} />
+              <M3Icon name="people" size={18} color={colors.primary} />
             </View>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
               {selectedFilter === "all" ? "All Counselors" : `${selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)} Specialists`}

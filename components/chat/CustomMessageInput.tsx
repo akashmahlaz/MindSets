@@ -1,5 +1,5 @@
+import { M3Icon } from "@/components/ui/M3Icon";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
     Keyboard,
@@ -96,7 +96,7 @@ export const CustomMessageInput = () => {
             backgroundColor: "transparent",
           }}
         >
-          <Ionicons name="add-circle-outline" size={26} color={colors.textSecondary} />
+          <M3Icon name="add-circle-outline" size={26} color={colors.textSecondary} />
         </Pressable>
 
         {/* Text Input */}
@@ -136,7 +136,7 @@ export const CustomMessageInput = () => {
             opacity: text.trim() ? 1 : 0.5,
           }}
         >
-          <Ionicons 
+          <M3Icon 
             name="arrow-up" 
             size={22} 
             color={text.trim() ? "#FFFFFF" : colors.textSecondary} 

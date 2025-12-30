@@ -1,14 +1,14 @@
 import "@/app/global.css";
+import { M3Icon } from "@/components/ui/M3Icon";
+import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { useVideo } from "@/context/VideoContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getUserSessions, SessionBooking, updateSessionStatus } from "@/services/sessionService";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
     Alert,
     Animated,
     Pressable,
@@ -328,7 +328,7 @@ export default function SessionsScreen() {
             alignItems: 'center',
             marginBottom: 16,
           }}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <M3CircularProgress size="large" color={colors.primary} />
           </View>
           <Text style={{ color: colors.textSecondary, marginTop: 8, fontSize: 16 }}>Loading sessions...</Text>
         </View>
@@ -366,7 +366,7 @@ export default function SessionsScreen() {
                   justifyContent: "center",
                 }}
               >
-                <Ionicons name="add" size={24} color="#FFFFFF" />
+                <M3Icon name="add" size={24} color="#FFFFFF" />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -452,7 +452,7 @@ export default function SessionsScreen() {
                   marginBottom: 20,
                 }}
               >
-                <Ionicons name="calendar-outline" size={36} color={colors.primary} />
+                <M3Icon name="calendar-outline" size={36} color={colors.primary} />
               </View>
               <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
                 No {activeTab === "upcoming" ? "upcoming" : "past"} sessions
@@ -516,7 +516,7 @@ export default function SessionsScreen() {
                               marginRight: 14,
                             }}
                           >
-                            <Ionicons name={getTypeIcon(session.type) as any} size={22} color={colors.primary} />
+                            <M3Icon name={getTypeIcon(session.type) as any} size={22} color={colors.primary} />
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
@@ -538,7 +538,7 @@ export default function SessionsScreen() {
                             borderRadius: 20,
                           }}
                         >
-                          <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+                          <M3Icon name={statusConfig.icon as any} size={14} color={statusConfig.color} />
                           <Text style={{ fontSize: 12, fontWeight: "600", color: statusConfig.color, marginLeft: 4 }}>
                             {statusConfig.label}
                           </Text>
@@ -556,13 +556,13 @@ export default function SessionsScreen() {
                       >
                         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                           <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                            <M3Icon name="calendar-outline" size={16} color={colors.primary} />
                             <Text style={{ fontSize: 14, color: colors.text, fontWeight: "600", marginLeft: 8 }}>
                               {formatDate(session.date)}
                             </Text>
                           </View>
                           <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <Ionicons name="time-outline" size={16} color={colors.purple} />
+                            <M3Icon name="time-outline" size={16} color={colors.purple} />
                             <Text style={{ fontSize: 14, color: colors.text, fontWeight: "600", marginLeft: 6 }}>
                               {session.duration} min
                             </Text>
@@ -606,7 +606,7 @@ export default function SessionsScreen() {
                                 paddingVertical: 14,
                               }}
                             >
-                              <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+                              <M3Icon name="checkmark-circle" size={18} color="#FFFFFF" />
                               <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginLeft: 6 }}>
                                 Approve
                               </Text>
@@ -625,7 +625,7 @@ export default function SessionsScreen() {
                               justifyContent: "center",
                             }}
                           >
-                            <Ionicons name="close-circle" size={18} color={colors.error} />
+                            <M3Icon name="close-circle" size={18} color={colors.error} />
                             <Text style={{ fontSize: 14, fontWeight: "600", color: colors.error, marginLeft: 6 }}>
                               Reject
                             </Text>
@@ -654,7 +654,7 @@ export default function SessionsScreen() {
                                   paddingVertical: 14,
                                 }}
                               >
-                                <Ionicons 
+                                <M3Icon 
                                   name={joinStatus.canJoin ? "videocam" : "time-outline"} 
                                   size={18} 
                                   color={joinStatus.canJoin ? "#FFFFFF" : colors.textSecondary} 
@@ -679,7 +679,7 @@ export default function SessionsScreen() {
                                 backgroundColor: colors.surfaceVariant,
                               }}
                             >
-                              <Ionicons name="share-outline" size={18} color={colors.text} />
+                              <M3Icon name="share-outline" size={18} color={colors.text} />
                             </TouchableOpacity>
                           </View>
                         );
@@ -696,7 +696,7 @@ export default function SessionsScreen() {
                             alignItems: "center",
                           }}
                         >
-                          <Ionicons name="time-outline" size={20} color={colors.warning} />
+                          <M3Icon name="time-outline" size={20} color={colors.warning} />
                           <Text style={{ fontSize: 13, color: colors.warning, marginLeft: 8, flex: 1, fontWeight: "600" }}>
                             Awaiting counsellor approval
                           </Text>

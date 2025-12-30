@@ -2,24 +2,24 @@ import "@/app/global.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { M3Icon } from "@/components/ui/M3Icon";
+import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { addSessionToCalendar } from "@/lib/calendarService";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { createSessionBooking, SessionData } from "@/services/sessionService";
 import { getCounsellors, getUserProfile } from "@/services/userService";
 import { CounsellorProfileData } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Share,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    Share,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -310,7 +310,7 @@ MindHeal Mental Health Platform
           barStyle={isDarkColorScheme ? "light-content" : "dark-content"}
         />
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator
+          <M3CircularProgress
             size="large"
             color={isDarkColorScheme ? "#ffffff" : "#000000"}
           />
@@ -345,8 +345,8 @@ MindHeal Mental Health Platform
           className="mr-4"
           style={{ opacity: booking ? 0.5 : 1 }}
         >
-          <Ionicons
-            name="chevron-back"
+          <M3Icon
+            name="chevron-left"
             size={24}
             color={isDarkColorScheme ? "#ffffff" : "#000000"}
           />
@@ -502,72 +502,65 @@ MindHeal Mental Health Platform
 
         {/* Step 3: Session Details */}
         {step === 3 && (
-          <View>
-            <Text className="text-xl font-semibold text-foreground mb-4">
+          <View className="pb-4">
+            <Text className="text-xl font-semibold text-foreground mb-3">
               Session Details
             </Text>
 
-            <Text className="text-lg font-medium text-foreground mb-3">
+            <Text className="text-base font-medium text-foreground mb-2">
               Session Type
             </Text>
-            {sessionTypes.map((type) => (
-              <TouchableOpacity
-                key={type.id}
-                onPress={() => setSelectedSessionType(type)}
-                className={`p-4 rounded-lg border mb-3 ${
-                  selectedSessionType?.id === type.id
-                    ? "bg-primary/10 border-primary"
-                    : "bg-card border-border"
-                }`}
-              >
-                <View className="flex-row justify-between items-start">
-                  <View className="flex-1">
-                    <Text className="text-lg font-semibold text-foreground mb-1">
+            {/* Compact session type cards - 2 columns */}
+            <View className="flex-row flex-wrap justify-between mb-3">
+              {sessionTypes.map((type) => (
+                <TouchableOpacity
+                  key={type.id}
+                  onPress={() => setSelectedSessionType(type)}
+                  className={`w-[48%] p-3 rounded-lg border mb-2 ${
+                    selectedSessionType?.id === type.id
+                      ? "bg-primary/10 border-primary"
+                      : "bg-card border-border"
+                  }`}
+                >
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-base font-semibold text-foreground flex-1" numberOfLines={1}>
                       {type.name}
                     </Text>
-                    <Text className="text-muted-foreground mb-2">
-                      {type.description}
-                    </Text>
-                    <Text className="text-sm text-muted-foreground">
-                      {type.duration} minutes
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-lg font-bold text-foreground">
+                    <Text className="text-base font-bold text-primary ml-1">
                       ${type.price}
                     </Text>
-                    <Text className="text-xs text-muted-foreground">
-                      per session
-                    </Text>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-
-            {/* Payment Note */}
-            <View className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
-              <View className="flex-row items-center mb-2">
-                <Ionicons name="information-circle" size={20} color="#F59E0B" />
-                <Text className="text-amber-600 dark:text-amber-400 font-medium ml-2">
-                  Payment Information
-                </Text>
-              </View>
-              <Text className="text-muted-foreground text-sm">
-                Payment will be arranged directly with your counsellor. 
-                The displayed price is an estimate based on the counsellor&apos;s rate.
-              </Text>
+                  <Text className="text-xs text-muted-foreground mb-1" numberOfLines={2}>
+                    {type.description}
+                  </Text>
+                  <Text className="text-xs text-muted-foreground">
+                    {type.duration} min
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            <Text className="text-lg font-medium text-foreground mb-3">
-              What would you like to discuss? (Optional)
+            {/* Compact Payment Note */}
+            <View className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-3">
+              <View className="flex-row items-start">
+                <M3Icon name="information-circle" size={16} color="#F59E0B" />
+                <Text className="text-muted-foreground text-xs ml-2 flex-1">
+                  Payment arranged directly with counsellor. Price is an estimate.
+                </Text>
+              </View>
+            </View>
+
+            <Text className="text-base font-medium text-foreground mb-2">
+              Notes (Optional)
             </Text>
             <Input
               value={sessionNotes}
               onChangeText={setSessionNotes}
-              placeholder="Share any topics, concerns, or goals for this session..."
+              placeholder="Topics or goals for this session..."
               multiline
-              numberOfLines={3}
-              className="mb-6"
+              numberOfLines={2}
+              className="mb-4"
+              style={{ minHeight: 60, maxHeight: 80 }}
             />
 
             <Button onPress={selectSessionDetails} className="w-full">
@@ -642,8 +635,8 @@ MindHeal Mental Health Platform
             >
               {booking ? (
                 <View className="flex-row items-center">
-                  <ActivityIndicator
-                    size="small"
+                  <M3CircularProgress
+                    size={20}
                     color="#ffffff"
                     style={{ marginRight: 8 }}
                   />

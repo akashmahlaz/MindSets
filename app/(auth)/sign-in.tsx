@@ -1,5 +1,7 @@
+import { M3Icon } from "@/components/ui/M3Icon";
+import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Apple from "expo-apple-authentication";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -10,7 +12,6 @@ import {
 } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
     Animated,
     Easing,
     Keyboard,
@@ -214,7 +215,7 @@ export default function SignInScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Text style={{ fontSize: 40 }}>🧠</Text>
+                    <MaterialCommunityIcons name="brain" size={40} color="#2AA79D" />
                   </View>
                 </LinearGradient>
               </View>
@@ -304,7 +305,7 @@ export default function SignInScreen() {
                         justifyContent: "center",
                       }}
                     >
-                      <Ionicons name="mail" size={18} color={colors.primary} />
+                      <M3Icon name="mail" size={18} color={colors.primary} />
                     </View>
                     <TextInput
                       placeholder="Enter your email"
@@ -360,7 +361,7 @@ export default function SignInScreen() {
                         justifyContent: "center",
                       }}
                     >
-                      <Ionicons name="lock-closed" size={18} color={colors.primary} />
+                      <M3Icon name="lock-closed" size={18} color={colors.primary} />
                     </View>
                     <TextInput
                       placeholder="Enter your password"
@@ -383,7 +384,7 @@ export default function SignInScreen() {
                         padding: 8,
                       }}
                     >
-                      <Ionicons 
+                      <M3Icon 
                         name={showPassword ? "eye" : "eye-off"} 
                         size={20} 
                         color={colors.textMuted}
@@ -404,7 +405,7 @@ export default function SignInScreen() {
                       marginBottom: 20,
                     }}
                   >
-                    <Ionicons name="alert-circle" size={20} color={colors.error} />
+                    <M3Icon name="error" size={20} color={colors.error} />
                     <Text style={{ color: colors.error, fontSize: 14, marginLeft: 10, flex: 1, fontWeight: "500" }}>
                       {error}
                     </Text>
@@ -437,13 +438,13 @@ export default function SignInScreen() {
                     }}
                   >
                     {isLoading && loadingType === "email" ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <M3CircularProgress size={20} color="#FFFFFF" />
                     ) : (
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                         <Text style={{ fontSize: 16, fontWeight: "600", color: "#FFFFFF" }}>
                           Sign In
                         </Text>
-                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                        <M3Icon name="arrow-forward" size={18} color="#FFFFFF" />
                       </View>
                     )}
                   </LinearGradient>
@@ -484,10 +485,10 @@ export default function SignInScreen() {
                   })}
                 >
                   {isLoading && loadingType === "apple" ? (
-                    <ActivityIndicator size="small" color={isDarkColorScheme ? "#000000" : "#FFFFFF"} />
+                    <M3CircularProgress size={20} color={isDarkColorScheme ? "#000000" : "#FFFFFF"} />
                   ) : (
                     <>
-                      <Ionicons name="logo-apple" size={20} color={isDarkColorScheme ? "#000000" : "#FFFFFF"} />
+                      <M3Icon name="logo-apple" size={20} color={isDarkColorScheme ? "#000000" : "#FFFFFF"} />
                       <Text 
                         style={{ 
                           fontSize: 15, 

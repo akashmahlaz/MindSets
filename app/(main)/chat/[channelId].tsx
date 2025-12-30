@@ -8,27 +8,27 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StatusBar,
-  Text,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    StatusBar,
+    Text,
+    View
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Channel as StreamChannel } from "stream-chat";
 import {
-  Channel,
-  MessageInput,
-  MessageList,
+    Channel,
+    MessageInput,
+    MessageList,
 } from "stream-chat-expo";
 
 export default function ChatScreen() {
@@ -454,15 +454,19 @@ export default function ChatScreen() {
         {/* Chat Area with proper keyboard handling */}
         <KeyboardAvoidingView 
           style={{ flex: 1 }} 
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={0}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
           <Channel
             channel={channel}
             enforceUniqueReaction={true}
+            keyboardVerticalOffset={0}
           >
             <MessageList />
-            <View style={{ marginBottom: keyboardHeight > 0 ? 0 : -insets.bottom }}>
+            {/* Add bottom padding when keyboard is hidden to stay above navigation bar */}
+            <View style={{ 
+              paddingBottom: Platform.OS === 'android' && keyboardHeight === 0 ? Math.max(insets.bottom, 16) : 0 
+            }}>
               <MessageInput />
             </View>
           </Channel>

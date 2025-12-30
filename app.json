@@ -93,7 +93,28 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#0F1117"
+          },
+          "ios": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#FFFFFF",
+            "dark": {
+              "image": "./assets/images/splash-icon.png",
+              "backgroundColor": "#0F1117"
+            }
+          },
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 200,
+            "backgroundColor": "#FFFFFF",
+            "dark": {
+              "image": "./assets/images/splash-icon.png",
+              "backgroundColor": "#0F1117"
+            }
+          }
         }
       ],
       [

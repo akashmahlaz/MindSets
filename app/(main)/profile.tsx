@@ -1,12 +1,12 @@
+import { M3Icon } from "@/components/ui/M3Icon";
+import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { UserProfileData } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
-    ActivityIndicator,
     Alert,
     Animated,
     Image,
@@ -43,9 +43,9 @@ export default function UserProfileScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  // Premium Material Design 3 colors
+  // Premium Material Design 3 colors - matching tab layout background exactly
   const colors = {
-    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",
+    background: isDarkColorScheme ? "#0C0F14" : "#FAFBFC",  // Must match _layout.tsx
     surface: isDarkColorScheme ? "#1E293B" : "#FFFFFF",
     surfaceVariant: isDarkColorScheme ? "#334155" : "#F1F5F9",
     text: isDarkColorScheme ? "#F1F5F9" : "#0F172A",
@@ -92,7 +92,7 @@ export default function UserProfileScreen() {
             alignItems: 'center',
             marginBottom: 16,
           }}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <M3CircularProgress size="medium" color={colors.primary} />
           </View>
           <Text style={{ color: colors.textSecondary, fontSize: 16 }}>Loading profile...</Text>
         </View>
@@ -138,7 +138,7 @@ export default function UserProfileScreen() {
               alignItems: 'center',
             }}
           >
-            <Ionicons name="settings-outline" size={22} color={colors.text} />
+            <M3Icon name="settings-outline" size={22} color={colors.text} />
           </Pressable>
         </View>
 
@@ -294,12 +294,12 @@ export default function UserProfileScreen() {
                     alignItems: 'center',
                     marginRight: 14,
                   }}>
-                    <Ionicons name={item.icon as any} size={20} color={item.color} />
+                    <M3Icon name={item.icon as any} size={20} color={item.color} />
                   </View>
                   <Text style={{ flex: 1, fontSize: 16, fontWeight: '500', color: colors.text }}>
                     {item.label}
                   </Text>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  <M3Icon name="chevron-right" size={20} color={colors.textSecondary} />
                 </Pressable>
               ))}
             </View>
@@ -351,7 +351,7 @@ export default function UserProfileScreen() {
                 borderColor: colors.border,
               }}
             >
-              <Ionicons name="log-out-outline" size={18} color={colors.textSecondary} />
+              <M3Icon name="logout-outline" size={18} color={colors.textSecondary} />
               <Text style={{ color: colors.textSecondary, marginLeft: 8, fontSize: 15, fontWeight: '500' }}>
                 Sign Out
               </Text>

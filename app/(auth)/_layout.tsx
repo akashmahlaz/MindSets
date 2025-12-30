@@ -1,8 +1,17 @@
+import { useColorScheme } from "@/lib/useColorScheme";
 import { Stack } from "expo-router";
 
 export default function AuthLayout() {
+  const { isDarkColorScheme } = useColorScheme();
+  const backgroundColor = isDarkColorScheme ? "#0C0F14" : "#FAFBFC";
+
   return (
-    <Stack screenOptions={{ animation: "slide_from_right" }}>
+    <Stack
+      screenOptions={{
+        animation: "slide_from_right",
+        contentStyle: { backgroundColor },
+      }}
+    >
       <Stack.Screen
         name="onboarding"
         options={{ title: "Welcome", headerShown: false }}
