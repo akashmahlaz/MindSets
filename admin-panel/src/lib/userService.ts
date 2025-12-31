@@ -1,6 +1,5 @@
 import {
     collection,
-    deleteDoc,
     doc,
     getDoc,
     getDocs,
@@ -8,7 +7,7 @@ import {
     query,
     Timestamp,
     updateDoc,
-    where,
+    where
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -115,10 +114,45 @@ export const toggleUserStatus = async (
 // Delete user (soft delete - just marks as deleted)
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
-    const docRef = doc(db, "users", userId);
-    await deleteDoc(docRef);
+    // Call API route to delete from both Auth and Firestore
+    const response = await fetch("/api/users", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to delete user");
+    }
   } catch (error) {
     console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
+// Bulk delete users
+export const bulkDeleteUsers = async (userIds: string[]): Promise<{ success: string[]; failed: string[] }> => {
+  try {
+    const response = await fetch("/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userIds, action: "bulk-delete" }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to delete users");
+    }
+
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error bulk deleting users:", error);
     throw error;
   }
 };
