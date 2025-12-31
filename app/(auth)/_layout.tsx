@@ -36,6 +36,10 @@ export default function AuthLayout() {
         name="sign-up-counsellor"
         options={{ title: "Counsellor Application", headerShown: false }}
       />
+      <Stack.Screen
+        name="verify-email"
+        options={{ title: "Verify Email", headerShown: false }}
+      />
     </Stack>
   );
 }

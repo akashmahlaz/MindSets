@@ -14,7 +14,6 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -22,7 +21,7 @@ import {
     StatusBar,
     Text,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -79,11 +78,8 @@ export default function CounsellorSignUpScreen() {
         "counsellor",
       );
 
-      Alert.alert(
-        "Application Submitted",
-        "Thank you for applying to join Mind Sets as a counsellor. Your application is under review.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/sign-in") }],
-      );
+      // Redirect to email verification screen
+      router.replace("/(auth)/verify-email");
     } catch (error: any) {
       console.error("Sign-up error:", error);
       let errorMessage = "Failed to submit application. Please try again.";

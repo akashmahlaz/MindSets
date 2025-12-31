@@ -200,11 +200,8 @@ export default function CounsellorSignUpScreen() {
         }
       }
 
-      Alert.alert(
-        "Application Submitted! 📧",
-        "Thank you for applying! We've sent a verification email to your address. Please verify your email. Your application is under review and we'll contact you within 3-5 business days.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/sign-in") }],
-      );
+      // Redirect to email verification screen
+      router.replace("/(auth)/verify-email");
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to submit application.");
     } finally {

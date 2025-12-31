@@ -364,6 +364,7 @@ function RootNavigator() {
     if (!isReady || loading || !navigationState?.key || hasSeenOnboarding === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const onVerifyScreen = segments[1] === "verify-email";
 
     try {
       if (!user && !inAuthGroup) {
@@ -375,8 +376,11 @@ function RootNavigator() {
           // Returning user - show role selection
           router.replace("/(auth)/role-selection");
         }
-      } else if (user && inAuthGroup) {
-        // User is signed in but on auth screens
+      } else if (user && !user.emailVerified && !onVerifyScreen) {
+        // User is signed in but email not verified - redirect to verify screen
+        router.replace("/(auth)/verify-email");
+      } else if (user && user.emailVerified && inAuthGroup) {
+        // User is signed in with verified email but on auth screens
         router.replace("/(main)");
       }
     } catch (e) {

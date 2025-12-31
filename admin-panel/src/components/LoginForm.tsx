@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/lib/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import { sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Lock, Mail, MailCheck, RefreshCw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,6 +28,12 @@ export default function LoginForm() {
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  
+  // Email verification state
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  
   const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +42,12 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      const result = await signIn(email, password);
+      if (result?.needsVerification) {
+        setNeedsVerification(true);
+        setVerificationEmail(result.email);
+        toast.info("Please verify your email to continue");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         if (err.message.includes("admin")) {
@@ -52,6 +63,30 @@ export default function LoginForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendVerification = async () => {
+    setIsResendingVerification(true);
+    try {
+      // Sign in temporarily to resend verification
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (!userCredential.user.emailVerified) {
+        await sendEmailVerification(userCredential.user);
+        toast.success("Verification email sent!");
+      }
+      // Sign out after sending
+      await auth.signOut();
+    } catch (error) {
+      toast.error("Failed to resend verification email");
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setNeedsVerification(false);
+    setVerificationEmail("");
+    setPassword("");
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -87,7 +122,78 @@ export default function LoginForm() {
 
   return (
     <>
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+      {/* Email Verification Required Card */}
+      {needsVerification ? (
+        <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+          <CardHeader className="space-y-4 text-center pb-2">
+            <div className="mx-auto w-20 h-20 bg-linear-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200">
+              <MailCheck className="w-10 h-10 text-white" />
+            </div>
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold text-gray-900">Verify Your Email</CardTitle>
+              <CardDescription className="text-gray-500">
+                We sent a verification link to your email
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="space-y-6">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-amber-900">Check your inbox</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      We sent a verification link to <span className="font-medium">{verificationEmail}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 text-center">
+                  Click the link in the email to verify your account, then come back and sign in.
+                </p>
+                
+                <Button
+                  onClick={handleResendVerification}
+                  variant="outline"
+                  className="w-full h-12 rounded-xl"
+                  disabled={isResendingVerification}
+                >
+                  {isResendingVerification ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Resend Verification Email
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handleBackToLogin}
+                  className="w-full h-12 bg-linear-to-r from-[#2AB09C] to-[#1a8a7a] hover:from-[#249588] hover:to-[#157a6c] text-white rounded-xl"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Sign In
+                </Button>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-center text-xs text-gray-400">
+                  Didn&apos;t receive the email? Check your spam folder or try resending.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Login Card */
+        <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
         <CardHeader className="space-y-4 text-center pb-2">
           <div className="mx-auto w-20 h-20 bg-linear-to-br from-[#2AB09C] to-[#1a8a7a] rounded-2xl flex items-center justify-center shadow-lg shadow-teal-200">
             <ShieldCheck className="w-10 h-10 text-white" />
@@ -179,6 +285,7 @@ export default function LoginForm() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Forgot Password Dialog */}
       <Dialog open={showForgotPassword} onOpenChange={closeForgotPassword}>

@@ -7,7 +7,6 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Animated,
     Keyboard,
     KeyboardAvoidingView,
@@ -18,7 +17,7 @@ import {
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -120,11 +119,8 @@ export default function UserSignUpScreen() {
 
       await signUpEnhanced(formData.email, formData.password, profileData, "user");
 
-      Alert.alert(
-        "Verify Your Email 📧",
-        "We've sent a verification link to your email. Please verify your email to complete registration.",
-        [{ text: "Got it!", onPress: () => router.replace("/(main)") }],
-      );
+      // Redirect to email verification screen
+      router.replace("/(auth)/verify-email");
     } catch (err: any) {
       console.error("Sign-up error:", err);
       const errorMessages: Record<string, string> = {
