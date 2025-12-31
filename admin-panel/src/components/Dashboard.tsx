@@ -88,7 +88,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 " />
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function Dashboard() {
             {recentUsers.map((user) => (
               <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-linear-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
                     <span className="text-indigo-600 font-semibold">
                       {getInitials(user.displayName)}
                     </span>

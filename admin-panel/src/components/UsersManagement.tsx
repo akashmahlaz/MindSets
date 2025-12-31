@@ -129,7 +129,7 @@ export default function UsersManagement() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-linear-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
                       <span className="text-indigo-600 font-semibold">
                         {getInitials(user.displayName)}
                       </span>

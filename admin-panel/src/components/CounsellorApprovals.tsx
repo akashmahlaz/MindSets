@@ -103,12 +103,12 @@ export default function CounsellorApprovals() {
       {/* Header & Filters */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lg  text-gray-100" />
           <Input
             placeholder="Search counsellors..."
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-[#2AB09C] text-white placeholder-white focus:ring-0 focus:border-white rounded-4xl"
           />
         </div>
         <Tabs value={filter} onValueChange={(v: string) => setFilter(v as typeof filter)}>
@@ -136,14 +136,14 @@ export default function CounsellorApprovals() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
-                      <span className="text-indigo-600 font-bold text-lg">
+                    <div className="w-14 h-14 bg-linear-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                      <span className="text-[#2AB09C] font-bold text-lg">
                         {getInitials(counsellor.displayName)}
                       </span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900">{counsellor.displayName}</h3>
+                        <h3 className="font-semibold text-[#2AB09C]">{counsellor.displayName}</h3>
                         {getStatusBadge(counsellor.verificationStatus)}
                       </div>
                       <p className="text-sm text-gray-500 mb-2">{counsellor.email}</p>
@@ -154,7 +154,7 @@ export default function CounsellorApprovals() {
                           </span>
                         )}
                         {counsellor.yearsExperience && (
-                          <span className="px-2 py-1 bg-gray-100 rounded-md text-gray-600">
+                          <span className="px-2 py-1 bg-gray-100 rounded-md text-[#2AB09C]">
                             {counsellor.yearsExperience} years exp.
                           </span>
                         )}
@@ -179,18 +179,20 @@ export default function CounsellorApprovals() {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
+                      className="bg-[#2AB09C] rounded-3xl"
                       size="sm"
                       onClick={() => setSelectedCounsellor(counsellor)}
                     >
-                      <Eye className="w-4 h-4 mr-1" />
+                      <Eye className="w-4  h-4 mr-1" />
                       View
                     </Button>
                     {counsellor.verificationStatus === "pending" && (
                       <>
                         <Button
                           variant="outline"
+                           className="bg-[#2AB09C] rounded-3xl"    
                           size="sm"
-                          className="text-green-600 hover:bg-green-50"
+                         
                           onClick={() => updateStatus(counsellor.id, "verified")}
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
@@ -199,7 +201,8 @@ export default function CounsellorApprovals() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 hover:bg-red-50"
+                          
+                          className="text-[WHITE] hover:bg-[RED] bg-[red] rounded-3xl"
                           onClick={() => updateStatus(counsellor.id, "rejected")}
                         >
                           <XCircle className="w-4 h-4 mr-1" />
@@ -229,7 +232,7 @@ export default function CounsellorApprovals() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                  <div className="w-16 h-16 bg-linear-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
                     <span className="text-indigo-600 font-bold text-xl">
                       {getInitials(selectedCounsellor.displayName)}
                     </span>

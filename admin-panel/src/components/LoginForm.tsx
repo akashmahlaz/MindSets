@@ -41,13 +41,13 @@ export default function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur">
       <CardHeader className="space-y-4 text-center pb-2">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <ShieldCheck className="w-8 h-8 text-white" />
+        <div className="mx-auto w-16 h-16 bg-[#2AB09C] rounded-2xl flex items-center justify-center shadow-lg">
+          <span className="w-8 h-8 text-white text-3xl">M</span>
         </div>
         <div>
           <CardTitle className="text-2xl font-bold text-gray-900">Admin Portal</CardTitle>
           <CardDescription className="text-gray-600 mt-2">
-            Sign in to access the MindHeal admin dashboard
+            Sign in to access the MindSets admin dashboard
           </CardDescription>
         </div>
       </CardHeader>
@@ -69,7 +69,7 @@ export default function LoginForm() {
                 placeholder="admin@mindheal.com"
                 value={email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-4xl bg-gray-100 text-[#2AB09C]  border-none focus:ring-0 focus:bg-white  "
                 required
               />
             </div>
@@ -84,13 +84,13 @@ export default function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-4xl bg-gray-100 text-[#2AB09C]  border-none focus:ring-0 focus:bg-white  "
                 required
               />
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-gray-100 text-[#2AB09C] hover:text-gray-100 rounded-4xl p-6 text-xl hover:bg-[#249588]" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
