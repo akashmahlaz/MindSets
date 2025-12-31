@@ -146,10 +146,14 @@ export const getArticle = async (
       return null;
     }
 
-    // Increment view count
-    await updateDoc(doc(db, ARTICLES_COLLECTION, articleId), {
-      viewCount: (articleDoc.data().viewCount || 0) + 1,
-    });
+    // Try to increment view count (may fail if not author, that's ok)
+    try {
+      await updateDoc(doc(db, ARTICLES_COLLECTION, articleId), {
+        viewCount: (articleDoc.data().viewCount || 0) + 1,
+      });
+    } catch {
+      // View count update failed (user not author) - that's ok, just continue
+    }
 
     return {
       id: articleDoc.id,

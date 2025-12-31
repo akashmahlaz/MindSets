@@ -103,7 +103,6 @@ export default function UserProfileScreen() {
   const menuItems = [
     { icon: "chatbubbles-outline", label: "My Conversations", route: "/chat", color: "#2AA79D" },
     { icon: "calendar-outline", label: "My Sessions", route: "/(main)/sessions", color: "#3A9C94" },
-    { icon: "heart-outline", label: "Saved Counselors", route: "/(main)/Counselors", color: "#EC4899" },
     { icon: "book-outline", label: "Stories", route: "/(resources)/articles", color: "#248F87" },
     { icon: "journal-outline", label: "My Journal", route: "/(resources)/journal", color: "#F59E0B" },
   ];

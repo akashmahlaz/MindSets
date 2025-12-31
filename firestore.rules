@@ -82,7 +82,11 @@ service cloud.firestore {
       // Any authenticated user can create articles
       allow create: if isAuthenticated();
       
-      // Users can update/delete their own articles
+      // Anyone authenticated can update viewCount only
+      allow update: if isAuthenticated() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']);
+      
+      // Users can update/delete their own articles (full access)
       allow update, delete: if isAuthenticated() && 
         resource.data.authorId == request.auth.uid;
       

@@ -4,10 +4,11 @@ import {
     getAllArticles,
     getUserArticles,
 } from "@/services/articleService";
+import { getSavedArticleIds, saveArticle, unsaveArticle } from "@/services/userService";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Dimensions,
     Image,
@@ -22,7 +23,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type TabType = "discover" | "my-stories";
+type TabType = "discover" | "my-stories" | "bookmarks";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.55; // Big cards like Perplexity
@@ -58,6 +59,7 @@ const CATEGORIES = [
 const MAIN_TABS = [
   { id: "discover", label: "Discover", icon: "compass-outline" },
   { id: "my-stories", label: "My Stories", icon: "person-outline" },
+  { id: "bookmarks", label: "Bookmarks", icon: "bookmark-outline" },
 ];
 
 export default function StoriesIndex() {
@@ -68,14 +70,39 @@ export default function StoriesIndex() {
   const { userProfile } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [userArticles, setUserArticles] = useState<Article[]>([]);
+  const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("for-you");
   const [activeTab, setActiveTab] = useState<TabType>("discover");
 
+  // Load bookmarked article IDs
+  const loadBookmarkedIds = useCallback(async () => {
+    if (!userProfile?.uid) return;
+    try {
+      // Get saved article IDs from user profile (single Firebase call)
+      const savedIds = await getSavedArticleIds(userProfile.uid);
+      setBookmarkedIds(new Set(savedIds));
+    } catch (error) {
+      console.error("Error loading bookmarks:", error);
+    }
+  }, [userProfile?.uid]);
+
+  // Load bookmarked articles when we have both articles and bookmarked IDs
+  useEffect(() => {
+    if (articles.length > 0 && bookmarkedIds.size > 0) {
+      const bookmarked = articles.filter(article => bookmarkedIds.has(article.id));
+      setBookmarkedArticles(bookmarked);
+    } else if (bookmarkedIds.size === 0) {
+      setBookmarkedArticles([]);
+    }
+  }, [articles, bookmarkedIds]);
+
   useEffect(() => {
     loadStories();
-  }, [activeTab]);
+    loadBookmarkedIds();
+  }, [activeTab, loadBookmarkedIds]);
 
   const loadStories = async () => {
     try {
@@ -99,9 +126,40 @@ export default function StoriesIndex() {
     loadStories();
   };
 
-  // Filter stories by category or show user's stories
+  // Toggle bookmark
+  const handleBookmark = async (articleId: string, e: any) => {
+    e.stopPropagation(); // Prevent card press
+    if (!userProfile?.uid) return;
+    
+    try {
+      const isCurrentlyBookmarked = bookmarkedIds.has(articleId);
+      
+      if (isCurrentlyBookmarked) {
+        await unsaveArticle(userProfile.uid, articleId);
+        setBookmarkedIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(articleId);
+          return newSet;
+        });
+        setBookmarkedArticles(prev => prev.filter(a => a.id !== articleId));
+      } else {
+        await saveArticle(userProfile.uid, articleId);
+        setBookmarkedIds(prev => new Set([...prev, articleId]));
+        const article = articles.find(a => a.id === articleId);
+        if (article) {
+          setBookmarkedArticles(prev => [...prev, article]);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+    }
+  };
+
+  // Filter stories by category or show user's stories or bookmarks
   const filteredStories = activeTab === "my-stories" 
     ? userArticles
+    : activeTab === "bookmarks"
+    ? bookmarkedArticles
     : articles.filter((article) => {
         if (selectedCategory === "for-you") return true;
         if (selectedCategory === "top-stories") return article.isFeatured || article.viewCount > 10;
@@ -218,15 +276,22 @@ export default function StoriesIndex() {
             </View>
 
             {/* Bookmark Icon */}
-            <TouchableOpacity style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: "rgba(255,255,255,0.15)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}>
-              <Ionicons name="bookmark-outline" size={20} color="#FFF" />
+            <TouchableOpacity 
+              onPress={(e) => handleBookmark(article.id, e)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: bookmarkedIds.has(article.id) ? colors.primary : "rgba(255,255,255,0.15)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons 
+                name={bookmarkedIds.has(article.id) ? "bookmark" : "bookmark-outline"} 
+                size={20} 
+                color="#FFF" 
+              />
             </TouchableOpacity>
           </View>
         </LinearGradient>
@@ -437,7 +502,11 @@ export default function StoriesIndex() {
               alignItems: "center",
               marginBottom: 24,
             }}>
-              <Ionicons name={activeTab === "my-stories" ? "create-outline" : "newspaper-outline"} size={48} color={colors.textMuted} />
+              <Ionicons 
+                name={activeTab === "my-stories" ? "create-outline" : activeTab === "bookmarks" ? "bookmark-outline" : "newspaper-outline"} 
+                size={48} 
+                color={colors.textMuted} 
+              />
             </View>
             <Text style={{
               fontSize: 22,
@@ -445,7 +514,7 @@ export default function StoriesIndex() {
               color: colors.text,
               marginBottom: 8,
             }}>
-              {activeTab === "my-stories" ? "No stories yet" : "No stories found"}
+              {activeTab === "my-stories" ? "No stories yet" : activeTab === "bookmarks" ? "No bookmarks yet" : "No stories found"}
             </Text>
             <Text style={{
               fontSize: 16,
@@ -456,25 +525,29 @@ export default function StoriesIndex() {
             }}>
               {activeTab === "my-stories" 
                 ? "Share your thoughts and experiences with the community"
+                : activeTab === "bookmarks"
+                ? "Bookmark stories to save them for later reading"
                 : "Check back later for new content"}
             </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/articles/create" as any)}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 28,
-                paddingVertical: 16,
-                borderRadius: 24,
-                marginTop: 28,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Ionicons name="create-outline" size={20} color="#FFF" />
-              <Text style={{ color: "#FFF", fontWeight: "600", fontSize: 16, marginLeft: 8 }}>
-                Write Story
-              </Text>
-            </TouchableOpacity>
+            {activeTab !== "bookmarks" && (
+              <TouchableOpacity
+                onPress={() => router.push("/articles/create" as any)}
+                style={{
+                  backgroundColor: colors.primary,
+                  paddingHorizontal: 28,
+                  paddingVertical: 16,
+                  borderRadius: 24,
+                  marginTop: 28,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Ionicons name="create-outline" size={20} color="#FFF" />
+                <Text style={{ color: "#FFF", fontWeight: "600", fontSize: 16, marginLeft: 8 }}>
+                  Write Story
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>

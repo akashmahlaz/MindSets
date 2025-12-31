@@ -686,3 +686,102 @@ export const deleteProfilePhoto = async (uid: string): Promise<void> => {
     throw error;
   }
 };
+
+// ============ SAVED ARTICLES (BOOKMARKS) ============
+
+// Save an article to user's bookmarks
+export const saveArticle = async (
+  userId: string,
+  articleId: string
+): Promise<void> => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new Error("User not found");
+    }
+    
+    const userData = userDoc.data();
+    const savedArticles = userData.savedArticles || [];
+    
+    if (!savedArticles.includes(articleId)) {
+      await updateDoc(userRef, {
+        savedArticles: [...savedArticles, articleId],
+      });
+      console.log("✅ Article saved:", articleId);
+    }
+  } catch (error) {
+    console.error("Error saving article:", error);
+    throw error;
+  }
+};
+
+// Remove an article from user's bookmarks
+export const unsaveArticle = async (
+  userId: string,
+  articleId: string
+): Promise<void> => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new Error("User not found");
+    }
+    
+    const userData = userDoc.data();
+    const savedArticles = userData.savedArticles || [];
+    
+    await updateDoc(userRef, {
+      savedArticles: savedArticles.filter((id: string) => id !== articleId),
+    });
+    console.log("✅ Article unsaved:", articleId);
+  } catch (error) {
+    console.error("Error unsaving article:", error);
+    throw error;
+  }
+};
+
+// Check if an article is saved
+export const isArticleSaved = async (
+  userId: string,
+  articleId: string
+): Promise<boolean> => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      return false;
+    }
+    
+    const userData = userDoc.data();
+    const savedArticles = userData.savedArticles || [];
+    
+    return savedArticles.includes(articleId);
+  } catch (error) {
+    console.error("Error checking saved article:", error);
+    return false;
+  }
+};
+
+// Get all saved article IDs for a user (efficient single call)
+export const getSavedArticleIds = async (
+  userId: string
+): Promise<string[]> => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      return [];
+    }
+    
+    const userData = userDoc.data();
+    return userData.savedArticles || [];
+  } catch (error) {
+    console.error("Error getting saved article IDs:", error);
+    return [];
+  }
+};

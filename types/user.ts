@@ -60,6 +60,9 @@ export interface UserProfileData extends BaseUserProfile {
   gender?: "male" | "female" | "non-binary" | "prefer-not-to-say";
   phone?: string;
 
+  // Saved articles (bookmarks)
+  savedArticles?: string[]; // Array of article IDs
+
   // Mental health information
   primaryConcerns: string[]; // e.g., ['anxiety', 'depression', 'stress', 'trauma']
   severityLevel?: "mild" | "moderate" | "severe";
