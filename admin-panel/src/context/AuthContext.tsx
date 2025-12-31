@@ -9,6 +9,7 @@ interface AdminUser {
   uid: string;
   email: string | null;
   displayName: string | null;
+  photoURL?: string | null;
   role: string;
   isAdmin: boolean;
 }
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName: userData?.displayName || firebaseUser.displayName,
+              photoURL: userData?.photoURL || firebaseUser.photoURL,
               role: userData?.role || "admin",
               isAdmin: true,
             });

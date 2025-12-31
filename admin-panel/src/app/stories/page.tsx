@@ -2,11 +2,10 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout";
 import LoginForm from "@/components/LoginForm";
-import { Card, CardContent } from "@/components/ui/card";
+import StoriesManagement from "@/components/StoriesManagement";
 import { useAuth } from "@/context/AuthContext";
-import { Settings } from "lucide-react";
 
-export default function SettingsPage() {
+export default function StoriesPage() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -28,16 +27,12 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Configure admin panel settings</p>
+        <h1 className="text-2xl font-bold text-gray-900">Stories & Articles</h1>
+        <p className="text-gray-500 mt-1">
+          Create, manage, and publish mental health stories and resources
+        </p>
       </div>
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-12 text-center">
-          <Settings className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">Coming Soon</h2>
-          <p className="text-gray-500">Settings configuration is under development</p>
-        </CardContent>
-      </Card>
+      <StoriesManagement />
     </DashboardLayout>
   );
 }

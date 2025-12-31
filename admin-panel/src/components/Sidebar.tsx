@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
+  BookOpen,
   Home,
   LogOut,
   MessageSquare,
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/approvals", label: "Approvals", icon: ShieldCheck },
   { href: "/users", label: "Users", icon: Users },
+  { href: "/stories", label: "Stories", icon: BookOpen },
   { href: "/chats", label: "Chats", icon: MessageSquare },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
