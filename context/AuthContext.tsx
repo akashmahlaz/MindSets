@@ -1,23 +1,25 @@
 import { auth } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  User,
-  UserCredential,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    sendEmailVerification,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
+    signOut,
+    User,
+    UserCredential,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { disablePushNotifications } from "../lib/pushNotificationHelpers";
 import { pushNotificationService } from "../lib/pushNotificationService";
 import { requestNotificationPermissions } from "../lib/requestPermissions";
 import {
-  createEnhancedUserProfile,
-  createUserProfile,
-  getUserProfile,
-  updateUserPushToken,
-  updateUserStatus,
+    createEnhancedUserProfile,
+    createUserProfile,
+    getUserProfile,
+    updateUserPushToken,
+    updateUserStatus,
 } from "../services/userService";
 import { UserProfile, UserRole } from "../types/user";
 
@@ -35,6 +37,8 @@ interface AuthContextType {
   ) => Promise<UserCredential>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,7 +75,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password,
     );
     await createEnhancedUserProfile(userCredential.user, profileData, role);
+    
+    // Send email verification
+    await sendEmailVerification(userCredential.user);
+    
     return userCredential;
+  };
+
+  const forgotPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  const resendVerificationEmail = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+    }
   };
 
   const refreshUserProfile = async () => {
@@ -142,6 +160,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         signUpEnhanced,
         logout,
         refreshUserProfile,
+        forgotPassword,
+        resendVerificationEmail,
       }}
     >
       {children}

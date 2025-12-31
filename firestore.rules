@@ -28,6 +28,9 @@ service cloud.firestore {
       
       // Allow admins to update any user (for verification, role changes, etc.)
       allow update: if isAdmin();
+      
+      // Allow admins to delete any user (for user management)
+      allow delete: if isAdmin();
     }
     
     // Notifications - users can read their own notifications

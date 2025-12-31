@@ -121,9 +121,9 @@ export default function UserSignUpScreen() {
       await signUpEnhanced(formData.email, formData.password, profileData, "user");
 
       Alert.alert(
-        "Welcome to MindSets! 🎉",
-        "Your account has been created successfully. Let's start your wellness journey.",
-        [{ text: "Get Started", onPress: () => router.replace("/(main)") }],
+        "Verify Your Email 📧",
+        "We've sent a verification link to your email. Please verify your email to complete registration.",
+        [{ text: "Got it!", onPress: () => router.replace("/(main)") }],
       );
     } catch (err: any) {
       console.error("Sign-up error:", err);

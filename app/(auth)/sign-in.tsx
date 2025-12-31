@@ -1,29 +1,32 @@
 import { M3Icon } from "@/components/ui/M3Icon";
 import { M3CircularProgress } from "@/components/ui/M3ProgressIndicator";
+import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Apple from "expo-apple-authentication";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-    OAuthProvider,
-    signInWithCredential,
-    signInWithEmailAndPassword,
+  OAuthProvider,
+  signInWithCredential,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Easing,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
+  Alert,
+  Animated,
+  Easing,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "../../firebaseConfig";
@@ -35,8 +38,12 @@ export default function SignInScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"email" | "google" | "apple" | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const router = useRouter();
   const { isDarkColorScheme } = useColorScheme();
+  const { forgotPassword } = useAuth();
   
   // Premium animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -160,6 +167,38 @@ export default function SignInScreen() {
     } finally {
       setIsLoading(false);
       setLoadingType(null);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail.trim()) {
+      Alert.alert("Error", "Please enter your email address");
+      return;
+    }
+
+    if (!forgotPasswordEmail.includes("@")) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
+    try {
+      setForgotPasswordLoading(true);
+      await forgotPassword(forgotPasswordEmail.trim());
+      Alert.alert(
+        "Email Sent! 📧",
+        "We've sent a password reset link to your email. Please check your inbox.",
+        [{ text: "OK", onPress: () => setShowForgotPassword(false) }]
+      );
+      setForgotPasswordEmail("");
+    } catch (error: any) {
+      const errorMessages: Record<string, string> = {
+        "auth/user-not-found": "No account found with this email",
+        "auth/invalid-email": "Invalid email address",
+        "auth/too-many-requests": "Too many requests. Try again later",
+      };
+      Alert.alert("Error", errorMessages[error.code] || "Failed to send reset email");
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -391,6 +430,23 @@ export default function SignInScreen() {
                       />
                     </Pressable>
                   </View>
+                  
+                  {/* Forgot Password Link */}
+                  <Pressable
+                    onPress={() => {
+                      setForgotPasswordEmail(email);
+                      setShowForgotPassword(true);
+                    }}
+                    style={{ alignSelf: "flex-end", marginTop: 8 }}
+                  >
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: colors.primary, 
+                      fontWeight: "600" 
+                    }}>
+                      Forgot Password?
+                    </Text>
+                  </Pressable>
                 </View>
 
                 {/* Error Message */}
@@ -522,6 +578,157 @@ export default function SignInScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={showForgotPassword}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowForgotPassword(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowForgotPassword(false)}>
+          <View style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+          }}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={{
+                backgroundColor: colors.card,
+                borderRadius: 24,
+                padding: 24,
+                width: "100%",
+                maxWidth: 400,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.2,
+                shadowRadius: 20,
+                elevation: 10,
+              }}>
+                {/* Modal Header */}
+                <View style={{ alignItems: "center", marginBottom: 24 }}>
+                  <View style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 20,
+                    backgroundColor: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}>
+                    <M3Icon name="mail" size={32} color={colors.primary} />
+                  </View>
+                  <Text style={{ 
+                    fontSize: 22, 
+                    fontWeight: "700", 
+                    color: colors.text,
+                    marginBottom: 8,
+                  }}>
+                    Reset Password
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 14, 
+                    color: colors.textSecondary, 
+                    textAlign: "center",
+                    lineHeight: 20,
+                  }}>
+                    Enter your email and we&apos;ll send you a link to reset your password
+                  </Text>
+                </View>
+
+                {/* Email Input */}
+                <View style={{
+                  backgroundColor: colors.inputBg,
+                  borderRadius: 14,
+                  borderWidth: 1.5,
+                  borderColor: colors.inputBorder,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 14,
+                  marginBottom: 20,
+                }}>
+                  <View style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: isDarkColorScheme ? "rgba(42, 167, 157, 0.15)" : "rgba(42, 167, 157, 0.1)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}>
+                    <M3Icon name="mail" size={18} color={colors.primary} />
+                  </View>
+                  <TextInput
+                    placeholder="Enter your email"
+                    placeholderTextColor={colors.textMuted}
+                    value={forgotPasswordEmail}
+                    onChangeText={setForgotPasswordEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    editable={!forgotPasswordLoading}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 16,
+                      paddingHorizontal: 12,
+                      fontSize: 16,
+                      color: colors.text,
+                    }}
+                  />
+                </View>
+
+                {/* Buttons */}
+                <View style={{ gap: 12 }}>
+                  <Pressable
+                    onPress={handleForgotPassword}
+                    disabled={forgotPasswordLoading}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.9 : 1,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    })}
+                  >
+                    <LinearGradient
+                      colors={colors.primaryGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={{
+                        borderRadius: 14,
+                        paddingVertical: 16,
+                        alignItems: "center",
+                        opacity: forgotPasswordLoading ? 0.7 : 1,
+                      }}
+                    >
+                      {forgotPasswordLoading ? (
+                        <M3CircularProgress size={20} color="#FFFFFF" />
+                      ) : (
+                        <Text style={{ fontSize: 16, fontWeight: "600", color: "#FFFFFF" }}>
+                          Send Reset Link
+                        </Text>
+                      )}
+                    </LinearGradient>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setShowForgotPassword(false)}
+                    disabled={forgotPasswordLoading}
+                    style={({ pressed }) => ({
+                      backgroundColor: colors.inputBg,
+                      borderRadius: 14,
+                      paddingVertical: 16,
+                      alignItems: "center",
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: "600", color: colors.textSecondary }}>
+                      Cancel
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }

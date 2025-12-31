@@ -201,8 +201,8 @@ export default function CounsellorSignUpScreen() {
       }
 
       Alert.alert(
-        "Application Submitted! 🎉",
-        "Thank you for applying to join MindSets. Your application is under review and we'll contact you within 3-5 business days.",
+        "Application Submitted! 📧",
+        "Thank you for applying! We've sent a verification email to your address. Please verify your email. Your application is under review and we'll contact you within 3-5 business days.",
         [{ text: "OK", onPress: () => router.replace("/(auth)/sign-in") }],
       );
     } catch (error: any) {
